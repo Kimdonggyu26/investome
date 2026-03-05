@@ -1,0 +1,88 @@
+.rankingCard{
+  padding:20px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);
+}
+
+.rankingHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:16px;
+}
+
+.rankingHeader h3{
+  font-size:18px;
+  font-weight:750;
+  margin:0;
+}
+
+.marketTabs{
+  display:flex;
+  gap:8px;
+}
+
+.marketTabs button{
+  padding:6px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.02);
+  color:#aaa;
+  cursor:pointer;
+  font-size:13px;
+  transition:all .2s ease;
+}
+
+.marketTabs button:hover{
+  border-color:#0ea5ff;
+  color:#0ea5ff;
+  box-shadow:0 0 14px rgba(14,165,255,0.18);
+}
+
+.marketTabs button.active{
+  background:#0ea5ff;
+  color:white;
+  border:none;
+  box-shadow:0 0 18px rgba(14,165,255,0.55);
+}
+
+.rankingScroll{
+  max-height: 440px;      /* TOP30 스크롤 */
+  overflow-y: auto;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.06);
+  background: rgba(0,0,0,0.15);
+}
+
+.rankingTable{
+  width:100%;
+  border-collapse:collapse;
+}
+
+.rankingTable thead th{
+  position: sticky;
+  top: 0;
+  background: rgba(12,12,16,0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  text-align:left;
+  font-size:12px;
+  color:#888;
+  padding:12px 12px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+
+.rankingTable td{
+  padding:12px 12px;
+  font-size:14px;
+}
+
+.rankingTable tbody tr{
+  border-top:1px solid rgba(255,255,255,0.05);
+  cursor:pointer;
+}
+
+.rankingTable tbody tr:hover{
+  background:rgba(255,255,255,0.04);
+}

@@ -1,0 +1,121 @@
+.tickerBar{
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(11,15,23,.72);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.tickerInner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 14px;
+  padding: 10px 0;
+}
+
+.tickerLeft{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  min-width: 180px;
+}
+
+.tickerDot{
+  width:8px; height:8px;
+  border-radius:999px;
+  background: var(--accent);
+  box-shadow: var(--glow);
+}
+.tickerTitle{ font-weight: 700; letter-spacing:.2px; }
+.tickerSub{ font-size: 12px; }
+
+.tickerItems{
+  position: relative;
+  overflow: hidden;           /* 중요: 흘러가는 트랙이 바깥으로 못 나가게 */
+  flex: 1;
+  min-width: 0;
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.tickerItems::-webkit-scrollbar{ display:none; }
+
+.tickerItem{
+  display:flex;
+  align-items:baseline;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 999px;
+  background: rgba(255,255,255,.02);
+  transition: 160ms ease;
+  white-space: nowrap;
+}
+.tickerItem:hover{
+  border-color: rgba(54,213,255,.30);
+  box-shadow: var(--glow);
+}
+
+.tickerSymbol{
+  font-weight: 700;
+  font-size: 12px;
+  color: rgba(255,255,255,.78);
+}
+
+.tickerTrack{
+  display: inline-flex;
+  gap: 12px;
+  white-space: nowrap;
+  will-change: transform;
+  animation: tickerScroll 22s linear infinite;
+}
+
+/* 마우스 올리면 멈춤 */
+.tickerItems:hover .tickerTrack{
+  animation-play-state: paused;
+}
+
+.tickerPrice{
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.tickerChange{
+  font-size: 12px;
+  font-weight: 700;
+  opacity: .95;
+}
+.tickerChange.up{ color: rgba(54,213,255,.95); }
+.tickerChange.down{ color: rgba(255,120,170,.95); }
+@keyframes tickerScroll{
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ===== flash effect (value update glow) ===== */
+.tickerItem{
+  position: relative; /* flash 배경/테두리 자연스럽게 */
+}
+
+/* 상승 반짝 */
+.tickerItem.flash-up{
+  border-color: rgba(54,213,255,.55);
+  box-shadow: 0 0 0 1px rgba(54,213,255,.15), var(--glow);
+  background: linear-gradient(90deg, rgba(54,213,255,.16), rgba(255,255,255,.02));
+  animation: flashPop 600ms ease-out;
+}
+
+/* 하락 반짝 */
+.tickerItem.flash-down{
+  border-color: rgba(255,120,170,.45);
+  box-shadow: 0 0 0 1px rgba(255,120,170,.12), 0 0 18px rgba(255,120,170,.18);
+  background: linear-gradient(90deg, rgba(255,120,170,.14), rgba(255,255,255,.02));
+  animation: flashPop 600ms ease-out;
+}
+
+@keyframes flashPop{
+  0%   { transform: translateY(0); }
+  40%  { transform: translateY(-1px); }
+  100% { transform: translateY(0); }
+}
