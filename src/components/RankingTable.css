@@ -1,0 +1,183 @@
+.rankingCard{
+  padding:20px;
+  border-radius:14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.02));
+  border:1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 18px 60px rgba(0,0,0,0.35);
+  position: relative;
+}
+
+.rankingHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:16px;
+}
+
+.rankingHeader h3{
+  font-size:18px;
+  font-weight:800;
+  margin:0;
+  letter-spacing: .2px;
+}
+
+.marketTabs{
+  display:flex;
+  gap:8px;
+}
+
+.marketTabs button{
+  padding:7px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.02);
+  color:#aaa;
+  cursor:pointer;
+  font-size:13px;
+  transition:all .2s ease;
+}
+
+.marketTabs button:hover{
+  border-color: rgba(14,165,255,0.75);
+  color:#0ea5ff;
+  box-shadow: 0 0 18px rgba(14,165,255,0.18);
+}
+
+.marketTabs button.active{
+  background:#0ea5ff;
+  color:white;
+  border:none;
+  box-shadow:0 0 22px rgba(14,165,255,0.55);
+}
+
+.rankingScroll{
+  max-height: 460px;
+  overflow:auto;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.18);
+  position: relative;
+}
+
+/* ✅ 고급 스크롤 */
+.luxuryScroll{
+  scrollbar-color: rgba(14,165,255,0.55) rgba(255,255,255,0.06); /* Firefox */
+  scrollbar-width: thin;
+}
+
+.luxuryScroll::-webkit-scrollbar{
+  width: 12px;
+}
+.luxuryScroll::-webkit-scrollbar-track{
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  border-left: 1px solid rgba(255,255,255,0.06);
+  border-radius: 999px;
+}
+.luxuryScroll::-webkit-scrollbar-thumb{
+  background: linear-gradient(180deg, rgba(14,165,255,0.85), rgba(14,165,255,0.25));
+  border: 3px solid rgba(10,12,18,0.9);
+  border-radius: 999px;
+  box-shadow: 0 0 16px rgba(14,165,255,0.35);
+}
+.luxuryScroll::-webkit-scrollbar-thumb:hover{
+  background: linear-gradient(180deg, rgba(14,165,255,0.95), rgba(14,165,255,0.35));
+}
+
+/* 위/아래 글로우 */
+.scrollGlowTop,
+.scrollGlowBottom{
+  pointer-events:none;
+  position:absolute;
+  left:0;
+  right:0;
+  height:26px;
+  z-index: 5;
+}
+.scrollGlowTop{
+  top:0;
+  background: linear-gradient(180deg, rgba(14,165,255,0.10), rgba(14,165,255,0.0));
+}
+.scrollGlowBottom{
+  bottom:0;
+  background: linear-gradient(0deg, rgba(14,165,255,0.10), rgba(14,165,255,0.0));
+}
+
+.rankingTable{
+  width:100%;
+  border-collapse:collapse;
+}
+
+.rankingTable thead th{
+  position: sticky;
+  top: 0;
+  background: rgba(12,12,16,0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  text-align:left;
+  font-size:12px;
+  color:#9aa0aa;
+  padding:12px 12px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  z-index: 6;
+}
+
+.rankingTable td{
+  padding:12px 12px;
+  font-size:14px;
+  vertical-align: middle;
+}
+
+.rankingTable tbody tr{
+  border-top:1px solid rgba(255,255,255,0.055);
+  cursor:pointer;
+  transition: background .18s ease;
+}
+
+.rankingTable tbody tr:hover{
+  background:rgba(255,255,255,0.045);
+}
+
+.rankCell{
+  color: rgba(255,255,255,0.85);
+  font-weight: 900;
+}
+
+.nameCell{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+
+.avatar{
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 0 16px rgba(0,0,0,0.25);
+}
+
+.avatarFallback{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 900;
+  color: rgba(255,255,255,0.9);
+  background: radial-gradient(circle at 30% 30%, rgba(14,165,255,0.35), rgba(255,255,255,0.04));
+}
+
+.nameText{ display:flex; flex-direction:column; }
+.nameMain{ font-weight: 850; }
+.nameSub{ font-size: 12px; margin-top: 2px; }
+
+.changePill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.02);
+  font-weight: 900;
+  font-size: 12px;
+}

@@ -1,14 +1,57 @@
-import { useEffect, useState } from "react";
+// src/components/FxRates.jsx
+import { useEffect, useRef, useState } from "react";
 import { fetchFx } from "../api/fxApi";
+import "./FxRates.css";
 
-function fmt(v) {
-  if (typeof v !== "number") return "-";
-  return "₩" + v.toLocaleString("ko-KR", { maximumFractionDigits: 2 });
+const FX = [
+  {
+    key: "USDKRW",
+    label: "미국 / USD",
+    flag: "https://flagcdn.com/w40/us.png",
+  },
+  {
+    key: "JPYKRW",
+    label: "일본 / JPY",
+    flag: "https://flagcdn.com/w40/jp.png",
+  },
+  {
+    key: "CNYKRW",
+    label: "중국 / CNY",
+    flag: "https://flagcdn.com/w40/cn.png",
+  },
+  {
+    key: "EURKRW",
+    label: "유럽 / EUR",
+    flag: "https://flagcdn.com/w40/eu.png",
+  },
+  {
+    key: "AUDKRW",
+    label: "호주 / AUD",
+    flag: "https://flagcdn.com/w40/au.png",
+  },
+];
+
+function fmt(n) {
+  if (typeof n !== "number" || !isFinite(n)) return "-";
+  return `${n.toLocaleString("ko-KR", { maximumFractionDigits: 2 })}원`;
+}
+
+function changePct(now, prev) {
+  if (typeof now !== "number" || typeof prev !== "number" || !isFinite(prev) || prev === 0) return null;
+  return ((now - prev) / prev) * 100;
+}
+
+function color(p) {
+  if (typeof p !== "number") return "rgba(255,255,255,0.55)";
+  if (p > 0) return "rgba(80, 255, 170, 0.95)"; // neon green
+  if (p < 0) return "rgba(255,120,170,0.95)";   // pink
+  return "rgba(255,255,255,0.55)";
 }
 
 export default function FxRates() {
   const [fx, setFx] = useState(null);
   const [err, setErr] = useState(null);
+  const prevRef = useRef(null);
 
   useEffect(() => {
     let mounted = true;
@@ -17,14 +60,20 @@ export default function FxRates() {
       try {
         setErr(null);
         const data = await fetchFx();
-        if (mounted) setFx(data);
+
+        const prev = prevRef.current;
+        prevRef.current = data;
+
+        if (!mounted) return;
+        setFx({ ...data, _prev: prev });
       } catch (e) {
-        if (mounted) setErr(e);
+        if (!mounted) return;
+        setErr(e);
       }
     };
 
     load();
-    const t = setInterval(load, 30 * 60 * 1000); // 30분
+    const t = setInterval(load, 10000); // 10초마다 갱신
     return () => {
       mounted = false;
       clearInterval(t);
@@ -32,32 +81,54 @@ export default function FxRates() {
   }, []);
 
   return (
-    <div className="card" style={{ padding: 18 }}>
-      <h3 style={{ margin: 0 }}>실시간 환율정보</h3>
-      <hr className="hr" />
-
-      {err && <div className="muted">환율을 불러오지 못했어요.</div>}
-
-      <div style={{ display: "grid", gap: 10 }}>
-        <div className="card" style={{ padding: 12, background: "rgba(255,255,255,0.02)" }}>
-          <div className="muted" style={{ fontSize: 12 }}>USD/KRW</div>
-          <div style={{ fontWeight: 900, fontSize: 18, marginTop: 6 }}>{fmt(fx?.USDKRW)}</div>
+    <div className="fxCard" id="fx">
+      <div className="fxHeader">
+        <div>
+          <div className="fxTitle">환율 모아보기</div>
+          <div className="fxSub">Currency Exchange Rates at a Glance</div>
         </div>
 
-        <div className="card" style={{ padding: 12, background: "rgba(255,255,255,0.02)" }}>
-          <div className="muted" style={{ fontSize: 12 }}>JPY/KRW (1 JPY)</div>
-          <div style={{ fontWeight: 900, fontSize: 18, marginTop: 6 }}>{fmt(fx?.JPYKRW)}</div>
-        </div>
-
-        <div className="card" style={{ padding: 12, background: "rgba(255,255,255,0.02)" }}>
-          <div className="muted" style={{ fontSize: 12 }}>EUR/KRW (1 EUR)</div>
-          <div style={{ fontWeight: 900, fontSize: 18, marginTop: 6 }}>{fmt(fx?.EURKRW)}</div>
-        </div>
-
-        <div className="muted" style={{ fontSize: 12 }}>
-          {fx?.updatedUtc ? `updated: ${fx.updatedUtc}` : ""}
-        </div>
+        <div className="fxUpdated">{fx?.updatedUtc ? "updated" : ""}</div>
       </div>
+
+      {err && (
+        <div className="muted" style={{ marginTop: 10 }}>
+          환율을 불러오지 못했어요.
+        </div>
+      )}
+
+      <div className="fxList">
+        {FX.map((c) => {
+          const now = fx?.[c.key];
+          const prev = fx?._prev?.[c.key];
+          const p = changePct(now, prev);
+
+          const col = color(p);
+          const sign = typeof p === "number" && p > 0 ? "▲" : "▼";
+          const pctText = typeof p === "number" ? `${sign} ${Math.abs(p).toFixed(2)}%` : "-";
+
+          return (
+            <div className="fxRow" key={c.key}>
+              <div className="fxLeft">
+                <div className="fxFlag">
+                  <img src={c.flag} alt="" />
+                </div>
+
+                <div className="fxMeta">
+                  <div className="fxValue">{fmt(now)}</div>
+                  <div className="fxLabel">{c.label}</div>
+                </div>
+              </div>
+
+              <div className="fxRight" style={{ color: col }}>
+                {pctText}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="fxFoot muted">{fx?.updatedUtc || ""}</div>
     </div>
   );
 }

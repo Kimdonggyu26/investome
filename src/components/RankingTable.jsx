@@ -1,52 +1,100 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/RankingTable.css";
+import "./RankingTable.css";
+import {
+  fetchCryptoTop30KRW,
+  fetchKospiTop30KRW,
+  fetchNasdaqTop30KRW,
+  getKoreanDummyTop30,
+} from "../api/rankingApi";
 
 const MARKETS = ["KOSPI", "NASDAQ", "CRYPTO"];
 
-function krw(v) {
-  if (typeof v !== "number") return "-";
-  return "₩" + Math.round(v).toLocaleString("ko-KR");
+function formatCapKRW(n) {
+  if (typeof n !== "number" || !isFinite(n)) return "-";
+  const JO = 1_000_000_000_000;
+  const EOK = 100_000_000;
+  if (n >= JO) return `${Math.floor(n / JO).toLocaleString("ko-KR")}조`;
+  if (n >= EOK) return `${Math.floor(n / EOK).toLocaleString("ko-KR")}억`;
+  return "-";
 }
 
-// 더미 TOP30 생성 (나중에 API 붙일 때 이 부분만 교체하면 됨)
-function makeTop30(market) {
-  const rows = [];
-  for (let i = 1; i <= 30; i++) {
-    if (market === "KOSPI") {
-      rows.push({
-        rank: i,
-        symbol: String(100000 + i),
-        name: `KOSPI 종목 ${i}`,
-        cap: 520_000_000_000_000 - i * 7_500_000_000_000, // 예시
-        price: 80_000 - i * 650,
-      });
-    } else if (market === "NASDAQ") {
-      rows.push({
-        rank: i,
-        symbol: `US${i}`,
-        name: `NASDAQ 종목 ${i}`,
-        cap: 3_400_000_000_000_000 - i * 45_000_000_000_000,
-        price: 320_000 - i * 3_200,
-      });
-    } else {
-      rows.push({
-        rank: i,
-        symbol: `C${i}`,
-        name: `Crypto ${i}`,
-        cap: 1_800_000_000_000_000 - i * 18_000_000_000_000,
-        price: 12_000_000 - i * 110_000,
-      });
-    }
-  }
-  return rows;
+function formatKRW(n) {
+  if (typeof n !== "number" || !isFinite(n)) return "-";
+  return "₩" + Math.round(n).toLocaleString("ko-KR");
+}
+
+// ✅ 상승: 네온 그린 / 하락: 핑크 레드
+function colorByChange(pct) {
+  if (typeof pct !== "number") return "rgba(255,255,255,0.88)";
+  if (pct > 0) return "rgba(80, 255, 170, 0.95)";
+  if (pct < 0) return "rgba(255,120,170,0.95)";
+  return "rgba(255,255,255,0.88)";
+}
+
+function ChangeText({ pct }) {
+  const isNum = typeof pct === "number" && isFinite(pct);
+  const col = colorByChange(pct);
+  const sign = isNum && pct > 0 ? "+" : "";
+  return (
+    <span style={{ color: col, fontWeight: 900 }}>
+      {isNum ? `${sign}${pct.toFixed(2)}%` : "-"}
+    </span>
+  );
+}
+
+function Avatar({ iconUrl, name }) {
+  if (iconUrl) return <img className="avatar" src={iconUrl} alt={name} loading="lazy" />;
+  const initial = (name || "?").trim().slice(0, 1);
+  return <div className="avatar avatarFallback">{initial}</div>;
 }
 
 export default function RankingTable() {
   const navigate = useNavigate();
-  const [market, setMarket] = useState("KOSPI");
+  const [market, setMarket] = useState("CRYPTO");
+  const [rows, setRows] = useState([]);
+  const [err, setErr] = useState(null);
 
-  const rows = useMemo(() => makeTop30(market), [market]);
+  useEffect(() => {
+    let alive = true;
+
+    async function load() {
+      try {
+        setErr(null);
+
+        if (market === "CRYPTO") {
+          const real = await fetchCryptoTop30KRW();
+          if (!alive) return;
+          setRows(real);
+          return;
+        }
+
+        if (market === "KOSPI") {
+          const realOrNull = await fetchKospiTop30KRW().catch(() => null);
+          if (!alive) return;
+          setRows(realOrNull ?? getKoreanDummyTop30("KOSPI"));
+          return;
+        }
+
+        if (market === "NASDAQ") {
+          const realOrNull = await fetchNasdaqTop30KRW().catch(() => null);
+          if (!alive) return;
+          setRows(realOrNull ?? getKoreanDummyTop30("NASDAQ"));
+          return;
+        }
+      } catch (e) {
+        if (!alive) return;
+        setErr(e);
+      }
+    }
+
+    load();
+    const t = setInterval(load, market === "CRYPTO" ? 60_000 : 5 * 60_000);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, [market]);
 
   return (
     <div className="rankingCard" id="ranking">
@@ -67,41 +115,59 @@ export default function RankingTable() {
         </div>
       </div>
 
-      <div className="rankingScroll">
+      {err && (
+        <div className="muted" style={{ marginBottom: 10 }}>
+          랭킹을 불러오지 못했어요.
+        </div>
+      )}
+
+      <div className="rankingScroll luxuryScroll">
         <table className="rankingTable">
           <thead>
             <tr>
-              <th style={{ width: 60 }}>#</th>
+              <th style={{ width: 76 }}>순위</th>
               <th>종목</th>
               <th style={{ width: 170 }}>시가총액</th>
-              <th style={{ width: 150 }}>현재가</th>
+              <th style={{ width: 170 }}>현재가</th>
+              <th style={{ width: 120 }}>등락률</th>
             </tr>
           </thead>
 
           <tbody>
             {rows.map((r) => (
               <tr
-                key={`${market}-${r.rank}`}
+                key={`${market}-${r.rank}-${r.symbol}`}  // ✅ index 사용 안 함
                 onClick={() => navigate(`/asset/${market}/${r.symbol}`)}
                 title="클릭해서 상세보기"
               >
-                <td>{r.rank}</td>
+                <td className="rankCell">{r.rank}</td>
+
                 <td>
-                  <div style={{ fontWeight: 850 }}>{r.name}</div>
-                  <div className="muted" style={{ fontSize: 12 }}>
-                    {r.symbol}
+                  <div className="nameCell">
+                    <Avatar iconUrl={r.iconUrl} name={r.name} />
+                    <div className="nameText">
+                      <div className="nameMain">{r.name}</div>
+                      <div className="muted nameSub">{r.symbol}</div>
+                    </div>
                   </div>
                 </td>
-                <td>{krw(r.cap)}</td>
-                <td>{krw(r.price)}</td>
+
+                <td>{formatCapKRW(r.capKRW)}</td>
+
+                <td style={{ color: colorByChange(r.changePct), fontWeight: 900 }}>
+                  {formatKRW(r.priceKRW)}
+                </td>
+
+                <td>
+                  <ChangeText pct={r.changePct} />
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
 
-      <div className="muted" style={{ fontSize: 12, marginTop: 10 }}>
-        * 현재는 더미 TOP30이며, 추후 KOSPI/NASDAQ/CRYPTO 실데이터 API로 교체 예정
+        <div className="scrollGlowTop" />
+        <div className="scrollGlowBottom" />
       </div>
     </div>
   );

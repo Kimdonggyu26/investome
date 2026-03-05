@@ -1,69 +1,57 @@
-export default function Hero() {
+// src/components/Hero.jsx
+import MyPortfolio from "./MyPortfolio";
+import FxRates from "./FxRates";
+import RankingTable from "./RankingTable";
+import NewsList from "./NewsList";
+
+export default function Hero({ prices }) {
   return (
-    <section style={{ padding: "42px 0 18px" }}>
+    <section style={{ padding: "14px 0 0px" }}>
       <div className="container">
-        <div className="card" style={{ padding: 22 }}>
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 18,
-              alignItems: "stretch",
-              justifyContent: "space-between",
-            }}
-          >
-            <div style={{ maxWidth: 760 }}>
-              <div className="muted" style={{ fontSize: 13, marginBottom: 8 }}>
-                Investome • Markets • Portfolio • News
-              </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "2fr 1fr",
+            gap: 18,
+            alignItems: "start",
+          }}
+        >
+          {/* ✅ 왼쪽 : MyPortfolio 바로 아래에 TOP30/뉴스를 붙임 */}
+          <div style={{ display: "grid", gap: 12 }}>
+            <MyPortfolio prices={prices} />
+            <RankingTable />
+            <NewsList />
+          </div>
 
-              <h1 style={{ margin: 0, fontSize: 34, letterSpacing: ".2px" }}>
-                실시간 시장 데이터, 한눈에.
-              </h1>
-
-              <p className="muted" style={{ marginTop: 10, lineHeight: 1.55 }}>
-                오늘의 주요 지표와 헤드라인을 빠르게 확인하고,
-                내 포트폴리오까지 한 화면에서 관리하세요.
-              </p>
-
-              <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-                <a className="btn primary" href="#ranking">
-                  TOP30 보기
-                </a>
-                <a className="btn" href="#news">
-                  경제 뉴스 보기
-                </a>
-              </div>
-            </div>
-
-            {/* 로그인 카드(코인니스 느낌) */}
+          {/* ✅ 오른쪽 : 로그인 + 환율 */}
+          <div style={{ display: "grid", gap: 12 }}>
             <div
               className="card"
               style={{
-                padding: 16,
-                minWidth: 300,
-                flex: "0 0 320px",
-                background: "rgba(255,255,255,.02)",
+                padding: 18,
+                background:
+                  "radial-gradient(120% 120% at 20% 0%, rgba(14,165,255,0.18), rgba(255,255,255,0.02))",
+                border: "1px solid rgba(255,255,255,0.10)",
+                boxShadow: "0 18px 60px rgba(0,0,0,0.35)",
                 display: "grid",
-                gap: 10,
+                gap: 12,
               }}
             >
-              <div style={{ fontWeight: 900, fontSize: 16 }}>
-                로그인
-              </div>
+              <div style={{ fontWeight: 900, fontSize: 16 }}>로그인</div>
 
-              <div className="muted" style={{ fontSize: 13, lineHeight: 1.45 }}>
+              <div className="muted" style={{ fontSize: 13, lineHeight: 1.5 }}>
                 로그인 하여 나만의 투자 포트폴리오를 완성해보세요.
               </div>
 
-              <button className="btn primary" style={{ justifyContent: "center" }} type="button">
-                로그인 (추후 연결)
-              </button>
+              <input className="input" placeholder="이메일" />
+              <input className="input" type="password" placeholder="비밀번호" />
 
-              <button className="btn" style={{ justifyContent: "center" }} type="button">
-                회원가입 (추후 연결)
+              <button className="btn primary" style={{ justifyContent: "center" }}>
+                로그인
               </button>
             </div>
+
+            <FxRates />
           </div>
         </div>
       </div>

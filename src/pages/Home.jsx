@@ -6,8 +6,6 @@ import Hero from "../components/Hero";
 import RankingTable from "../components/RankingTable";
 import NewsList from "../components/NewsList";
 import CommunityFeed from "../components/CommunityFeed";
-import MyPortfolio from "../components/MyPortfolio";
-import FxRates from "../components/FxRates";
 
 export default function Home() {
   const { prices, changes, loading, error } = useTicker();
@@ -23,27 +21,28 @@ export default function Home() {
       <Header />
 
       <main>
-        <Hero />
+        {/* ✅ Hero가 prices를 받아서 MyPortfolio를 내부에서 렌더 */}
+        <Hero prices={prices} />
 
-        {/* ✅ Hero 아래 2열 레이아웃(정석) */}
-        <section style={{ padding: "10px 0 18px" }}>
+        {/* ✅ Hero 아래: 랭킹 + (원래 환율 자리로) 뉴스 */}
+        <section style={{ padding: "0px 0 18px", marginTop: -10 }}>
           <div
             className="container"
             style={{
               display: "grid",
               gridTemplateColumns: "2fr 1fr",
-              gap: 18,
+              gap: 12,
               alignItems: "start",
             }}
           >
             <div style={{ display: "grid", gap: 18 }}>
               <RankingTable />
-              <FxRates />
               <NewsList />
             </div>
 
+            {/* 오른쪽 컬럼은 일단 비워둠 (나중에 커뮤니티 위젯/인기글/미니티커 넣기 좋음) */}
             <div style={{ position: "sticky", top: 120 }}>
-              <MyPortfolio prices={prices} />
+              {/* 추후 위젯 자리 */}
             </div>
           </div>
         </section>
