@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./RankingTable.css";
 import {
@@ -24,63 +24,83 @@ function formatKRW(n) {
   return "₩" + Math.round(n).toLocaleString("ko-KR");
 }
 
-// ✅ 상승: 네온 그린 / 하락: 핑크 레드
 function colorByChange(pct) {
   if (typeof pct !== "number") return "rgba(255,255,255,0.88)";
-  if (pct > 0) return "rgba(80, 255, 170, 0.95)";
+  if (pct > 0) return "rgba(80,255,170,0.95)";
   if (pct < 0) return "rgba(255,120,170,0.95)";
   return "rgba(255,255,255,0.88)";
 }
 
-function ChangeText({ pct }) {
-  const isNum = typeof pct === "number" && isFinite(pct);
-  const col = colorByChange(pct);
-  const sign = isNum && pct > 0 ? "+" : "";
-  return (
-    <span style={{ color: col, fontWeight: 900 }}>
-      {isNum ? `${sign}${pct.toFixed(2)}%` : "-"}
-    </span>
-  );
-}
-
 function Avatar({ iconUrl, name }) {
-  if (iconUrl) return <img className="avatar" src={iconUrl} alt={name} loading="lazy" />;
+  if (iconUrl) {
+    return <img className="avatar" src={iconUrl} alt={name} loading="lazy" />;
+  }
   const initial = (name || "?").trim().slice(0, 1);
   return <div className="avatar avatarFallback">{initial}</div>;
 }
 
 export default function RankingTable() {
   const navigate = useNavigate();
+
   const [market, setMarket] = useState("CRYPTO");
   const [rows, setRows] = useState([]);
   const [err, setErr] = useState(null);
+  const [flashMap, setFlashMap] = useState({});
+
+  const prevRowsRef = useRef([]);
+  const flashTimerRef = useRef(null);
 
   useEffect(() => {
     let alive = true;
 
-    async function load() {
+    async function fetchRows() {
       try {
         setErr(null);
 
+        let nextRows = [];
+
         if (market === "CRYPTO") {
-          const real = await fetchCryptoTop30KRW();
-          if (!alive) return;
-          setRows(real);
-          return;
-        }
-
-        if (market === "KOSPI") {
+          nextRows = await fetchCryptoTop30KRW();
+        } else if (market === "KOSPI") {
           const realOrNull = await fetchKospiTop30KRW().catch(() => null);
-          if (!alive) return;
-          setRows(realOrNull ?? getKoreanDummyTop30("KOSPI"));
-          return;
+          nextRows = realOrNull ?? getKoreanDummyTop30("KOSPI");
+        } else {
+          const realOrNull = await fetchNasdaqTop30KRW().catch(() => null);
+          nextRows = realOrNull ?? getKoreanDummyTop30("NASDAQ");
         }
 
-        if (market === "NASDAQ") {
-          const realOrNull = await fetchNasdaqTop30KRW().catch(() => null);
-          if (!alive) return;
-          setRows(realOrNull ?? getKoreanDummyTop30("NASDAQ"));
-          return;
+        if (!alive) return;
+
+        const prevMap = Object.fromEntries(
+          prevRowsRef.current.map((r) => [r.symbol, r])
+        );
+
+        const flashes = {};
+        nextRows.forEach((r) => {
+          const prev = prevMap[r.symbol];
+          if (!prev) return;
+
+          const priceChanged = prev.priceKRW !== r.priceKRW;
+          const pctChanged = prev.changePct !== r.changePct;
+
+          if (priceChanged || pctChanged) {
+            flashes[r.symbol] =
+              typeof r.changePct === "number" && r.changePct < 0 ? "down" : "up";
+          }
+        });
+
+        setRows(nextRows);
+        prevRowsRef.current = nextRows;
+
+        if (flashTimerRef.current) {
+          clearTimeout(flashTimerRef.current);
+        }
+
+        if (Object.keys(flashes).length > 0) {
+          setFlashMap(flashes);
+          flashTimerRef.current = setTimeout(() => {
+            setFlashMap({});
+          }, 900);
         }
       } catch (e) {
         if (!alive) return;
@@ -88,13 +108,18 @@ export default function RankingTable() {
       }
     }
 
-    load();
-    const t = setInterval(load, market === "CRYPTO" ? 60_000 : 5 * 60_000);
+    fetchRows();
+
+    // ✅ 안전하게 20초
+    const t = setInterval(fetchRows, 20_000);
+
     return () => {
       alive = false;
       clearInterval(t);
+      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
     };
   }, [market]);
+
 
   return (
     <div className="rankingCard" id="ranking">
@@ -117,7 +142,7 @@ export default function RankingTable() {
 
       {err && (
         <div className="muted" style={{ marginBottom: 10 }}>
-          랭킹을 불러오지 못했어요.
+          데이터를 불러오지 못했어요.
         </div>
       )}
 
@@ -134,40 +159,75 @@ export default function RankingTable() {
           </thead>
 
           <tbody>
-            {rows.map((r) => (
-              <tr
-                key={`${market}-${r.rank}-${r.symbol}`}  // ✅ index 사용 안 함
-                onClick={() => navigate(`/asset/${market}/${r.symbol}`)}
-                title="클릭해서 상세보기"
-              >
-                <td className="rankCell">{r.rank}</td>
+            {rows.map((r) => {
+              const flash = flashMap[r.symbol];
+              const priceClass =
+                flash === "up"
+                  ? "valueGlowUp"
+                  : flash === "down"
+                  ? "valueGlowDown"
+                  : "";
 
-                <td>
-                  <div className="nameCell">
-                    <Avatar iconUrl={r.iconUrl} name={r.name} />
-                    <div className="nameText">
-                      <div className="nameMain">{r.name}</div>
-                      <div className="muted nameSub">{r.symbol}</div>
+              const rateClass =
+                flash === "up"
+                  ? "valueGlowUp"
+                  : flash === "down"
+                  ? "valueGlowDown"
+                  : "";
+
+              return (
+                <tr
+                  key={`${market}-${r.rank}-${r.symbol}`}
+                  onClick={() => navigate(`/asset/${market}/${r.symbol}`)}
+                  title="클릭해서 상세보기"
+                >
+                  <td className="rankCell">{r.rank}</td>
+
+                  <td>
+                    <div className="nameCell">
+                      <Avatar iconUrl={r.iconUrl} name={r.name} />
+                      <div className="nameText">
+                        <div className="nameMain">{r.name}</div>
+                        <div className="muted nameSub">{r.symbol}</div>
+                      </div>
                     </div>
-                  </div>
-                </td>
+                  </td>
 
-                <td>{formatCapKRW(r.capKRW)}</td>
+                  <td>{formatCapKRW(r.capKRW)}</td>
 
-                <td style={{ color: colorByChange(r.changePct), fontWeight: 900 }}>
-                  {formatKRW(r.priceKRW)}
-                </td>
+                  <td
+                    className={priceClass}
+                    style={{
+                      color: colorByChange(r.changePct),
+                      fontWeight: 900,
+                    }}
+                  >
+                    {formatKRW(r.priceKRW)}
+                  </td>
 
-                <td>
-                  <ChangeText pct={r.changePct} />
-                </td>
-              </tr>
-            ))}
+                  <td
+                    className={rateClass}
+                    style={{
+                      color: colorByChange(r.changePct),
+                      fontWeight: 900,
+                    }}
+                  >
+                    {typeof r.changePct === "number"
+                      ? `${r.changePct > 0 ? "+" : ""}${r.changePct.toFixed(2)}%`
+                      : "-"}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 
         <div className="scrollGlowTop" />
         <div className="scrollGlowBottom" />
+      </div>
+
+      <div className="muted" style={{ fontSize: 12, marginTop: 10 }}>
+        20초마다 갱신됩니다.
       </div>
     </div>
   );

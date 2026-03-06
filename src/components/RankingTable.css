@@ -18,7 +18,7 @@
   font-size:18px;
   font-weight:800;
   margin:0;
-  letter-spacing: .2px;
+  letter-spacing:.2px;
 }
 
 .marketTabs{
@@ -51,7 +51,7 @@
 }
 
 .rankingScroll{
-  max-height: 460px;
+  max-height:460px;
   overflow:auto;
   border-radius:12px;
   border:1px solid rgba(255,255,255,0.08);
@@ -59,9 +59,8 @@
   position: relative;
 }
 
-/* ✅ 고급 스크롤 */
 .luxuryScroll{
-  scrollbar-color: rgba(14,165,255,0.55) rgba(255,255,255,0.06); /* Firefox */
+  scrollbar-color: rgba(14,165,255,0.55) rgba(255,255,255,0.06);
   scrollbar-width: thin;
 }
 
@@ -79,11 +78,7 @@
   border-radius: 999px;
   box-shadow: 0 0 16px rgba(14,165,255,0.35);
 }
-.luxuryScroll::-webkit-scrollbar-thumb:hover{
-  background: linear-gradient(180deg, rgba(14,165,255,0.95), rgba(14,165,255,0.35));
-}
 
-/* 위/아래 글로우 */
 .scrollGlowTop,
 .scrollGlowBottom{
   pointer-events:none;
@@ -91,7 +86,7 @@
   left:0;
   right:0;
   height:26px;
-  z-index: 5;
+  z-index:5;
 }
 .scrollGlowTop{
   top:0;
@@ -112,19 +107,19 @@
   top: 0;
   background: rgba(12,12,16,0.92);
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   text-align:left;
   font-size:12px;
   color:#9aa0aa;
-  padding:12px 12px;
+  padding:12px;
   border-bottom:1px solid rgba(255,255,255,0.08);
   z-index: 6;
 }
 
 .rankingTable td{
-  padding:12px 12px;
+  padding:12px;
   font-size:14px;
   vertical-align: middle;
+  transition: color .25s ease, text-shadow .25s ease, filter .25s ease;
 }
 
 .rankingTable tbody tr{
@@ -145,39 +140,73 @@
 .nameCell{
   display:flex;
   align-items:center;
-  gap: 10px;
+  gap:10px;
 }
 
 .avatar{
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  object-fit: cover;
-  border: 1px solid rgba(255,255,255,0.15);
+  width:32px;
+  height:32px;
+  border-radius:999px;
+  object-fit:cover;
+  border:1px solid rgba(255,255,255,0.15);
   box-shadow: 0 0 16px rgba(0,0,0,0.25);
 }
 
 .avatarFallback{
+  width:32px;
+  height:32px;
+  border-radius:999px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-weight: 900;
+  font-weight:900;
   color: rgba(255,255,255,0.9);
   background: radial-gradient(circle at 30% 30%, rgba(14,165,255,0.35), rgba(255,255,255,0.04));
 }
 
 .nameText{ display:flex; flex-direction:column; }
-.nameMain{ font-weight: 850; }
-.nameSub{ font-size: 12px; margin-top: 2px; }
+.nameMain{ font-weight:850; }
+.nameSub{ font-size:12px; margin-top:2px; }
 
-.changePill{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding: 5px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.18);
-  background: rgba(255,255,255,0.02);
-  font-weight: 900;
-  font-size: 12px;
+/* ✅ 이전 flash보다 훨씬 자연스럽고 고급스럽게 */
+.valueGlowUp{
+  animation: luxuryUp 0.9s ease;
+}
+
+.valueGlowDown{
+  animation: luxuryDown 0.9s ease;
+}
+
+@keyframes luxuryUp{
+  0% {
+    text-shadow: 0 0 0 rgba(80,255,170,0);
+    filter: brightness(1);
+  }
+  25% {
+    text-shadow:
+      0 0 10px rgba(80,255,170,0.30),
+      0 0 22px rgba(80,255,170,0.20);
+    filter: brightness(1.08);
+  }
+  100% {
+    text-shadow: 0 0 0 rgba(80,255,170,0);
+    filter: brightness(1);
+  }
+}
+
+@keyframes luxuryDown{
+  0% {
+    text-shadow: 0 0 0 rgba(255,120,170,0);
+    filter: brightness(1);
+  }
+  25% {
+    text-shadow:
+      0 0 10px rgba(255,120,170,0.30),
+      0 0 22px rgba(255,120,170,0.20);
+    filter: brightness(1.08);
+  }
+  100% {
+    text-shadow: 0 0 0 rgba(255,120,170,0);
+    filter: brightness(1);
+  }
 }

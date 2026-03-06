@@ -1,4 +1,3 @@
-// src/pages/Home.jsx
 import { useTicker } from "../hooks/useTicker";
 import TopTickerBar from "../components/TopTickerBar";
 import Header from "../components/Header";
@@ -21,33 +20,31 @@ export default function Home() {
       <Header />
 
       <main>
-        {/* ✅ Hero가 prices를 받아서 MyPortfolio를 내부에서 렌더 */}
+        {/* 1행: My Portfolio | 환율 모아보기 */}
         <Hero prices={prices} />
 
-        {/* ✅ Hero 아래: 랭킹 + (원래 환율 자리로) 뉴스 */}
-        <section style={{ padding: "0px 0 18px", marginTop: -10 }}>
+        {/* 2행: 시가총액 TOP30 | 커뮤니티 피드 */}
+        <section style={{ padding: "0 0 12px" }}>
           <div
             className="container"
             style={{
               display: "grid",
               gridTemplateColumns: "2fr 1fr",
-              gap: 12,
+              gap: 18,
               alignItems: "start",
             }}
           >
-            <div style={{ display: "grid", gap: 18 }}>
-              <RankingTable />
-              <NewsList />
-            </div>
-
-            {/* 오른쪽 컬럼은 일단 비워둠 (나중에 커뮤니티 위젯/인기글/미니티커 넣기 좋음) */}
-            <div style={{ position: "sticky", top: 120 }}>
-              {/* 추후 위젯 자리 */}
-            </div>
+            <RankingTable />
+            <CommunityFeed />
           </div>
         </section>
 
-        <CommunityFeed />
+        {/* 3행: 글로벌 경제 주요 소식 */}
+        <section style={{ padding: "0 0 18px" }}>
+          <div className="container">
+            <NewsList />
+          </div>
+        </section>
       </main>
 
       <footer style={{ padding: "20px 0 40px" }}>

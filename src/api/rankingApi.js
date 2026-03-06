@@ -1,17 +1,6 @@
-// src/api/rankingApi.js
-
 export async function fetchCryptoTop30KRW() {
-  const url =
-    "/cg/api/v3/coins/markets" +
-    "?vs_currency=krw" +
-    "&order=market_cap_desc" +
-    "&per_page=30" +
-    "&page=1" +
-    "&sparkline=false" +
-    "&price_change_percentage=24h";
-
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`CoinGecko markets failed: ${res.status}`);
+  const res = await fetch("/api/crypto-top30");
+  if (!res.ok) throw new Error(`Crypto top30 failed: ${res.status}`);
   const json = await res.json();
 
   return json.map((c, idx) => ({
@@ -26,7 +15,6 @@ export async function fetchCryptoTop30KRW() {
   }));
 }
 
-// ✅ KOSPI 실데이터(키 있으면 동작)
 export async function fetchKospiTop30KRW() {
   const res = await fetch("/api/krx-top30?market=KOSPI");
   if (!res.ok) throw new Error(`KRX top30 failed: ${res.status}`);
@@ -34,7 +22,6 @@ export async function fetchKospiTop30KRW() {
   return json.items;
 }
 
-// ✅ NASDAQ 실데이터(키 있으면 동작)
 export async function fetchNasdaqTop30KRW() {
   const res = await fetch("/api/us-top30?exchange=NASDAQ");
   if (!res.ok) throw new Error(`US top30 failed: ${res.status}`);
