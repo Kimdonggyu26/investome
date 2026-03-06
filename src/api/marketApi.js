@@ -1,6 +1,33 @@
+// src/api/marketApi.js
+
+const COINGECKO_SIMPLE_PRICE_URL =
+  "https://api.coingecko.com/api/v3/simple/price" +
+  "?ids=bitcoin,ethereum,ripple" +
+  "&vs_currencies=krw" +
+  "&include_24hr_change=true";
+
+function getRandomDelta(min = -0.35, max = 0.35) {
+  return Math.random() * (max - min) + min;
+}
+
+function updateMockIndex(basePrice, baseChange) {
+  const delta = getRandomDelta(-0.18, 0.18);
+  const nextPrice = basePrice * (1 + delta / 100);
+  const nextChange = baseChange + delta;
+
+  return {
+    price: Number(nextPrice.toFixed(2)),
+    change: Number(nextChange.toFixed(2)),
+  };
+}
+
 export async function fetchCryptoTickerKRW() {
-  const res = await fetch("/api/ticker");
-  if (!res.ok) throw new Error(`Ticker failed: ${res.status}`);
+  const res = await fetch(COINGECKO_SIMPLE_PRICE_URL);
+
+  if (!res.ok) {
+    throw new Error(`Ticker failed: ${res.status}`);
+  }
+
   const json = await res.json();
 
   return {
@@ -18,14 +45,17 @@ export async function fetchCryptoTickerKRW() {
 }
 
 export async function fetchIndexPlaceholders() {
+  const kospi = updateMockIndex(2640.12, 0.52);
+  const nasdaq = updateMockIndex(16840.55, -0.31);
+
   return {
     prices: {
-      KOSPI: 2640.12,
-      NASDAQ: 16840.55,
+      KOSPI: kospi.price,
+      NASDAQ: nasdaq.price,
     },
     changes: {
-      KOSPI: 0.52,
-      NASDAQ: -0.31,
+      KOSPI: kospi.change,
+      NASDAQ: nasdaq.change,
     },
   };
 }
