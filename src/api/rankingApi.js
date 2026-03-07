@@ -1,13 +1,21 @@
 // src/api/rankingApi.js
 
-const COINGECKO_MARKETS_URL =
-  "https://api.coingecko.com/api/v3/coins/markets" +
-  "?vs_currency=krw" +
-  "&order=market_cap_desc" +
-  "&per_page=30" +
-  "&page=1" +
-  "&sparkline=false" +
-  "&price_change_percentage=24h";
+function toNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function normalizeRow(row, index) {
+  return {
+    rank: row.rank ?? index + 1,
+    name: row.name ?? "-",
+    symbol: (row.symbol || "-").toUpperCase(),
+    iconUrl: row.iconUrl ?? "",
+    capKRW: toNumber(row.capKRW),
+    priceKRW: toNumber(row.priceKRW),
+    changePct: toNumber(row.changePct),
+  };
+}
 
 function toCryptoRow(coin, index) {
   return {
@@ -34,15 +42,25 @@ export async function fetchCryptoTop30KRW() {
   return json.map(toCryptoRow);
 }
 
-// 현재는 실데이터 API 미연결이라 null 반환 -> RankingTable에서 더미로 fallback
+async function fetchStockTop30(market) {
+  const res = await fetch(`/api/stock-top30?market=${market}`);
+  if (!res.ok) throw new Error(`${market} top30 failed: ${res.status}`);
+
+  const json = await res.json();
+  const items = Array.isArray(json?.items) ? json.items : [];
+
+  return items.map(normalizeRow);
+}
+
 export async function fetchKospiTop30KRW() {
-  return null;
+  return fetchStockTop30("KOSPI");
 }
 
 export async function fetchNasdaqTop30KRW() {
-  return null;
+  return fetchStockTop30("NASDAQ");
 }
 
+// 장애 시 fallback 용으로 남겨둠
 function makeDummyRows(market, names) {
   return names.map((item, idx) => {
     const rank = idx + 1;
