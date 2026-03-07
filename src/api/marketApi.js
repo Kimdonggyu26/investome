@@ -1,11 +1,5 @@
 // src/api/marketApi.js
 
-const COINGECKO_SIMPLE_PRICE_URL =
-  "https://api.coingecko.com/api/v3/simple/price" +
-  "?ids=bitcoin,ethereum,ripple" +
-  "&vs_currencies=krw" +
-  "&include_24hr_change=true";
-
 function getRandomDelta(min = -0.35, max = 0.35) {
   return Math.random() * (max - min) + min;
 }
@@ -22,7 +16,7 @@ function updateMockIndex(basePrice, baseChange) {
 }
 
 export async function fetchCryptoTickerKRW() {
-  const res = await fetch(COINGECKO_SIMPLE_PRICE_URL);
+  const res = await fetch("/api/ticker");
 
   if (!res.ok) {
     throw new Error(`Ticker failed: ${res.status}`);
