@@ -19,6 +19,33 @@ function formatKRW(n) {
   return `₩${Math.round(n).toLocaleString("ko-KR")}`;
 }
 
+function formatSignedKRW(n) {
+  if (typeof n !== "number" || !isFinite(n)) return "-";
+  const sign = n > 0 ? "+" : "";
+  return `${sign}₩${Math.round(n).toLocaleString("ko-KR")}`;
+}
+
+function calcChangeAmount(price, pct) {
+  if (typeof price !== "number" || !isFinite(price)) return null;
+  if (typeof pct !== "number" || !isFinite(pct)) return null;
+  return price * (pct / 100);
+}
+
+function calcRange(price, pct) {
+  if (typeof price !== "number" || !isFinite(price)) {
+    return { high: null, low: null };
+  }
+
+  const volatility = typeof pct === "number" && isFinite(pct)
+    ? Math.max(1.2, Math.min(6, Math.abs(pct) * 1.8))
+    : 2.2;
+
+  const high = price * (1 + volatility / 100);
+  const low = price * (1 - volatility / 100);
+
+  return { high, low };
+}
+
 function formatCapKRW(n) {
   if (typeof n !== "number" || !isFinite(n)) return "-";
   const JO = 1_000_000_000_000;
@@ -184,6 +211,9 @@ export default function AssetDetail() {
 
   const showCap = market !== "KOSPI";
 
+  const changeAmount = calcChangeAmount(asset.priceKRW, asset.changePct);
+  const { high, low } = calcRange(asset.priceKRW, asset.changePct);
+
   return (
     <>
       <TopTickerBar prices={prices} changes={changes} loading={loading} error={error} />
@@ -218,40 +248,46 @@ export default function AssetDetail() {
             </div>
 
             <div className="assetStatRow">
-              <div className="assetStatBlock">
+              <div className="assetStatCard primary">
                 <div className="assetStatLabel">현재가</div>
                 <div className="assetPrice">
                   {assetLoading ? "불러오는중" : formatKRW(asset.priceKRW)}
                 </div>
+                <div className="assetStatHint">
+                  {assetLoading ? "-" : `${marketLabel} 실시간 반영`}
+                </div>
               </div>
 
-              <div className="assetStatBlock">
+              <div className={`assetStatCard ${getChangeClass(asset.changePct)}`}>
                 <div className="assetStatLabel">등락률</div>
                 <div className={`assetChange ${getChangeClass(asset.changePct)}`}>
                   {assetLoading ? "불러오는중" : formatChange(asset.changePct)}
+                </div>
+                <div className="assetStatHint">
+                  {assetLoading ? "-" : formatSignedKRW(changeAmount)}
                 </div>
               </div>
             </div>
 
             <div className="assetMetaGrid">
-              <div className="assetMetaCard">
+              <div className="assetMetaCard blue">
                 <div className="assetMetaLabel">시장</div>
                 <div className="assetMetaValue">{marketLabel}</div>
               </div>
 
-              <div className="assetMetaCard">
+              <div className="assetMetaCard purple">
                 <div className="assetMetaLabel">심볼</div>
                 <div className="assetMetaValue">{symbol}</div>
               </div>
 
-              <div className="assetMetaCard">
+              <div className="assetMetaCard green">
                 <div className="assetMetaLabel">시가총액</div>
                 <div className="assetMetaValue">
                   {showCap ? formatCapKRW(asset.capKRW) : "-"}
                 </div>
               </div>
 
-              <div className="assetMetaCard">
+              <div className="assetMetaCard orange">
                 <div className="assetMetaLabel">뉴스 검색어</div>
                 <div className="assetMetaValue">{asset.name}</div>
               </div>
@@ -273,9 +309,25 @@ export default function AssetDetail() {
               </div>
 
               <div className="assetInfoList">
-                <div className="assetInfoItem">
+                <div className="assetInfoItem emphasis">
                   <div className="assetInfoItemLabel">종목명</div>
                   <div className="assetInfoItemValue">{asset.name}</div>
+                </div>
+
+                <div className="assetInfoMiniGrid">
+                  <div className="assetMiniCard high">
+                    <div className="assetMiniLabel">예상 High</div>
+                    <div className="assetMiniValue">
+                      {assetLoading ? "불러오는중" : formatKRW(high)}
+                    </div>
+                  </div>
+
+                  <div className="assetMiniCard low">
+                    <div className="assetMiniLabel">예상 Low</div>
+                    <div className="assetMiniValue">
+                      {assetLoading ? "불러오는중" : formatKRW(low)}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="assetInfoItem">
@@ -292,8 +344,15 @@ export default function AssetDetail() {
 
                 <div className="assetInfoItem">
                   <div className="assetInfoItemLabel">등락률</div>
-                  <div className="assetInfoItemValue">
+                  <div className={`assetInfoItemValue ${getChangeClass(asset.changePct)}`}>
                     {assetLoading ? "불러오는중" : formatChange(asset.changePct)}
+                  </div>
+                </div>
+
+                <div className="assetInfoItem">
+                  <div className="assetInfoItemLabel">변동 금액</div>
+                  <div className="assetInfoItemValue">
+                    {assetLoading ? "불러오는중" : formatSignedKRW(changeAmount)}
                   </div>
                 </div>
 

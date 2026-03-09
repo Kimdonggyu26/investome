@@ -95,7 +95,11 @@ export default function AssetCommunity({ market, symbol, assetName }) {
         )}
 
         {comments.map((item) => (
-          <div key={item.id} className="communityItem">
+          <div
+            key={item.id}
+            className="communityItem"
+            data-initial={(item.nickname || "익명").trim().slice(0, 1)}
+          >
             <div className="communityMeta">
               <span className="communityNick">{item.nickname}</span>
               <span className="communityDot">•</span>
