@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import "./TopTickerBar.css";
 
 function formatPrice(value) {
   if (typeof value !== "number" || !isFinite(value)) return "불러오는중";
