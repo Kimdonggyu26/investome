@@ -32,9 +32,20 @@ function colorByChange(pct) {
 }
 
 function Avatar({ iconUrl, name }) {
-  if (iconUrl) {
-    return <img className="avatar" src={iconUrl} alt={name} loading="lazy" />;
+  const [imgError, setImgError] = useState(false);
+
+  if (iconUrl && !imgError) {
+    return (
+      <img
+        className="avatar"
+        src={iconUrl}
+        alt={name}
+        loading="lazy"
+        onError={() => setImgError(true)}
+      />
+    );
   }
+
   const initial = (name || "?").trim().slice(0, 1);
   return <div className="avatar avatarFallback">{initial}</div>;
 }
@@ -100,7 +111,7 @@ export default function RankingTable() {
           setFlashMap(flashes);
           flashTimerRef.current = setTimeout(() => {
             setFlashMap({});
-          }, 900);
+          }, 1100);
         }
       } catch (e) {
         if (!alive) return;
@@ -109,8 +120,6 @@ export default function RankingTable() {
     }
 
     fetchRows();
-
-    // ✅ 안전하게 20초
     const t = setInterval(fetchRows, 20_000);
 
     return () => {
@@ -119,7 +128,6 @@ export default function RankingTable() {
       if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
     };
   }, [market]);
-
 
   return (
     <div className="rankingCard" id="ranking">
@@ -161,23 +169,24 @@ export default function RankingTable() {
           <tbody>
             {rows.map((r) => {
               const flash = flashMap[r.symbol];
-              const priceClass =
+              const rowFlashClass =
                 flash === "up"
-                  ? "valueGlowUp"
+                  ? "rowFlashUp"
                   : flash === "down"
-                  ? "valueGlowDown"
-                  : "";
+                    ? "rowFlashDown"
+                    : "";
 
-              const rateClass =
+              const valueClass =
                 flash === "up"
-                  ? "valueGlowUp"
+                  ? "valueUpdate valueGlowUp"
                   : flash === "down"
-                  ? "valueGlowDown"
-                  : "";
+                    ? "valueUpdate valueGlowDown"
+                    : "";
 
               return (
                 <tr
                   key={`${market}-${r.rank}-${r.symbol}`}
+                  className={rowFlashClass}
                   onClick={() => navigate(`/asset/${market}/${r.symbol}`)}
                   title="클릭해서 상세보기"
                 >
@@ -188,7 +197,11 @@ export default function RankingTable() {
                       <Avatar iconUrl={r.iconUrl} name={r.name} />
                       <div className="nameText">
                         <div className="nameMain">{r.name}</div>
-                        <div className="muted nameSub">{r.symbol}</div>
+                        <div className="muted nameSub">
+                          {r.displayNameEN && r.displayNameEN !== r.name
+                            ? `${r.symbol} · ${r.displayNameEN}`
+                            : r.symbol}
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -196,7 +209,7 @@ export default function RankingTable() {
                   <td>{formatCapKRW(r.capKRW)}</td>
 
                   <td
-                    className={priceClass}
+                    className={valueClass}
                     style={{
                       color: colorByChange(r.changePct),
                       fontWeight: 900,
@@ -206,7 +219,7 @@ export default function RankingTable() {
                   </td>
 
                   <td
-                    className={rateClass}
+                    className={valueClass}
                     style={{
                       color: colorByChange(r.changePct),
                       fontWeight: 900,
@@ -221,13 +234,6 @@ export default function RankingTable() {
             })}
           </tbody>
         </table>
-
-        <div className="scrollGlowTop" />
-        <div className="scrollGlowBottom" />
-      </div>
-
-      <div className="muted" style={{ fontSize: 12, marginTop: 10 }}>
-        20초마다 갱신됩니다.
       </div>
     </div>
   );

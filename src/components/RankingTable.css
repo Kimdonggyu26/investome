@@ -1,7 +1,7 @@
 .rankingCard{
   padding:20px;
   border-radius:14px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.02));
+  background: rgba(255,255,255,0.035);
   border:1px solid rgba(255,255,255,0.08);
   box-shadow: 0 18px 60px rgba(0,0,0,0.35);
   position: relative;
@@ -47,7 +47,7 @@
   background:#0ea5ff;
   color:white;
   border:none;
-  box-shadow:0 0 22px rgba(14,165,255,0.55);
+  box-shadow:0 0 22px rgba(14,165,255,0.35);
 }
 
 .rankingScroll{
@@ -55,7 +55,7 @@
   overflow:auto;
   border-radius:12px;
   border:1px solid rgba(255,255,255,0.08);
-  background: rgba(0,0,0,0.18);
+  background: rgba(255,255,255,0.02);
   position: relative;
 }
 
@@ -79,24 +79,6 @@
   box-shadow: 0 0 16px rgba(14,165,255,0.35);
 }
 
-.scrollGlowTop,
-.scrollGlowBottom{
-  pointer-events:none;
-  position:absolute;
-  left:0;
-  right:0;
-  height:26px;
-  z-index:5;
-}
-.scrollGlowTop{
-  top:0;
-  background: linear-gradient(180deg, rgba(14,165,255,0.10), rgba(14,165,255,0.0));
-}
-.scrollGlowBottom{
-  bottom:0;
-  background: linear-gradient(0deg, rgba(14,165,255,0.10), rgba(14,165,255,0.0));
-}
-
 .rankingTable{
   width:100%;
   border-collapse:collapse;
@@ -105,7 +87,7 @@
 .rankingTable thead th{
   position: sticky;
   top: 0;
-  background: rgba(12,12,16,0.92);
+  background: rgba(11,15,23,0.96);
   backdrop-filter: blur(10px);
   text-align:left;
   font-size:12px;
@@ -119,13 +101,13 @@
   padding:12px;
   font-size:14px;
   vertical-align: middle;
-  transition: color .25s ease, text-shadow .25s ease, filter .25s ease;
+  transition: color .25s ease, text-shadow .25s ease, filter .25s ease, transform .25s ease;
 }
 
 .rankingTable tbody tr{
   border-top:1px solid rgba(255,255,255,0.055);
   cursor:pointer;
-  transition: background .18s ease;
+  transition: background .18s ease, transform .18s ease, box-shadow .18s ease;
 }
 
 .rankingTable tbody tr:hover{
@@ -144,17 +126,19 @@
 }
 
 .avatar{
-  width:32px;
-  height:32px;
+  width:34px;
+  height:34px;
   border-radius:999px;
   object-fit:cover;
-  border:1px solid rgba(255,255,255,0.15);
-  box-shadow: 0 0 16px rgba(0,0,0,0.25);
+  border:1px solid rgba(255,255,255,0.16);
+  background: rgba(255,255,255,0.08);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.22);
+  flex-shrink: 0;
 }
 
 .avatarFallback{
-  width:32px;
-  height:32px;
+  width:34px;
+  height:34px;
   border-radius:999px;
   display:flex;
   align-items:center;
@@ -164,33 +148,90 @@
   background: radial-gradient(circle at 30% 30%, rgba(14,165,255,0.35), rgba(255,255,255,0.04));
 }
 
-.nameText{ display:flex; flex-direction:column; }
+.nameText{ display:flex; flex-direction:column; min-width:0; }
 .nameMain{ font-weight:850; }
-.nameSub{ font-size:12px; margin-top:2px; }
+.nameSub{
+  font-size:12px;
+  margin-top:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width: 260px;
+}
 
-/* ✅ 이전 flash보다 훨씬 자연스럽고 고급스럽게 */
+.rowFlashUp,
+.rowFlashDown{
+  position: relative;
+}
+
+.rowFlashUp{
+  animation: rowPulseUp 1.05s cubic-bezier(.22,1,.36,1);
+}
+
+.rowFlashDown{
+  animation: rowPulseDown 1.05s cubic-bezier(.22,1,.36,1);
+}
+
+.valueUpdate{
+  position: relative;
+  will-change: transform, filter;
+}
+
 .valueGlowUp{
-  animation: luxuryUp 0.9s ease;
+  animation: luxuryUp 1.05s cubic-bezier(.22,1,.36,1);
 }
 
 .valueGlowDown{
-  animation: luxuryDown 0.9s ease;
+  animation: luxuryDown 1.05s cubic-bezier(.22,1,.36,1);
+}
+
+@keyframes rowPulseUp{
+  0% {
+    background: rgba(80,255,170,0);
+    box-shadow: inset 0 0 0 rgba(80,255,170,0);
+  }
+  22% {
+    background: linear-gradient(90deg, rgba(80,255,170,0.12), rgba(14,165,255,0.04));
+    box-shadow: inset 3px 0 0 rgba(80,255,170,0.65);
+  }
+  100% {
+    background: rgba(80,255,170,0);
+    box-shadow: inset 0 0 0 rgba(80,255,170,0);
+  }
+}
+
+@keyframes rowPulseDown{
+  0% {
+    background: rgba(255,120,170,0);
+    box-shadow: inset 0 0 0 rgba(255,120,170,0);
+  }
+  22% {
+    background: linear-gradient(90deg, rgba(255,120,170,0.12), rgba(255,255,255,0.02));
+    box-shadow: inset 3px 0 0 rgba(255,120,170,0.65);
+  }
+  100% {
+    background: rgba(255,120,170,0);
+    box-shadow: inset 0 0 0 rgba(255,120,170,0);
+  }
 }
 
 @keyframes luxuryUp{
   0% {
     text-shadow: 0 0 0 rgba(80,255,170,0);
     filter: brightness(1);
+    transform: translateY(0);
   }
-  25% {
+  28% {
     text-shadow:
-      0 0 10px rgba(80,255,170,0.30),
-      0 0 22px rgba(80,255,170,0.20);
-    filter: brightness(1.08);
+      0 0 12px rgba(80,255,170,0.34),
+      0 0 26px rgba(80,255,170,0.20);
+    filter: brightness(1.12);
+    transform: translateY(-1px);
   }
   100% {
     text-shadow: 0 0 0 rgba(80,255,170,0);
     filter: brightness(1);
+    transform: translateY(0);
   }
 }
 
@@ -198,15 +239,18 @@
   0% {
     text-shadow: 0 0 0 rgba(255,120,170,0);
     filter: brightness(1);
+    transform: translateY(0);
   }
-  25% {
+  28% {
     text-shadow:
-      0 0 10px rgba(255,120,170,0.30),
-      0 0 22px rgba(255,120,170,0.20);
-    filter: brightness(1.08);
+      0 0 12px rgba(255,120,170,0.34),
+      0 0 26px rgba(255,120,170,0.20);
+    filter: brightness(1.12);
+    transform: translateY(-1px);
   }
   100% {
     text-shadow: 0 0 0 rgba(255,120,170,0);
     filter: brightness(1);
+    transform: translateY(0);
   }
 }

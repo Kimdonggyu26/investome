@@ -9,6 +9,7 @@ function normalizeRow(row, index) {
   return {
     rank: row.rank ?? index + 1,
     name: row.name ?? "-",
+    displayNameEN: row.displayNameEN ?? "",
     symbol: (row.symbol || "-").toUpperCase(),
     iconUrl: row.iconUrl ?? "",
     capKRW: toNumber(row.capKRW),

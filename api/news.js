@@ -36,28 +36,21 @@ async function fetchRss(query) {
     `&hl=ko&gl=KR&ceid=KR:ko`;
 
   const r = await fetch(rssUrl, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Investome Vercel)",
-    },
+    headers: { "User-Agent": "Mozilla/5.0 (Investome Vercel)" },
     redirect: "follow",
   });
 
-  if (!r.ok) {
-    throw new Error(`News fetch failed: ${r.status}`);
-  }
-
+  if (!r.ok) throw new Error(`News fetch failed: ${r.status}`);
   return r.text();
 }
 
 function uniqueBy(items, getKey) {
   const map = new Map();
-
   for (const item of items) {
     const key = getKey(item);
     if (!key) continue;
     if (!map.has(key)) map.set(key, item);
   }
-
   return [...map.values()];
 }
 

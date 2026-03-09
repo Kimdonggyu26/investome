@@ -17,7 +17,7 @@ export default function NewsPage() {
       />
       <Header />
 
-      <main style={{ padding: "18px 0 40px" }}>
+      <main style={{ padding: "18px 0 40px", background: "var(--bg)" }}>
         <div className="container" style={{ display: "grid", gap: 18 }}>
           <section
             className="card"
@@ -26,33 +26,9 @@ export default function NewsPage() {
               overflow: "hidden",
               padding: "28px 24px",
               border: "1px solid rgba(255,255,255,0.08)",
-              background:
-                "radial-gradient(circle at top left, rgba(14,165,255,0.18), transparent 24%), radial-gradient(circle at top right, rgba(120,80,255,0.18), transparent 26%), linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015))",
+              background: "rgba(255,255,255,0.03)",
             }}
           >
-            <div
-              style={{
-                position: "absolute",
-                inset: "-30% auto auto -10%",
-                width: 220,
-                height: 220,
-                borderRadius: "50%",
-                background: "rgba(14,165,255,0.12)",
-                filter: "blur(40px)",
-              }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                inset: "auto -6% -18% auto",
-                width: 260,
-                height: 260,
-                borderRadius: "50%",
-                background: "rgba(120,80,255,0.14)",
-                filter: "blur(46px)",
-              }}
-            />
-
             <div
               style={{
                 position: "relative",
@@ -91,9 +67,7 @@ export default function NewsPage() {
                     letterSpacing: "-1px",
                   }}
                 >
-                  경제 · 증시 · 코인
-                  <br />
-                  한눈에 보는 뉴스룸
+                  경제 · 증시 · 코인 한눈에보는 뉴스룸
                 </h1>
 
                 <p
@@ -105,7 +79,7 @@ export default function NewsPage() {
                     maxWidth: 760,
                   }}
                 >
-                  오늘의 최신 뉴스를 카테고리별로 빠르게 훑고, 클릭하여 원문 기사까지 확인해보세요 !
+                  오늘의 최신 뉴스를 카테고리별로 빠르게 훑고, 클릭하여 원문 기사까지 확인해보세요!
                 </p>
               </div>
 
@@ -117,11 +91,7 @@ export default function NewsPage() {
             </div>
           </section>
 
-          <NewsList
-            title="실시간 뉴스 피드"
-            limit={60}
-            pageMode
-          />
+          <NewsList title="실시간 뉴스 피드" limit={60} pageMode />
         </div>
       </main>
     </>
