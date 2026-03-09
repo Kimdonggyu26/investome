@@ -71,10 +71,19 @@ function toNumber(value) {
   return Number.isFinite(n) ? n : null;
 }
 
+function chunk(arr, size) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += size) {
+    out.push(arr.slice(i, i + size));
+  }
+  return out;
+}
+
 async function fetchJson(url) {
   const res = await fetch(url, {
     headers: {
       "User-Agent": "Mozilla/5.0 (Investome Vercel)",
+      "Accept": "application/json,text/plain,*/*",
     },
   });
 
@@ -87,18 +96,41 @@ async function fetchJson(url) {
 }
 
 async function fetchYahooQuotes(symbols) {
-  const url =
-    "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" +
-    encodeURIComponent(symbols.join(","));
+  const groups = chunk(symbols, 8);
 
-  const json = await fetchJson(url);
-  return json?.quoteResponse?.result || [];
+  const results = await Promise.allSettled(
+    groups.map(async (group) => {
+      const url =
+        "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" +
+        encodeURIComponent(group.join(","));
+
+      const json = await fetchJson(url);
+      return json?.quoteResponse?.result || [];
+    })
+  );
+
+  const rows = [];
+  const errors = [];
+
+  for (const r of results) {
+    if (r.status === "fulfilled") {
+      rows.push(...r.value);
+    } else {
+      errors.push(String(r.reason?.message || r.reason || "unknown error"));
+    }
+  }
+
+  return { rows, errors };
 }
 
 async function fetchUsdKrw() {
-  const rows = await fetchYahooQuotes(["KRW=X"]);
-  const fx = rows[0];
-  return toNumber(fx?.regularMarketPrice) || 1350;
+  try {
+    const { rows } = await fetchYahooQuotes(["KRW=X"]);
+    const fx = rows[0];
+    return toNumber(fx?.regularMarketPrice) || 1350;
+  } catch {
+    return 1350;
+  }
 }
 
 function mapKospiRow(item, quote, index) {
@@ -129,71 +161,108 @@ function mapNasdaqRow(item, quote, usdKrw, index) {
 }
 
 async function fetchKospiRows() {
-  const quoteList = await fetchYahooQuotes(KOSPI_UNIVERSE.map((x) => x.yahoo));
-  const quoteMap = new Map(quoteList.map((q) => [q.symbol, q]));
+  const { rows, errors } = await fetchYahooQuotes(KOSPI_UNIVERSE.map((x) => x.yahoo));
+  const quoteMap = new Map(rows.map((q) => [q.symbol, q]));
 
-  return KOSPI_UNIVERSE.map((item, index) =>
+  const items = KOSPI_UNIVERSE.map((item, index) =>
     mapKospiRow(item, quoteMap.get(item.yahoo), index)
   )
     .filter((row) => row.priceKRW !== null || row.capKRW !== null)
     .sort((a, b) => (b.capKRW ?? 0) - (a.capKRW ?? 0))
     .map((row, index) => ({ ...row, rank: index + 1 }))
     .slice(0, 30);
+
+  return { items, errors };
 }
 
 async function fetchNasdaqRows() {
-  const [usdKrw, quoteList] = await Promise.all([
+  const [usdKrw, quoteResult] = await Promise.all([
     fetchUsdKrw(),
     fetchYahooQuotes(NASDAQ_UNIVERSE.map((x) => x.symbol)),
   ]);
 
-  const quoteMap = new Map(quoteList.map((q) => [q.symbol, q]));
+  const { rows, errors } = quoteResult;
+  const quoteMap = new Map(rows.map((q) => [q.symbol, q]));
 
-  return NASDAQ_UNIVERSE.map((item, index) =>
+  const items = NASDAQ_UNIVERSE.map((item, index) =>
     mapNasdaqRow(item, quoteMap.get(item.symbol), usdKrw, index)
   )
     .filter((row) => row.priceKRW !== null || row.capKRW !== null)
     .sort((a, b) => (b.capKRW ?? 0) - (a.capKRW ?? 0))
     .map((row, index) => ({ ...row, rank: index + 1 }))
     .slice(0, 30);
+
+  return { items, errors };
 }
 
 export default async function handler(req, res) {
+  const market = String(req.query?.market || "KOSPI").toUpperCase();
+
+  if (!["KOSPI", "NASDAQ"].includes(market)) {
+    res.status(400).json({ error: "market must be KOSPI or NASDAQ" });
+    return;
+  }
+
   try {
-    const market = String(req.query?.market || "KOSPI").toUpperCase();
-
-    if (!["KOSPI", "NASDAQ"].includes(market)) {
-      res.status(400).json({ error: "market must be KOSPI or NASDAQ" });
-      return;
-    }
-
     const cached = cache.get(market);
     const now = Date.now();
 
     if (cached && now - cached.at < 20_000) {
       res.setHeader("Cache-Control", "s-maxage=20, stale-while-revalidate=40");
-      res.status(200).json({ items: cached.items });
+      res.status(200).json({
+        items: cached.items,
+        stale: false,
+      });
       return;
     }
 
-    const items =
+    const result =
       market === "KOSPI" ? await fetchKospiRows() : await fetchNasdaqRows();
 
-    cache.set(market, { at: now, items });
-
-    res.setHeader("Cache-Control", "s-maxage=20, stale-while-revalidate=40");
-    res.status(200).json({ items });
-  } catch (error) {
-    const market = String(req.query?.market || "KOSPI").toUpperCase();
-    const cached = cache.get(market);
-
-    if (cached?.items) {
+    if (result.items.length > 0) {
+      cache.set(market, { at: now, items: result.items });
       res.setHeader("Cache-Control", "s-maxage=20, stale-while-revalidate=40");
-      res.status(200).json({ items: cached.items });
+      res.status(200).json({
+        items: result.items,
+        stale: false,
+      });
       return;
     }
 
-    res.status(500).json({
+    if (cached?.items?.length) {
+      res.setHeader("Cache-Control", "s-maxage=20, stale-while-revalidate=40");
+      res.status(200).json({
+        items: cached.items,
+        stale: true,
+      });
+      return;
+    }
+
+    console.error(`[stock-top30] ${market} no items`, result.errors);
+
+    res.status(200).json({
+      items: [],
+      stale: true,
+      error: `${market} 데이터를 가져오지 못했습니다.`,
+      debug: result.errors,
+    });
+  } catch (error) {
+    const cached = cache.get(market);
+
+    console.error(`[stock-top30] ${market} fatal`, error);
+
+    if (cached?.items?.length) {
+      res.setHeader("Cache-Control", "s-maxage=20, stale-while-revalidate=40");
+      res.status(200).json({
+        items: cached.items,
+        stale: true,
+      });
+      return;
+    }
+
+    res.status(200).json({
+      items: [],
+      stale: true,
       error: String(error?.message || error),
     });
   }
