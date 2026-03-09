@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import "./Ticker.css";
 
 function formatPrice(value) {
   if (typeof value !== "number" || !isFinite(value)) return "불러오는중";
