@@ -1,127 +1,331 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
 import { useTicker } from "../hooks/useTicker";
+import {
+  fetchCryptoTop30KRW,
+  fetchKospiTop30KRW,
+  fetchNasdaqTop30KRW,
+  getKoreanDummyTop30,
+} from "../api/rankingApi";
+import TradingViewChart from "../components/TradingViewChart";
+import AssetNewsList from "../components/AssetNewsList";
+import AssetCommunity from "../components/AssetCommunity";
+import "../styles/AssetDetail.css";
 
-function makeMockSeries() {
-  // 간단한 랜덤 시계열(차트용) - 새로고침마다 조금 달라짐
-  const n = 40;
-  let v = 100;
-  const out = [];
-  for (let i = 0; i < n; i++) {
-    v = v + (Math.random() - 0.5) * 6;
-    out.push(Math.max(60, Math.min(140, v)));
-  }
-  return out;
+function formatKRW(n) {
+  if (typeof n !== "number" || !isFinite(n)) return "-";
+  return `₩${Math.round(n).toLocaleString("ko-KR")}`;
 }
 
-function SparkLine({ data }) {
-  const w = 520;
-  const h = 160;
-  const pad = 12;
+function formatCapKRW(n) {
+  if (typeof n !== "number" || !isFinite(n)) return "-";
+  const JO = 1_000_000_000_000;
+  const EOK = 100_000_000;
+  if (n >= JO) return `${(n / JO).toFixed(1)}조`;
+  if (n >= EOK) return `${Math.round(n / EOK).toLocaleString("ko-KR")}억`;
+  return Math.round(n).toLocaleString("ko-KR");
+}
 
-  const min = Math.min(...data);
-  const max = Math.max(...data);
+function formatChange(n) {
+  if (typeof n !== "number" || !isFinite(n)) return "-";
+  return `${n > 0 ? "+" : ""}${n.toFixed(2)}%`;
+}
 
-  const pts = data.map((v, i) => {
-    const x = pad + (i * (w - pad * 2)) / (data.length - 1);
-    const t = (v - min) / (max - min || 1);
-    const y = pad + (1 - t) * (h - pad * 2);
-    return [x, y];
-  });
+function getChangeClass(n) {
+  if (typeof n !== "number" || !isFinite(n)) return "flat";
+  if (n > 0) return "up";
+  if (n < 0) return "down";
+  return "flat";
+}
 
-  const d = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ");
+function getTradingViewSymbol(market, symbol) {
+  if (market === "CRYPTO") {
+    if (symbol === "BTC") return "BINANCE:BTCUSDT";
+    if (symbol === "ETH") return "BINANCE:ETHUSDT";
+    if (symbol === "XRP") return "BINANCE:XRPUSDT";
+    return `BINANCE:${symbol}USDT`;
+  }
 
-  return (
-    <div className="card" style={{ padding: 14 }}>
-      <div className="muted" style={{ fontSize: 12, marginBottom: 10 }}>
-        Mock chart (나중에 실데이터로 교체)
-      </div>
-      <svg width="100%" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
-        <path d={d} fill="none" stroke="rgba(54,213,255,.9)" strokeWidth="2.2" />
-      </svg>
-    </div>
-  );
+  if (market === "KOSPI") {
+    return `KRX:${symbol}`;
+  }
+
+  return `NASDAQ:${symbol}`;
+}
+
+function getNewsQuery({ market, symbol, name, displayNameEN }) {
+  if (market === "CRYPTO") {
+    if (symbol === "BTC") return "비트코인 OR Bitcoin OR BTC";
+    if (symbol === "ETH") return "이더리움 OR Ethereum OR ETH";
+    if (symbol === "XRP") return "리플 OR XRP";
+    return `${name || symbol} OR ${displayNameEN || symbol} OR ${symbol}`;
+  }
+
+  const base = [name, displayNameEN, symbol].filter(Boolean).join(" OR ");
+  return base || symbol;
+}
+
+function getFallbackAsset(market, symbol) {
+  return {
+    market,
+    symbol,
+    name: symbol,
+    displayNameEN: symbol,
+    iconUrl: "",
+    capKRW: null,
+    priceKRW: null,
+    changePct: null,
+  };
+}
+
+function AssetLogo({ iconUrl, name }) {
+  const [imgError, setImgError] = useState(false);
+
+  if (iconUrl && !imgError) {
+    return (
+      <img
+        src={iconUrl}
+        alt={name}
+        className="assetLogo"
+        onError={() => setImgError(true)}
+      />
+    );
+  }
+
+  const initial = (name || "?").trim().slice(0, 1);
+  return <div className="assetLogo assetLogoFallback">{initial}</div>;
 }
 
 export default function AssetDetail() {
-  const { market, symbol } = useParams(); // market: KOSPI/NASDAQ/CRYPTO, symbol: BTC/AAPL/005930 등
+  const { market = "", symbol = "" } = useParams();
   const { prices, changes, loading, error } = useTicker();
 
-  const series = useMemo(() => makeMockSeries(), [market, symbol]);
+  const [asset, setAsset] = useState(getFallbackAsset(market, symbol));
+  const [assetLoading, setAssetLoading] = useState(true);
 
-  const price = prices?.[symbol]; // CRYPTO(BTC/ETH/XRP)만 현재 연결돼있음
-  const change = changes?.[symbol];
+  useEffect(() => {
+    let alive = true;
 
-  const hasPrice = typeof price === "number";
-  const hasChange = typeof change === "number";
+    async function loadAsset() {
+      try {
+        setAssetLoading(true);
+
+        let rows = [];
+
+        if (market === "CRYPTO") {
+          rows = await fetchCryptoTop30KRW();
+        } else if (market === "KOSPI") {
+          const real = await fetchKospiTop30KRW().catch(() => null);
+          rows = real ?? getKoreanDummyTop30("KOSPI");
+        } else if (market === "NASDAQ") {
+          const real = await fetchNasdaqTop30KRW().catch(() => null);
+          rows = real ?? getKoreanDummyTop30("NASDAQ");
+        }
+
+        if (!alive) return;
+
+        const found = rows.find((row) => String(row.symbol).toUpperCase() === String(symbol).toUpperCase());
+
+        setAsset(
+          found
+            ? {
+                market,
+                symbol,
+                name: found.name,
+                displayNameEN: found.displayNameEN || found.name,
+                iconUrl: found.iconUrl || "",
+                capKRW: found.capKRW ?? null,
+                priceKRW: found.priceKRW ?? null,
+                changePct: found.changePct ?? null,
+              }
+            : getFallbackAsset(market, symbol)
+        );
+      } catch {
+        if (!alive) return;
+        setAsset(getFallbackAsset(market, symbol));
+      } finally {
+        if (alive) setAssetLoading(false);
+      }
+    }
+
+    loadAsset();
+    const t = setInterval(loadAsset, 20_000);
+
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, [market, symbol]);
+
+  const tradingViewSymbol = useMemo(
+    () => getTradingViewSymbol(market, symbol),
+    [market, symbol]
+  );
+
+  const newsQuery = useMemo(
+    () =>
+      getNewsQuery({
+        market,
+        symbol,
+        name: asset.name,
+        displayNameEN: asset.displayNameEN,
+      }),
+    [market, symbol, asset.name, asset.displayNameEN]
+  );
+
+  const marketLabel =
+    market === "CRYPTO"
+      ? "CRYPTO"
+      : market === "KOSPI"
+        ? "KOSPI"
+        : "NASDAQ";
+
+  const showCap = market !== "KOSPI";
 
   return (
     <>
       <TopTickerBar prices={prices} changes={changes} loading={loading} error={error} />
       <Header />
 
-      <main style={{ padding: "18px 0 42px" }}>
+      <main className="assetDetailPage">
         <div className="container" style={{ display: "grid", gap: 18 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline" }}>
-            <div>
-              <div className="muted" style={{ fontSize: 13 }}>
-                {market} • <span style={{ fontWeight: 800, color: "rgba(255,255,255,.85)" }}>{symbol}</span>
-              </div>
-              <h2 style={{ margin: "6px 0 0" }}>Asset Detail</h2>
-            </div>
+          <section className="card assetTopCard">
+            <div className="assetTopHead">
+              <div className="assetIdentity">
+                <AssetLogo iconUrl={asset.iconUrl} name={asset.name} />
 
-            <Link className="btn" to="/">
-              ← 홈으로
-            </Link>
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "2fr 1fr",
-              gap: 18,
-              alignItems: "start",
-            }}
-          >
-            <SparkLine data={series} />
-
-            <div className="card" style={{ padding: 16 }}>
-              <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 10 }}>
-                현재 정보
-              </div>
-
-              <div className="muted" style={{ fontSize: 13 }}>Price</div>
-              <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>
-                {hasPrice ? `₩${Math.round(price).toLocaleString("ko-KR")}` : "불러오는중 / 미지원"}
-              </div>
-
-              <div style={{ marginTop: 8 }}>
-                <span className="muted" style={{ fontSize: 13 }}>Change</span>
-                <div
-                  style={{
-                    marginTop: 6,
-                    fontWeight: 900,
-                    color: hasChange
-                      ? change >= 0
-                        ? "rgba(54,213,255,.95)"
-                        : "rgba(255,120,170,.95)"
-                      : "rgba(255,255,255,.6)",
-                  }}
-                >
-                  {hasChange ? `${change >= 0 ? "+" : ""}${change.toFixed(2)}%` : "불러오는중 / 미지원"}
+                <div>
+                  <div className="assetMarketBadge">{marketLabel}</div>
+                  <h1 className="assetName">{asset.name}</h1>
+                  <div className="assetSymbolRow">
+                    <span>{symbol}</span>
+                    {asset.displayNameEN &&
+                    asset.displayNameEN !== asset.name ? (
+                      <>
+                        <span>•</span>
+                        <span>{asset.displayNameEN}</span>
+                      </>
+                    ) : null}
+                  </div>
                 </div>
               </div>
 
-              <hr className="hr" />
+              <Link className="btn" to="/">
+                ← 홈으로
+              </Link>
+            </div>
 
-              <div className="muted" style={{ fontSize: 12, lineHeight: 1.6 }}>
-                • 지금은 구조 먼저 잡는 단계라 차트/데이터는 mock이야.<br />
-                • 다음 단계에서 KOSPI/NASDAQ/환율/뉴스 API를 붙이면 진짜로 바뀜.
+            <div className="assetStatRow">
+              <div className="assetStatBlock">
+                <div className="assetStatLabel">현재가</div>
+                <div className="assetPrice">
+                  {assetLoading ? "불러오는중" : formatKRW(asset.priceKRW)}
+                </div>
+              </div>
+
+              <div className="assetStatBlock">
+                <div className="assetStatLabel">등락률</div>
+                <div className={`assetChange ${getChangeClass(asset.changePct)}`}>
+                  {assetLoading ? "불러오는중" : formatChange(asset.changePct)}
+                </div>
               </div>
             </div>
-          </div>
+
+            <div className="assetMetaGrid">
+              <div className="assetMetaCard">
+                <div className="assetMetaLabel">시장</div>
+                <div className="assetMetaValue">{marketLabel}</div>
+              </div>
+
+              <div className="assetMetaCard">
+                <div className="assetMetaLabel">심볼</div>
+                <div className="assetMetaValue">{symbol}</div>
+              </div>
+
+              <div className="assetMetaCard">
+                <div className="assetMetaLabel">시가총액</div>
+                <div className="assetMetaValue">
+                  {showCap ? formatCapKRW(asset.capKRW) : "-"}
+                </div>
+              </div>
+
+              <div className="assetMetaCard">
+                <div className="assetMetaLabel">뉴스 검색어</div>
+                <div className="assetMetaValue">{asset.name}</div>
+              </div>
+            </div>
+          </section>
+
+          <section className="assetMainGrid">
+            <TradingViewChart
+              symbol={tradingViewSymbol}
+              title={`${asset.name} · ${symbol}`}
+            />
+
+            <div className="assetPanel">
+              <div className="assetPanelHead">
+                <div>
+                  <div className="assetPanelTitle">현재 정보</div>
+                  <div className="assetPanelSub">핵심 정보 요약</div>
+                </div>
+              </div>
+
+              <div className="assetInfoList">
+                <div className="assetInfoItem">
+                  <div className="assetInfoItemLabel">종목명</div>
+                  <div className="assetInfoItemValue">{asset.name}</div>
+                </div>
+
+                <div className="assetInfoItem">
+                  <div className="assetInfoItemLabel">심볼</div>
+                  <div className="assetInfoItemValue">{symbol}</div>
+                </div>
+
+                <div className="assetInfoItem">
+                  <div className="assetInfoItemLabel">현재가</div>
+                  <div className="assetInfoItemValue">
+                    {assetLoading ? "불러오는중" : formatKRW(asset.priceKRW)}
+                  </div>
+                </div>
+
+                <div className="assetInfoItem">
+                  <div className="assetInfoItemLabel">등락률</div>
+                  <div className="assetInfoItemValue">
+                    {assetLoading ? "불러오는중" : formatChange(asset.changePct)}
+                  </div>
+                </div>
+
+                <div className="assetInfoItem">
+                  <div className="assetInfoItemLabel">시가총액</div>
+                  <div className="assetInfoItemValue">
+                    {showCap ? formatCapKRW(asset.capKRW) : "-"}
+                  </div>
+                </div>
+              </div>
+
+              <div className="assetInfoNotice">
+                • 차트는 TradingView 위젯을 사용했어.<br />
+                • 뉴스는 현재 종목명/심볼 기준으로 관련 기사만 최대한 가져오게 했어.<br />
+                • 커뮤니티는 우선 localStorage 기반이라 새로고침해도 브라우저 안에서는 유지돼.
+              </div>
+            </div>
+          </section>
+
+          <section className="assetBottomGrid">
+            <AssetNewsList
+              assetName={asset.name}
+              query={newsQuery}
+              limit={8}
+            />
+
+            <AssetCommunity
+              market={market}
+              symbol={symbol}
+              assetName={asset.name}
+            />
+          </section>
         </div>
       </main>
     </>

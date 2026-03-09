@@ -100,8 +100,9 @@ export default async function handler(req, res) {
   try {
     const limit = Math.min(100, Math.max(1, Number(req.query?.limit || "24")));
     const category = String(req.query?.category || "all").trim().toLowerCase();
+    const q = String(req.query?.q || "").trim();
 
-    const queries = getQueriesByCategory(category);
+    const queries = q ? [q] : getQueriesByCategory(category);
     const xmlList = await Promise.allSettled(queries.map(fetchRss));
 
     const allItems = xmlList.flatMap((result) => {
@@ -121,7 +122,11 @@ export default async function handler(req, res) {
       .slice(0, limit);
 
     res.setHeader("Cache-Control", "s-maxage=180, stale-while-revalidate=600");
-    res.status(200).json({ items: sorted, category });
+    res.status(200).json({
+      items: sorted,
+      category,
+      query: q || null,
+    });
   } catch (e) {
     res.status(500).json({ error: String(e) });
   }
