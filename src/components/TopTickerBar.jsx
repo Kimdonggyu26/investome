@@ -1,4 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import "./Ticker.css";
+
+function formatPrice(value) {
+  if (typeof value !== "number" || !isFinite(value)) return "불러오는중";
+  return value.toLocaleString("ko-KR");
+}
 
 function Ticker({ prices = {}, changes = {} }) {
   const coins = ["BTC", "ETH", "XRP"];
@@ -20,11 +26,15 @@ function Ticker({ prices = {}, changes = {} }) {
 
     prevPricesRef.current = prices || {};
 
-    if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+    if (flashTimerRef.current) {
+      clearTimeout(flashTimerRef.current);
+    }
 
     if (Object.keys(nextFlashMap).length > 0) {
       setFlashMap(nextFlashMap);
-      flashTimerRef.current = setTimeout(() => setFlashMap({}), 1000);
+      flashTimerRef.current = setTimeout(() => {
+        setFlashMap({});
+      }, 1000);
     }
 
     return () => {
@@ -36,20 +46,16 @@ function Ticker({ prices = {}, changes = {} }) {
     <div className="ticker">
       {coins.map((coin) => {
         const flash = flashMap[coin];
-        const priceClass =
-          flash === "up"
-            ? "ticker-price upFlash"
-            : flash === "down"
-              ? "ticker-price downFlash"
-              : "ticker-price";
+        const flashClass =
+          flash === "up" ? "ticker-price upFlash" :
+          flash === "down" ? "ticker-price downFlash" :
+          "ticker-price";
 
         return (
           <span key={coin} className="ticker-item">
             {coin} ₩
-            <span className={priceClass}>
-              {typeof prices?.[coin] === "number"
-                ? prices[coin].toLocaleString("ko-KR")
-                : "불러오는중"}
+            <span className={flashClass}>
+              {formatPrice(prices?.[coin])}
             </span>{" "}
             {changes?.[coin] !== undefined && (
               <span className={changes[coin] >= 0 ? "up" : "down"}>
