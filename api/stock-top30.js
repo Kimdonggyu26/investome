@@ -1,36 +1,36 @@
 const cache = new Map();
 
-const KOSPI_FALLBACK = [
-  { name: "삼성전자", symbol: "005930" },
-  { name: "SK하이닉스", symbol: "000660" },
-  { name: "LG에너지솔루션", symbol: "373220" },
-  { name: "삼성바이오로직스", symbol: "207940" },
-  { name: "현대차", symbol: "005380" },
-  { name: "셀트리온", symbol: "068270" },
-  { name: "기아", symbol: "000270" },
-  { name: "KB금융", symbol: "105560" },
-  { name: "NAVER", symbol: "035420" },
-  { name: "신한지주", symbol: "055550" },
-  { name: "POSCO홀딩스", symbol: "005490" },
-  { name: "삼성SDI", symbol: "006400" },
-  { name: "카카오", symbol: "035720" },
-  { name: "LG화학", symbol: "051910" },
-  { name: "삼성물산", symbol: "028260" },
-  { name: "하나금융지주", symbol: "086790" },
-  { name: "한국전력", symbol: "015760" },
-  { name: "HD현대중공업", symbol: "329180" },
-  { name: "메리츠금융지주", symbol: "138040" },
-  { name: "삼성생명", symbol: "032830" },
-  { name: "크래프톤", symbol: "259960" },
-  { name: "KT&G", symbol: "033780" },
-  { name: "HMM", symbol: "011200" },
-  { name: "우리금융지주", symbol: "316140" },
-  { name: "두산에너빌리티", symbol: "034020" },
-  { name: "대한항공", symbol: "003490" },
-  { name: "LG전자", symbol: "066570" },
-  { name: "포스코퓨처엠", symbol: "003670" },
-  { name: "삼성전기", symbol: "009150" },
-  { name: "한화에어로스페이스", symbol: "012450" },
+const KOSPI_UNIVERSE = [
+  { name: "삼성전자", symbol: "005930", yahoo: "005930.KS" },
+  { name: "SK하이닉스", symbol: "000660", yahoo: "000660.KS" },
+  { name: "LG에너지솔루션", symbol: "373220", yahoo: "373220.KS" },
+  { name: "삼성바이오로직스", symbol: "207940", yahoo: "207940.KS" },
+  { name: "현대차", symbol: "005380", yahoo: "005380.KS" },
+  { name: "셀트리온", symbol: "068270", yahoo: "068270.KS" },
+  { name: "기아", symbol: "000270", yahoo: "000270.KS" },
+  { name: "KB금융", symbol: "105560", yahoo: "105560.KS" },
+  { name: "NAVER", symbol: "035420", yahoo: "035420.KS" },
+  { name: "신한지주", symbol: "055550", yahoo: "055550.KS" },
+  { name: "POSCO홀딩스", symbol: "005490", yahoo: "005490.KS" },
+  { name: "삼성SDI", symbol: "006400", yahoo: "006400.KS" },
+  { name: "카카오", symbol: "035720", yahoo: "035720.KS" },
+  { name: "LG화학", symbol: "051910", yahoo: "051910.KS" },
+  { name: "삼성물산", symbol: "028260", yahoo: "028260.KS" },
+  { name: "하나금융지주", symbol: "086790", yahoo: "086790.KS" },
+  { name: "한국전력", symbol: "015760", yahoo: "015760.KS" },
+  { name: "HD현대중공업", symbol: "329180", yahoo: "329180.KS" },
+  { name: "메리츠금융지주", symbol: "138040", yahoo: "138040.KS" },
+  { name: "삼성생명", symbol: "032830", yahoo: "032830.KS" },
+  { name: "크래프톤", symbol: "259960", yahoo: "259960.KS" },
+  { name: "KT&G", symbol: "033780", yahoo: "033780.KS" },
+  { name: "HMM", symbol: "011200", yahoo: "011200.KS" },
+  { name: "우리금융지주", symbol: "316140", yahoo: "316140.KS" },
+  { name: "두산에너빌리티", symbol: "034020", yahoo: "034020.KS" },
+  { name: "대한항공", symbol: "003490", yahoo: "003490.KS" },
+  { name: "LG전자", symbol: "066570", yahoo: "066570.KS" },
+  { name: "포스코퓨처엠", symbol: "003670", yahoo: "003670.KS" },
+  { name: "삼성전기", symbol: "009150", yahoo: "009150.KS" },
+  { name: "한화에어로스페이스", symbol: "012450", yahoo: "012450.KS" },
 ];
 
 const NASDAQ_UNIVERSE = [
@@ -66,32 +66,15 @@ const NASDAQ_UNIVERSE = [
   { name: "Starbucks", symbol: "SBUX" },
 ];
 
-function getTwelveKey() {
-  return process.env.TWELVE_DATA_API_KEY;
-}
-
-function getKisKeys() {
-  const appKey = process.env.KIS_APP_KEY;
-  const appSecret = process.env.KIS_APP_SECRET;
-
-  if (!appKey || !appSecret) {
-    throw new Error("Missing KIS_APP_KEY or KIS_APP_SECRET");
-  }
-
-  return { appKey, appSecret };
-}
-
 function toNumber(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }
 
-async function fetchJson(url, options = {}) {
+async function fetchJson(url) {
   const res = await fetch(url, {
-    ...options,
     headers: {
-      "User-Agent": "Investome Vercel",
-      ...(options.headers || {}),
+      "User-Agent": "Mozilla/5.0 (Investome Vercel)",
     },
   });
 
@@ -103,161 +86,75 @@ async function fetchJson(url, options = {}) {
   return res.json();
 }
 
-async function getKisAccessToken() {
-  const { appKey, appSecret } = getKisKeys();
+async function fetchYahooQuotes(symbols) {
+  const url =
+    "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" +
+    encodeURIComponent(symbols.join(","));
 
-  const data = await fetchJson("https://openapivts.koreainvestment.com:29443/oauth2/tokenP", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json; charset=utf-8",
-    },
-    body: JSON.stringify({
-      grant_type: "client_credentials",
-      appkey: appKey,
-      appsecret: appSecret,
-    }),
-  });
-
-  return data?.access_token;
+  const json = await fetchJson(url);
+  return json?.quoteResponse?.result || [];
 }
 
-async function fetchKisPrice(token, symbol) {
-  const { appKey, appSecret } = getKisKeys();
+async function fetchUsdKrw() {
+  const rows = await fetchYahooQuotes(["KRW=X"]);
+  const fx = rows[0];
+  return toNumber(fx?.regularMarketPrice) || 1350;
+}
 
-  const qs = new URLSearchParams({
-    fid_cond_mrkt_div_code: "J",
-    fid_input_iscd: symbol,
-  });
-
-  const data = await fetchJson(
-    `https://openapivts.koreainvestment.com:29443/uapi/domestic-stock/v1/quotations/inquire-price?${qs.toString()}`,
-    {
-      method: "GET",
-      headers: {
-        authorization: `Bearer ${token}`,
-        appkey: appKey,
-        appsecret: appSecret,
-        tr_id: "FHKST01010100",
-      },
-    }
-  );
-
-  const out = data?.output || {};
-
+function mapKospiRow(item, quote, index) {
   return {
-    priceKRW: toNumber(out.stck_prpr),
-    changePct: toNumber(out.prdy_ctrt),
-    name: out.hts_kor_isnm || null,
+    rank: index + 1,
+    name: quote?.longName || quote?.shortName || item.name,
+    symbol: item.symbol,
+    iconUrl: "",
+    capKRW: toNumber(quote?.marketCap),
+    priceKRW: toNumber(quote?.regularMarketPrice),
+    changePct: toNumber(quote?.regularMarketChangePercent),
   };
 }
 
-async function fetchKisKospiRows() {
-  const token = await getKisAccessToken();
+function mapNasdaqRow(item, quote, usdKrw, index) {
+  const usdPrice = toNumber(quote?.regularMarketPrice);
+  const usdCap = toNumber(quote?.marketCap);
 
-  const rows = await Promise.all(
-    KOSPI_FALLBACK.map(async (item) => {
-      try {
-        const quote = await fetchKisPrice(token, item.symbol);
-
-        return {
-          rank: 0,
-          name: quote.name || item.name,
-          symbol: item.symbol,
-          iconUrl: "",
-          capKRW: null,
-          priceKRW: quote.priceKRW,
-          changePct: quote.changePct,
-        };
-      } catch {
-        return {
-          rank: 0,
-          name: item.name,
-          symbol: item.symbol,
-          iconUrl: "",
-          capKRW: null,
-          priceKRW: null,
-          changePct: null,
-        };
-      }
-    })
-  );
-
-  return rows
-    .filter((row) => row.priceKRW !== null)
-    .map((row, index) => ({
-      ...row,
-      rank: index + 1,
-    }));
+  return {
+    rank: index + 1,
+    name: quote?.longName || quote?.shortName || item.name,
+    symbol: item.symbol,
+    iconUrl: "",
+    capKRW: usdCap != null ? Math.round(usdCap * usdKrw) : null,
+    priceKRW: usdPrice != null ? Number((usdPrice * usdKrw).toFixed(2)) : null,
+    changePct: toNumber(quote?.regularMarketChangePercent),
+  };
 }
 
-async function fetchTwelveQuote(symbol, apikey) {
-  const qs = new URLSearchParams({
-    symbol,
-    exchange: "NASDAQ",
-    apikey,
-  });
+async function fetchKospiRows() {
+  const quoteList = await fetchYahooQuotes(KOSPI_UNIVERSE.map((x) => x.yahoo));
+  const quoteMap = new Map(quoteList.map((q) => [q.symbol, q]));
 
-  return fetchJson(`https://api.twelvedata.com/quote?${qs.toString()}`);
-}
-
-async function fetchTwelveMarketCap(symbol, apikey) {
-  const qs = new URLSearchParams({
-    symbol,
-    exchange: "NASDAQ",
-    apikey,
-  });
-
-  return fetchJson(`https://api.twelvedata.com/market_cap?${qs.toString()}`);
+  return KOSPI_UNIVERSE.map((item, index) =>
+    mapKospiRow(item, quoteMap.get(item.yahoo), index)
+  )
+    .filter((row) => row.priceKRW !== null || row.capKRW !== null)
+    .sort((a, b) => (b.capKRW ?? 0) - (a.capKRW ?? 0))
+    .map((row, index) => ({ ...row, rank: index + 1 }))
+    .slice(0, 30);
 }
 
 async function fetchNasdaqRows() {
-  const apikey = getTwelveKey();
-  if (!apikey) {
-    throw new Error("Missing TWELVE_DATA_API_KEY");
-  }
+  const [usdKrw, quoteList] = await Promise.all([
+    fetchUsdKrw(),
+    fetchYahooQuotes(NASDAQ_UNIVERSE.map((x) => x.symbol)),
+  ]);
 
-  const rows = await Promise.all(
-    NASDAQ_UNIVERSE.map(async (item) => {
-      try {
-        const [quote, marketCap] = await Promise.all([
-          fetchTwelveQuote(item.symbol, apikey),
-          fetchTwelveMarketCap(item.symbol, apikey),
-        ]);
+  const quoteMap = new Map(quoteList.map((q) => [q.symbol, q]));
 
-        const capValue = marketCap?.market_cap?.[0]?.value;
-        const usdPrice = toNumber(quote?.close);
-        const usdCap = toNumber(capValue);
-
-        return {
-          rank: 0,
-          name: quote?.name || item.name,
-          symbol: item.symbol,
-          iconUrl: "",
-          capKRW: usdCap != null ? Math.round(usdCap * 1350) : null,
-          priceKRW: usdPrice != null ? Number((usdPrice * 1350).toFixed(2)) : null,
-          changePct: toNumber(quote?.percent_change),
-        };
-      } catch {
-        return {
-          rank: 0,
-          name: item.name,
-          symbol: item.symbol,
-          iconUrl: "",
-          capKRW: null,
-          priceKRW: null,
-          changePct: null,
-        };
-      }
-    })
-  );
-
-  return rows
-    .filter((row) => row.capKRW !== null || row.priceKRW !== null)
+  return NASDAQ_UNIVERSE.map((item, index) =>
+    mapNasdaqRow(item, quoteMap.get(item.symbol), usdKrw, index)
+  )
+    .filter((row) => row.priceKRW !== null || row.capKRW !== null)
     .sort((a, b) => (b.capKRW ?? 0) - (a.capKRW ?? 0))
-    .map((row, index) => ({
-      ...row,
-      rank: index + 1,
-    }))
+    .map((row, index) => ({ ...row, rank: index + 1 }))
     .slice(0, 30);
 }
 
@@ -273,20 +170,29 @@ export default async function handler(req, res) {
     const cached = cache.get(market);
     const now = Date.now();
 
-    if (cached && now - cached.at < 60 * 1000) {
-      res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=120");
+    if (cached && now - cached.at < 20_000) {
+      res.setHeader("Cache-Control", "s-maxage=20, stale-while-revalidate=40");
       res.status(200).json({ items: cached.items });
       return;
     }
 
     const items =
-      market === "KOSPI" ? await fetchKisKospiRows() : await fetchNasdaqRows();
+      market === "KOSPI" ? await fetchKospiRows() : await fetchNasdaqRows();
 
     cache.set(market, { at: now, items });
 
-    res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=120");
+    res.setHeader("Cache-Control", "s-maxage=20, stale-while-revalidate=40");
     res.status(200).json({ items });
   } catch (error) {
+    const market = String(req.query?.market || "KOSPI").toUpperCase();
+    const cached = cache.get(market);
+
+    if (cached?.items) {
+      res.setHeader("Cache-Control", "s-maxage=20, stale-while-revalidate=40");
+      res.status(200).json({ items: cached.items });
+      return;
+    }
+
     res.status(500).json({
       error: String(error?.message || error),
     });

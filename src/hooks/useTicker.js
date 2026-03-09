@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { fetchCryptoTickerKRW, fetchIndexPlaceholders } from "../api/marketApi";
+import { fetchMarketTicker } from "../api/marketApi";
 
 export function useTicker() {
   const [prices, setPrices] = useState({});
@@ -10,23 +10,10 @@ export function useTicker() {
   async function load() {
     try {
       setError(null);
-      const [crypto, idx] = await Promise.all([
-        fetchCryptoTickerKRW(),
-        fetchIndexPlaceholders(),
-      ]);
+      const data = await fetchMarketTicker();
 
-      setPrices((prev) => ({
-        ...prev,
-        ...crypto.prices,
-        ...idx.prices,
-      }));
-
-      setChanges((prev) => ({
-        ...prev,
-        ...crypto.changes,
-        ...idx.changes,
-      }));
-
+      setPrices(data.prices || {});
+      setChanges(data.changes || {});
       setLoading(false);
     } catch (e) {
       setError(e);
@@ -36,14 +23,12 @@ export function useTicker() {
 
   useEffect(() => {
     load();
-    const t = setInterval(load, 20_000); // 20초마다 갱신
+    const t = setInterval(load, 20_000);
     return () => clearInterval(t);
   }, []);
 
-  const value = useMemo(
+  return useMemo(
     () => ({ prices, changes, loading, error }),
     [prices, changes, loading, error]
   );
-
-  return value;
 }

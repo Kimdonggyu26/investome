@@ -1,6 +1,6 @@
 .headerWrap{
   position: sticky;
-  top: 44px; /* tickerBar 높이 고려(대략) */
+  top: 44px;
   z-index: 40;
   background: rgba(11,15,23,.55);
   backdrop-filter: blur(10px);
@@ -20,6 +20,12 @@
   align-items:center;
   gap: 10px;
 }
+
+.brandLink{
+  text-decoration:none;
+  color:inherit;
+}
+
 .logoMark{
   width: 34px;
   height: 34px;
@@ -28,8 +34,16 @@
   box-shadow: var(--glow);
   border: 1px solid rgba(54,213,255,.25);
 }
-.brandName{ font-weight: 900; letter-spacing: .3px; }
-.brandSub{ font-size: 12px; margin-left: 2px; }
+
+.brandName{
+  font-weight: 900;
+  letter-spacing: .3px;
+}
+
+.brandSub{
+  font-size: 12px;
+  margin-left: 2px;
+}
 
 .nav{
   display:flex;
@@ -39,16 +53,18 @@
   border-radius: 999px;
   background: rgba(255,255,255,.02);
 }
+
 .navItem{
   font-size: 13px;
   color: rgba(255,255,255,.78);
   padding: 6px 10px;
   border-radius: 999px;
   transition: 160ms ease;
+  text-decoration: none;
 }
+
 .navItem:hover{
   color: var(--accent);
-  /*box-shadow: var(--glow);*/
 }
 
 .headerRight{

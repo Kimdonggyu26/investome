@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchFx } from "../api/fxApi";
 import "./FxRates.css";
 
@@ -47,22 +47,14 @@ function color(v) {
   return "rgba(255,255,255,0.55)";
 }
 
-function todayText() {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}. ${m}. ${day}`;
-}
-
 function formatPct(p) {
   if (typeof p !== "number" || !isFinite(p)) return "-";
+  const sign = p > 0 ? "+" : p < 0 ? "-" : "";
   const abs = Math.abs(p);
 
-  // 환율은 변화폭이 작아서 작은 값은 소수 4자리까지
-  if (abs < 0.01) return `${abs.toFixed(4)}%`;
-  if (abs < 0.1) return `${abs.toFixed(3)}%`;
-  return `${abs.toFixed(2)}%`;
+  if (abs < 0.01) return `${sign}${abs.toFixed(4)}%`;
+  if (abs < 0.1) return `${sign}${abs.toFixed(3)}%`;
+  return `${sign}${abs.toFixed(2)}%`;
 }
 
 function formatDiff(v) {
@@ -78,9 +70,6 @@ export default function FxRates() {
   const [fx, setFx] = useState(null);
   const [err, setErr] = useState(null);
 
-  // 오늘 첫값
-  const baseRef = useRef(null);
-
   useEffect(() => {
     let mounted = true;
 
@@ -88,11 +77,6 @@ export default function FxRates() {
       try {
         setErr(null);
         const data = await fetchFx();
-
-        if (!baseRef.current) {
-          baseRef.current = data;
-        }
-
         if (!mounted) return;
         setFx(data);
       } catch (e) {
@@ -102,7 +86,7 @@ export default function FxRates() {
     };
 
     load();
-    const t = setInterval(load, 30_000); // 환율은 30초 정도 추천
+    const t = setInterval(load, 30_000);
     return () => {
       mounted = false;
       clearInterval(t);
@@ -117,7 +101,7 @@ export default function FxRates() {
           <div className="fxSub">Currency Exchange Rates at a Glance</div>
         </div>
 
-        <div className="fxUpdated">{todayText()}</div>
+        <div className="fxUpdated">{fx?.updatedDate || "-"}</div>
       </div>
 
       {err && (
@@ -129,7 +113,7 @@ export default function FxRates() {
       <div className="fxList">
         {FX.map((c) => {
           const now = fx?.[c.key];
-          const base = baseRef.current?.[c.key];
+          const base = fx?.changes?.[c.key];
 
           const diff = diffValue(now, base);
           const pct = changePct(now, base);
@@ -178,7 +162,7 @@ export default function FxRates() {
           letterSpacing: ".3px",
         }}
       >
-        Data Source : ER-API
+        Data Source : Frankfurter
       </div>
     </div>
   );

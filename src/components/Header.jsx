@@ -1,10 +1,11 @@
+import { Link } from "react-router-dom";
 import "./Header.css";
 
 export default function Header() {
   return (
     <header className="headerWrap">
       <div className="container header">
-        <div className="brand">
+        <Link to="/" className="brand brandLink">
           <div className="brandMark" aria-hidden="true">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
               <path
@@ -22,13 +23,13 @@ export default function Header() {
             </svg>
           </div>
           <span className="brandName">Investome</span>
-        </div>
+        </Link>
 
         <nav className="nav">
-          <a className="navItem" href="#ranking">랭킹</a>
-          <a className="navItem" href="#charts">차트</a>
-          <a className="navItem" href="#news">뉴스</a>
-          <a className="navItem" href="#community">커뮤니티</a>
+          <a className="navItem" href="/#ranking">랭킹</a>
+          <a className="navItem" href="/#charts">차트</a>
+          <Link className="navItem" to="/news">뉴스</Link>
+          <a className="navItem" href="/#community">커뮤니티</a>
         </nav>
 
         <div className="headerRight">

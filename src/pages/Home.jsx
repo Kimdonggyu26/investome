@@ -20,10 +20,8 @@ export default function Home() {
       <Header />
 
       <main>
-        {/* 1행: My Portfolio | 환율 모아보기 */}
         <Hero prices={prices} />
 
-        {/* 2행: 시가총액 TOP30 | 커뮤니티 피드 */}
         <section style={{ padding: "0 0 12px" }}>
           <div
             className="container"
@@ -39,10 +37,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 3행: 글로벌 경제 주요 소식 */}
         <section style={{ padding: "0 0 18px" }}>
           <div className="container">
-            <NewsList />
+            <NewsList limit={12} />
           </div>
         </section>
       </main>
