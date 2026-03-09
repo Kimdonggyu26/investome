@@ -198,7 +198,7 @@
 
 .tvInner {
   width: 100%;
-  min-height: 560px;
+  height: 560px;
 }
 
 .assetInfoList {
@@ -373,7 +373,7 @@
   }
 
   .tvInner {
-    min-height: 460px;
+    height: 460px;
   }
 }
 
@@ -405,6 +405,6 @@
   }
 
   .tvInner {
-    min-height: 380px;
+    height: 380px;
   }
 }

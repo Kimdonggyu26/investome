@@ -8,10 +8,15 @@ export default function TradingViewChart({ symbol, title }) {
 
     containerRef.current.innerHTML = "";
 
+    const widgetContainer = document.createElement("div");
+    widgetContainer.className = "tradingview-widget-container";
+    widgetContainer.style.width = "100%";
+    widgetContainer.style.height = "560px";
+
     const widgetEl = document.createElement("div");
     widgetEl.className = "tradingview-widget-container__widget";
-    widgetEl.style.height = "100%";
     widgetEl.style.width = "100%";
+    widgetEl.style.height = "100%";
 
     const script = document.createElement("script");
     script.type = "text/javascript";
@@ -20,7 +25,8 @@ export default function TradingViewChart({ symbol, title }) {
       "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
 
     script.innerHTML = JSON.stringify({
-      autosize: true,
+      width: "100%",
+      height: 560,
       symbol,
       interval: "D",
       timezone: "Asia/Seoul",
@@ -37,8 +43,9 @@ export default function TradingViewChart({ symbol, title }) {
       support_host: "https://www.tradingview.com",
     });
 
-    containerRef.current.appendChild(widgetEl);
-    containerRef.current.appendChild(script);
+    widgetContainer.appendChild(widgetEl);
+    widgetContainer.appendChild(script);
+    containerRef.current.appendChild(widgetContainer);
 
     return () => {
       if (containerRef.current) {
