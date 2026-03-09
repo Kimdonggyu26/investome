@@ -49,6 +49,10 @@ async function fetchStockTop30(market) {
   const json = await res.json();
   const items = Array.isArray(json?.items) ? json.items : [];
 
+  if (items.length === 0) {
+    throw new Error(`${market} top30 empty`);
+  }
+
   return items.map(normalizeRow);
 }
 

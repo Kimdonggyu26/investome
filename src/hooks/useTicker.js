@@ -23,7 +23,7 @@ export function useTicker() {
 
   useEffect(() => {
     load();
-    const t = setInterval(load, 20_000);
+    const t = setInterval(load, 20000);
     return () => clearInterval(t);
   }, []);
 
