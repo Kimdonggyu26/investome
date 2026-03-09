@@ -91,7 +91,7 @@ export default function NewsPage() {
                     letterSpacing: "-1px",
                   }}
                 >
-                  경제 · 증시 · 코인 뉴스를
+                  경제 · 증시 · 코인
                   <br />
                   한눈에 보는 뉴스룸
                 </h1>
@@ -105,38 +105,11 @@ export default function NewsPage() {
                     maxWidth: 760,
                   }}
                 >
-                  최신 이슈를 카테고리별로 빠르게 훑고, 클릭 한 번으로 원문 기사까지
-                  이어서 볼 수 있게 구성했어.
+                  오늘의 최신 뉴스를 카테고리별로 빠르게 훑고, 클릭하여 원문 기사까지 확인해보세요 !
                 </p>
               </div>
 
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <div
-                  style={{
-                    minWidth: 120,
-                    padding: "14px 16px",
-                    borderRadius: 18,
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                  }}
-                >
-                  <div className="muted" style={{ fontSize: 12 }}>카테고리</div>
-                  <div style={{ fontSize: 20, fontWeight: 900, marginTop: 6 }}>4개</div>
-                </div>
-
-                <div
-                  style={{
-                    minWidth: 120,
-                    padding: "14px 16px",
-                    borderRadius: 18,
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                  }}
-                >
-                  <div className="muted" style={{ fontSize: 12 }}>정렬</div>
-                  <div style={{ fontSize: 20, fontWeight: 900, marginTop: 6 }}>최신/인기</div>
-                </div>
-
                 <Link className="btn" to="/">
                   ← 홈으로
                 </Link>
