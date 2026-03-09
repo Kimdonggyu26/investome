@@ -1,6 +1,10 @@
 .assetDetailPage {
   padding: 18px 0 42px;
-  background: var(--bg);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(14,165,255,0.10), transparent 26%),
+    radial-gradient(circle at 88% 18%, rgba(124,77,255,0.10), transparent 24%),
+    radial-gradient(circle at 50% 100%, rgba(80,255,170,0.05), transparent 28%),
+    var(--bg);
 }
 
 .assetTopCard {
@@ -8,7 +12,41 @@
   display: grid;
   gap: 18px;
   border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.03);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.02));
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.assetHeroGlow::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(14,165,255,0.18), transparent 28%),
+    radial-gradient(circle at 100% 0%, rgba(124,77,255,0.16), transparent 26%),
+    radial-gradient(circle at 50% 100%, rgba(80,255,170,0.08), transparent 30%);
+  pointer-events: none;
+}
+
+.assetHeroGlow::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(14,165,255,0),
+    rgba(14,165,255,0.55),
+    rgba(124,77,255,0.55),
+    rgba(14,165,255,0)
+  );
+  pointer-events: none;
 }
 
 .assetTopHead {
@@ -17,6 +55,8 @@
   gap: 18px;
   align-items: flex-start;
   flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
 }
 
 .assetIdentity {
@@ -31,8 +71,10 @@
   border-radius: 18px;
   object-fit: cover;
   background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow:
+    0 14px 34px rgba(0,0,0,0.30),
+    0 0 0 1px rgba(255,255,255,0.03);
 }
 
 .assetLogoFallback {
@@ -42,20 +84,22 @@
   font-size: 24px;
   font-weight: 900;
   color: white;
-  background: radial-gradient(circle at 30% 30%, rgba(14,165,255,0.35), rgba(255,255,255,0.04));
+  background:
+    radial-gradient(circle at 30% 30%, rgba(14,165,255,0.45), rgba(124,77,255,0.18) 45%, rgba(255,255,255,0.04));
 }
 
 .assetMarketBadge {
   display: inline-flex;
   align-items: center;
-  height: 28px;
+  height: 30px;
   padding: 0 12px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 900;
-  color: #dff6ff;
-  background: rgba(14,165,255,0.16);
+  color: #f5fbff;
+  background: linear-gradient(135deg, rgba(14,165,255,0.26), rgba(124,77,255,0.20));
   border: 1px solid rgba(14,165,255,0.28);
+  box-shadow: 0 8px 22px rgba(14,165,255,0.12);
   margin-bottom: 10px;
 }
 
@@ -64,6 +108,7 @@
   font-size: 34px;
   line-height: 1.12;
   letter-spacing: -0.8px;
+  color: rgba(255,255,255,0.97);
 }
 
 .assetSymbolRow {
@@ -81,6 +126,8 @@
   gap: 28px;
   flex-wrap: wrap;
   align-items: flex-end;
+  position: relative;
+  z-index: 1;
 }
 
 .assetStatBlock {
@@ -92,13 +139,16 @@
   font-size: 12px;
   color: rgba(255,255,255,0.58);
   font-weight: 700;
+  letter-spacing: 0.2px;
 }
 
 .assetPrice {
-  font-size: 34px;
+  font-size: 36px;
   line-height: 1;
   font-weight: 900;
-  letter-spacing: -0.8px;
+  letter-spacing: -1px;
+  color: rgba(255,255,255,0.98);
+  text-shadow: 0 0 26px rgba(14,165,255,0.10);
 }
 
 .assetChange {
@@ -107,11 +157,13 @@
 }
 
 .assetChange.up {
-  color: rgba(80,255,170,0.95);
+  color: rgba(80,255,170,0.96);
+  text-shadow: 0 0 18px rgba(80,255,170,0.16);
 }
 
 .assetChange.down {
-  color: rgba(255,120,170,0.95);
+  color: rgba(255,120,170,0.96);
+  text-shadow: 0 0 18px rgba(255,120,170,0.14);
 }
 
 .assetChange.flat {
@@ -122,13 +174,29 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
+  position: relative;
+  z-index: 1;
 }
 
 .assetMetaCard {
   padding: 14px;
-  border-radius: 16px;
+  border-radius: 18px;
   border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.025);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.02));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.03),
+    0 12px 28px rgba(0,0,0,0.18);
+  transition: transform .18s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.assetMetaCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(14,165,255,0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.03),
+    0 18px 36px rgba(0,0,0,0.22),
+    0 0 24px rgba(14,165,255,0.06);
 }
 
 .assetMetaLabel {
@@ -140,7 +208,7 @@
 .assetMetaValue {
   font-size: 16px;
   font-weight: 900;
-  color: rgba(255,255,255,0.93);
+  color: rgba(255,255,255,0.95);
 }
 
 .assetMainGrid {
@@ -159,10 +227,22 @@
 
 .assetPanel {
   padding: 18px;
-  border-radius: 18px;
+  border-radius: 20px;
   border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.03);
-  box-shadow: 0 16px 48px rgba(0,0,0,0.22);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  box-shadow:
+    0 18px 48px rgba(0,0,0,0.24),
+    inset 0 1px 0 rgba(255,255,255,0.03);
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+.assetPanel:hover {
+  border-color: rgba(14,165,255,0.15);
+  box-shadow:
+    0 22px 56px rgba(0,0,0,0.28),
+    0 0 28px rgba(14,165,255,0.05),
+    inset 0 1px 0 rgba(255,255,255,0.03);
 }
 
 .assetPanelHead {
@@ -176,7 +256,8 @@
 .assetPanelTitle {
   font-size: 18px;
   font-weight: 900;
-  color: rgba(255,255,255,0.95);
+  color: rgba(255,255,255,0.97);
+  letter-spacing: -0.2px;
 }
 
 .assetPanelSub {
@@ -187,13 +268,38 @@
 
 .chartPanel {
   overflow: hidden;
+  position: relative;
+}
+
+.chartPanel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(14,165,255,0.30),
+    rgba(124,77,255,0.18),
+    rgba(80,255,170,0.14),
+    rgba(14,165,255,0.08)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
 }
 
 .tvWrap {
-  border-radius: 16px;
+  border-radius: 18px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(7,10,15,0.85);
+  background:
+    radial-gradient(circle at 20% 0%, rgba(14,165,255,0.06), transparent 32%),
+    rgba(7,10,15,0.90);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.03),
+    0 14px 34px rgba(0,0,0,0.24);
 }
 
 .tvInner {
@@ -209,8 +315,16 @@
 .assetInfoItem {
   padding: 14px;
   border-radius: 16px;
-  background: rgba(255,255,255,0.025);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
   border: 1px solid rgba(255,255,255,0.06);
+  transition: transform .18s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.assetInfoItem:hover {
+  transform: translateY(-2px);
+  border-color: rgba(124,77,255,0.16);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.18);
 }
 
 .assetInfoItemLabel {
@@ -222,7 +336,7 @@
 .assetInfoItemValue {
   font-size: 17px;
   font-weight: 900;
-  color: rgba(255,255,255,0.94);
+  color: rgba(255,255,255,0.95);
 }
 
 .assetInfoNotice {
@@ -230,9 +344,10 @@
   padding: 14px;
   border-radius: 16px;
   font-size: 13px;
-  line-height: 1.65;
-  color: rgba(255,255,255,0.65);
-  background: rgba(255,255,255,0.025);
+  line-height: 1.7;
+  color: rgba(255,255,255,0.66);
+  background:
+    linear-gradient(180deg, rgba(14,165,255,0.05), rgba(255,255,255,0.02));
   border: 1px solid rgba(255,255,255,0.06);
 }
 
@@ -244,9 +359,10 @@
 .assetNewsItem {
   display: block;
   padding: 16px;
-  border-radius: 16px;
+  border-radius: 18px;
   text-decoration: none;
-  background: rgba(255,255,255,0.025);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
   border: 1px solid rgba(255,255,255,0.06);
   transition: transform .15s ease, border-color .2s ease, box-shadow .2s ease;
 }
@@ -254,13 +370,15 @@
 .assetNewsItem:hover {
   transform: translateY(-2px);
   border-color: rgba(14,165,255,0.22);
-  box-shadow: 0 16px 40px rgba(0,0,0,0.25), 0 0 24px rgba(14,165,255,0.08);
+  box-shadow:
+    0 16px 40px rgba(0,0,0,0.25),
+    0 0 24px rgba(14,165,255,0.08);
 }
 
 .assetNewsTitle {
   font-weight: 900;
   line-height: 1.55;
-  color: rgba(255,255,255,0.94);
+  color: rgba(255,255,255,0.95);
 }
 
 .assetNewsMeta {
@@ -321,8 +439,15 @@
 .communityItem {
   padding: 14px;
   border-radius: 16px;
-  background: rgba(255,255,255,0.025);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
   border: 1px solid rgba(255,255,255,0.06);
+  transition: transform .18s ease, border-color .2s ease;
+}
+
+.communityItem:hover {
+  transform: translateY(-2px);
+  border-color: rgba(80,255,170,0.18);
 }
 
 .communityMeta {
@@ -335,7 +460,7 @@
 
 .communityNick {
   font-weight: 900;
-  color: rgba(255,255,255,0.94);
+  color: rgba(255,255,255,0.95);
 }
 
 .communityDot {
@@ -348,7 +473,7 @@
 }
 
 .communityContent {
-  color: rgba(255,255,255,0.82);
+  color: rgba(255,255,255,0.84);
   line-height: 1.65;
   white-space: pre-wrap;
   word-break: break-word;
@@ -357,7 +482,8 @@
 .assetEmpty {
   padding: 18px;
   border-radius: 16px;
-  background: rgba(255,255,255,0.025);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
   border: 1px solid rgba(255,255,255,0.06);
   color: rgba(255,255,255,0.62);
 }

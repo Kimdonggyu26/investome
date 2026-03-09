@@ -191,7 +191,7 @@ export default function AssetDetail() {
 
       <main className="assetDetailPage">
         <div className="container" style={{ display: "grid", gap: 18 }}>
-          <section className="card assetTopCard">
+          <section className="card assetTopCard assetHeroGlow">
             <div className="assetTopHead">
               <div className="assetIdentity">
                 <AssetLogo iconUrl={asset.iconUrl} name={asset.name} />
