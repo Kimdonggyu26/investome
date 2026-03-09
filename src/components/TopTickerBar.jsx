@@ -1,76 +1,86 @@
-import { useEffect, useRef, useState } from "react";
 import "./TopTickerBar.css";
 
 function formatPrice(value) {
   if (typeof value !== "number" || !isFinite(value)) return "불러오는중";
-  return value.toLocaleString("ko-KR");
+  return `₩${Math.round(value).toLocaleString("ko-KR")}`;
 }
 
-function Ticker({ prices = {}, changes = {} }) {
-  const coins = ["BTC", "ETH", "XRP"];
-  const prevPricesRef = useRef({});
-  const flashTimerRef = useRef(null);
-  const [flashMap, setFlashMap] = useState({});
+function formatChange(value) {
+  if (typeof value !== "number" || !isFinite(value)) return "-";
+  return `${value > 0 ? "+" : ""}${value.toFixed(2)}%`;
+}
 
-  useEffect(() => {
-    const nextFlashMap = {};
-
-    coins.forEach((coin) => {
-      const prev = prevPricesRef.current[coin];
-      const next = prices?.[coin];
-
-      if (typeof prev === "number" && typeof next === "number" && prev !== next) {
-        nextFlashMap[coin] = next > prev ? "up" : "down";
-      }
-    });
-
-    prevPricesRef.current = prices || {};
-
-    if (flashTimerRef.current) {
-      clearTimeout(flashTimerRef.current);
-    }
-
-    if (Object.keys(nextFlashMap).length > 0) {
-      setFlashMap(nextFlashMap);
-      flashTimerRef.current = setTimeout(() => {
-        setFlashMap({});
-      }, 1000);
-    }
-
-    return () => {
-      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
-    };
-  }, [prices]);
+function TickerItem({ symbol, price, change }) {
+  const dir =
+    typeof change === "number" ? (change >= 0 ? "up" : "down") : "";
 
   return (
-    <div className="ticker">
-      {coins.map((coin) => {
-        const flash = flashMap[coin];
-        const flashClass =
-          flash === "up" ? "ticker-price upFlash" :
-          flash === "down" ? "ticker-price downFlash" :
-          "ticker-price";
-
-        return (
-          <span key={coin} className="ticker-item">
-            {coin} ₩
-            <span className={flashClass}>
-              {formatPrice(prices?.[coin])}
-            </span>{" "}
-            {changes?.[coin] !== undefined && (
-              <span className={changes[coin] >= 0 ? "up" : "down"}>
-                {changes[coin] > 0 ? "+" : ""}
-                {changes[coin]?.toFixed(2)}%
-              </span>
-            )}
-          </span>
-        );
-      })}
-
-      <span>USD/KRW 1,325원</span>
-      <span>KOSPI 2,640 ▲0.5%</span>
+    <div className="tickerItem">
+      <span className="tickerSymbol">{symbol}</span>
+      <span className="tickerPrice">{formatPrice(price)}</span>
+      <span className={`tickerChange ${dir}`}>{formatChange(change)}</span>
     </div>
   );
 }
 
-export default Ticker;
+export default function TopTickerBar({
+  prices = {},
+  changes = {},
+  loading,
+  error,
+}) {
+  const items = [
+    { symbol: "BTC", price: prices?.BTC, change: changes?.BTC },
+    { symbol: "ETH", price: prices?.ETH, change: changes?.ETH },
+    { symbol: "XRP", price: prices?.XRP, change: changes?.XRP },
+  ];
+
+  const tickerItems = (
+    <>
+      {items.map((item) => (
+        <TickerItem
+          key={item.symbol}
+          symbol={item.symbol}
+          price={item.price}
+          change={item.change}
+        />
+      ))}
+
+      <div className="tickerItem">
+        <span className="tickerSymbol">USD/KRW</span>
+        <span className="tickerPrice">1,325원</span>
+      </div>
+
+      <div className="tickerItem">
+        <span className="tickerSymbol">KOSPI</span>
+        <span className="tickerPrice">2,640</span>
+        <span className="tickerChange up">▲0.5%</span>
+      </div>
+    </>
+  );
+
+  return (
+    <div className="tickerBar">
+      <div className="container tickerInner">
+        <div className="tickerLeft">
+          <span className="tickerDot" />
+          <span className="tickerTitle">Investome</span>
+          <span className="tickerSub muted">
+            {loading
+              ? "시세 불러오는 중"
+              : error
+                ? "일부 시세 연결 지연"
+                : "실시간 마켓 브리핑"}
+          </span>
+        </div>
+
+        <div className="tickerItems">
+          <div className="tickerTrack">
+            {tickerItems}
+            {tickerItems}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
