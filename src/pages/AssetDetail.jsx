@@ -363,12 +363,6 @@ export default function AssetDetail() {
                   </div>
                 </div>
               </div>
-
-              <div className="assetInfoNotice">
-                • 차트는 TradingView 위젯을 사용했어.<br />
-                • 뉴스는 현재 종목명/심볼 기준으로 관련 기사만 최대한 가져오게 했어.<br />
-                • 커뮤니티는 우선 localStorage 기반이라 새로고침해도 브라우저 안에서는 유지돼.
-              </div>
             </div>
           </section>
 
