@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { fetchNews } from "../api/newsApi";
 import "../styles/NewsList.css";
+
+const CATEGORIES = [
+  { key: "all", label: "전체" },
+  { key: "crypto", label: "코인(암호화폐)" },
+  { key: "domestic", label: "국내증시" },
+  { key: "global", label: "해외증시" },
+];
 
 function ymdhm(dateStr) {
   const d = new Date(dateStr);
@@ -20,11 +26,25 @@ function popularScore(item) {
   const t = (item.title || "").toLowerCase();
   let s = 0;
 
-  ["속보", "급등", "급락", "금리", "환율", "물가", "반도체", "미국", "연준", "코스피", "나스닥", "비트코인"].forEach(
-    (k) => {
-      if (t.includes(k)) s += 3;
-    }
-  );
+  [
+    "속보",
+    "급등",
+    "급락",
+    "금리",
+    "환율",
+    "물가",
+    "반도체",
+    "미국",
+    "연준",
+    "코스피",
+    "나스닥",
+    "비트코인",
+    "이더리움",
+    "테슬라",
+    "엔비디아",
+  ].forEach((k) => {
+    if (t.includes(k)) s += 3;
+  });
 
   s += Math.min(6, Math.floor((t.length || 0) / 12));
 
@@ -45,12 +65,26 @@ export default function NewsList({
   const [items, setItems] = useState([]);
   const [err, setErr] = useState(null);
   const [mode, setMode] = useState("latest");
+  const [category, setCategory] = useState("all");
 
   useEffect(() => {
-    fetchNews({ topic: "경제 증시 환율 코인", limit })
-      .then(setItems)
-      .catch(setErr);
-  }, [limit]);
+    let alive = true;
+
+    fetchNews({ category, limit })
+      .then((data) => {
+        if (!alive) return;
+        setItems(data);
+        setErr(null);
+      })
+      .catch((e) => {
+        if (!alive) return;
+        setErr(e);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [category, limit]);
 
   const view = useMemo(() => {
     const arr = [...items];
@@ -64,16 +98,17 @@ export default function NewsList({
     return arr;
   }, [items, mode]);
 
+  const featured = pageMode ? view[0] : null;
+  const rest = pageMode ? view.slice(1) : view;
+
   return (
-    <div className={`card ${pageMode ? "newsPageCard" : ""}`} id="news" style={{ padding: 18 }}>
+    <div className={`card newsWrap ${pageMode ? "newsWrapPage" : ""}`} id="news">
       <div className="newsHeader">
         <div>
-          <h3 style={{ margin: 0 }}>{title}</h3>
-          {pageMode && (
-            <div className="newsDesc">
-              경제 / 증시 / 환율 / 코인 관련 뉴스를 한 번에 모아봅니다.
-            </div>
-          )}
+          <h3 className="newsHeading">{title}</h3>
+          <div className="newsDesc">
+            실시간으로 모아본 경제 · 증시 · 암호화폐 뉴스
+          </div>
         </div>
 
         <div className="newsHeaderRight">
@@ -93,21 +128,44 @@ export default function NewsList({
               인기순
             </button>
           </div>
-
-          {!pageMode && (
-            <Link className="newsMoreBtn" to="/news">
-              전체보기
-            </Link>
-          )}
         </div>
       </div>
 
-      <hr className="hr" />
+      <div className="newsCategoryRow">
+        {CATEGORIES.map((c) => (
+          <button
+            key={c.key}
+            type="button"
+            className={`newsCategoryChip ${category === c.key ? "active" : ""}`}
+            onClick={() => setCategory(c.key)}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
 
       {err && <div className="muted">뉴스를 불러오지 못했어요.</div>}
 
-      <div className="newsGrid">
-        {view.map((n, idx) => (
+      {!err && pageMode && featured && (
+        <a
+          href={featured.link}
+          target="_blank"
+          rel="noreferrer"
+          className="newsFeatured"
+          title="클릭해서 기사로 이동"
+        >
+          <div className="newsFeaturedBadge">FEATURED</div>
+          <div className="newsFeaturedTitle">{featured.title}</div>
+          <div className="newsFeaturedMeta">
+            <span>{featured.source || "Google News"}</span>
+            <span className="newsDot">•</span>
+            <span>{ymdhm(featured.pubDate)}</span>
+          </div>
+        </a>
+      )}
+
+      <div className={`newsGrid ${pageMode ? "newsGridPage" : ""}`}>
+        {rest.map((n, idx) => (
           <a
             key={`${n.link}-${idx}`}
             href={n.link}

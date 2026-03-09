@@ -19,7 +19,6 @@ function parseRss(xml) {
 
   return items.map((chunk) => {
     const itemXml = chunk.split(/<\/item>/i)[0] || "";
-
     const sourceMatch = itemXml.match(/<source[^>]*>([\s\S]*?)<\/source>/i);
 
     return {
@@ -62,28 +61,54 @@ function uniqueBy(items, getKey) {
   return [...map.values()];
 }
 
+function getQueriesByCategory(category) {
+  switch (category) {
+    case "crypto":
+      return [
+        "비트코인 OR 이더리움 OR 리플 OR 알트코인",
+        "암호화폐 시장",
+        "코인 규제",
+        "ETF 비트코인",
+        "가상자산 거래소",
+      ];
+    case "domestic":
+      return [
+        "코스피 OR 코스닥 OR 국내증시",
+        "삼성전자 SK하이닉스 현대차 NAVER",
+        "한국 증시 수급",
+        "원달러 환율 국내증시",
+        "한국 금리 증시",
+      ];
+    case "global":
+      return [
+        "나스닥 OR S&P500 OR 다우지수 OR 미국증시",
+        "미국 증시 기술주",
+        "연준 금리 미국주식",
+        "엔비디아 애플 테슬라 아마존 메타",
+        "월가 미국 시장",
+      ];
+    default:
+      return [
+        "한국 경제",
+        "미국 증시",
+        "코스피",
+        "나스닥",
+        "환율",
+        "금리",
+        "연준",
+        "비트코인",
+        "이더리움",
+        "AI 반도체",
+      ];
+  }
+}
+
 export default async function handler(req, res) {
   try {
-    const limit = Math.min(100, Math.max(1, Number(req.query?.limit || "30")));
-    const topic = String(req.query?.topic || "").trim();
+    const limit = Math.min(100, Math.max(1, Number(req.query?.limit || "24")));
+    const category = String(req.query?.category || "all").trim().toLowerCase();
 
-    const defaultQueries = [
-      "한국 경제",
-      "미국 증시",
-      "코스피",
-      "나스닥",
-      "환율",
-      "금리",
-      "연준",
-      "비트코인",
-      "이더리움",
-      "AI 반도체",
-    ];
-
-    const queries = topic
-      ? uniqueBy([topic, ...defaultQueries], (x) => x.toLowerCase())
-      : defaultQueries;
-
+    const queries = getQueriesByCategory(category);
     const xmlList = await Promise.allSettled(queries.map(fetchRss));
 
     const allItems = xmlList.flatMap((result) => {
@@ -103,7 +128,7 @@ export default async function handler(req, res) {
       .slice(0, limit);
 
     res.setHeader("Cache-Control", "s-maxage=180, stale-while-revalidate=600");
-    res.status(200).json({ items: sorted });
+    res.status(200).json({ items: sorted, category });
   } catch (e) {
     res.status(500).json({ error: String(e) });
   }

@@ -1,6 +1,6 @@
-export async function fetchNews({ topic = "", limit = 12 } = {}) {
+export async function fetchNews({ category = "all", limit = 12 } = {}) {
   const qs = new URLSearchParams({
-    topic,
+    category,
     limit: String(limit),
   });
 

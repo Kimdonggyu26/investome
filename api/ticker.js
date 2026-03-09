@@ -1,18 +1,30 @@
 let tickerCache = { at: 0, data: null };
 
-async function fetchJson(url) {
-  const r = await fetch(url, {
+async function fetchText(url) {
+  const res = await fetch(url, {
     headers: {
       "User-Agent": "Mozilla/5.0 (Investome Vercel)",
       Accept: "application/json,text/plain,*/*",
     },
   });
 
-  if (!r.ok) {
-    throw new Error(`Upstream failed: ${r.status}`);
+  const text = await res.text();
+
+  if (!res.ok) {
+    throw new Error(`Upstream failed: ${res.status} ${text.slice(0, 120)}`);
   }
 
-  return r.json();
+  return text;
+}
+
+async function fetchJson(url) {
+  const text = await fetchText(url);
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`Non-JSON response: ${text.slice(0, 120)}`);
+  }
 }
 
 async function fetchCrypto() {
@@ -25,46 +37,92 @@ async function fetchCrypto() {
   return fetchJson(url);
 }
 
-async function fetchIndexes() {
+function toNumber(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+async function fetchYahooQuoteBatch(symbols) {
   const url =
-    "https://query1.finance.yahoo.com/v7/finance/quote" +
-    "?symbols=%5EKS11,%5EIXIC";
+    "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" +
+    encodeURIComponent(symbols.join(","));
 
   const json = await fetchJson(url);
-  const rows = json?.quoteResponse?.result || [];
+  return json?.quoteResponse?.result || [];
+}
 
-  const kospi = rows.find((x) => x.symbol === "^KS11");
-  const nasdaq = rows.find((x) => x.symbol === "^IXIC");
+async function fetchYahooChartMeta(symbol) {
+  const url =
+    `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}` +
+    `?interval=1d&range=5d&includePrePost=false`;
+
+  const json = await fetchJson(url);
+  const meta = json?.chart?.result?.[0]?.meta;
+
+  if (!meta) {
+    throw new Error(`No chart meta for ${symbol}`);
+  }
+
+  const price = toNumber(meta.regularMarketPrice);
+  const prevClose = toNumber(meta.previousClose ?? meta.chartPreviousClose);
 
   return {
-    KOSPI: {
-      price:
-        typeof kospi?.regularMarketPrice === "number"
-          ? kospi.regularMarketPrice
-          : null,
-      changePct:
-        typeof kospi?.regularMarketChangePercent === "number"
-          ? kospi.regularMarketChangePercent
-          : null,
-    },
-    NASDAQ: {
-      price:
-        typeof nasdaq?.regularMarketPrice === "number"
-          ? nasdaq.regularMarketPrice
-          : null,
-      changePct:
-        typeof nasdaq?.regularMarketChangePercent === "number"
-          ? nasdaq.regularMarketChangePercent
-          : null,
-    },
+    price,
+    changePct:
+      price != null && prevClose != null && prevClose !== 0
+        ? ((price - prevClose) / prevClose) * 100
+        : null,
   };
+}
+
+async function fetchIndexes() {
+  const result = {
+    KOSPI: { price: null, changePct: null },
+    NASDAQ: { price: null, changePct: null },
+  };
+
+  try {
+    const rows = await fetchYahooQuoteBatch(["^KS11", "^IXIC"]);
+    const kospi = rows.find((x) => x.symbol === "^KS11");
+    const nasdaq = rows.find((x) => x.symbol === "^IXIC");
+
+    result.KOSPI = {
+      price: toNumber(kospi?.regularMarketPrice),
+      changePct: toNumber(kospi?.regularMarketChangePercent),
+    };
+
+    result.NASDAQ = {
+      price: toNumber(nasdaq?.regularMarketPrice),
+      changePct: toNumber(nasdaq?.regularMarketChangePercent),
+    };
+  } catch {
+    // 아래 chart fallback으로 진행
+  }
+
+  if (result.KOSPI.price == null) {
+    try {
+      result.KOSPI = await fetchYahooChartMeta("^KS11");
+    } catch {
+      // noop
+    }
+  }
+
+  if (result.NASDAQ.price == null) {
+    try {
+      result.NASDAQ = await fetchYahooChartMeta("^IXIC");
+    } catch {
+      // noop
+    }
+  }
+
+  return result;
 }
 
 export default async function handler(_req, res) {
   try {
     const now = Date.now();
 
-    if (tickerCache.data && now - tickerCache.at < 15000) {
+    if (tickerCache.data && now - tickerCache.at < 15_000) {
       res.setHeader("Cache-Control", "s-maxage=15, stale-while-revalidate=30");
       res.status(200).json(tickerCache.data);
       return;
@@ -75,24 +133,28 @@ export default async function handler(_req, res) {
       fetchIndexes(),
     ]);
 
-    const crypto =
-      cryptoResult.status === "fulfilled"
-        ? cryptoResult.value
-        : tickerCache.data || {};
-
-    const indexes =
-      indexResult.status === "fulfilled"
-        ? indexResult.value
-        : tickerCache.data?.indexes || {
-            KOSPI: { price: null, changePct: null },
-            NASDAQ: { price: null, changePct: null },
-          };
+    const prev = tickerCache.data || {};
 
     const data = {
-      bitcoin: crypto.bitcoin || null,
-      ethereum: crypto.ethereum || null,
-      ripple: crypto.ripple || null,
-      indexes,
+      bitcoin:
+        cryptoResult.status === "fulfilled"
+          ? cryptoResult.value?.bitcoin || prev.bitcoin || null
+          : prev.bitcoin || null,
+      ethereum:
+        cryptoResult.status === "fulfilled"
+          ? cryptoResult.value?.ethereum || prev.ethereum || null
+          : prev.ethereum || null,
+      ripple:
+        cryptoResult.status === "fulfilled"
+          ? cryptoResult.value?.ripple || prev.ripple || null
+          : prev.ripple || null,
+      indexes:
+        indexResult.status === "fulfilled"
+          ? indexResult.value
+          : prev.indexes || {
+              KOSPI: { price: null, changePct: null },
+              NASDAQ: { price: null, changePct: null },
+            },
     };
 
     tickerCache = { at: now, data };
@@ -106,6 +168,6 @@ export default async function handler(_req, res) {
       return;
     }
 
-    res.status(500).json({ error: String(e) });
+    res.status(500).json({ error: String(e?.message || e) });
   }
 }
