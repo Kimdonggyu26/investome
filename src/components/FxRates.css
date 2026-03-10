@@ -4,6 +4,11 @@
   background: rgba(255,255,255,0.035);
   border: 1px solid rgba(255,255,255,0.08);
   box-shadow: 0 18px 60px rgba(0,0,0,0.35);
+
+  height: 100%;
+  min-height: 560px;
+  display: flex;
+  flex-direction: column;
 }
 
 .fxHeader{
@@ -36,18 +41,22 @@
 .fxList{
   margin-top: 14px;
   display: grid;
-  gap: 10px;
+  gap: 12px;
+
+  flex: 1;
+  align-content: start;
 }
 
 .fxRow{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding: 12px;
+  padding: 14px 12px;
   border-radius: 12px;
   background: rgba(255,255,255,0.02);
   border: 1px solid rgba(255,255,255,0.06);
   transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+  min-height: 76px;
 }
 
 .fxRow:hover{
@@ -82,13 +91,25 @@
   object-fit: cover;
 }
 
-.fxMeta{ display:flex; flex-direction:column; gap: 2px; }
-.fxValue{ font-weight: 900; }
-.fxLabel{ font-size: 12px; color: rgba(255,255,255,0.55); }
+.fxMeta{
+  display:flex;
+  flex-direction:column;
+  gap: 2px;
+}
+
+.fxValue{
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.fxLabel{
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+}
 
 .fxRight{
   font-weight: 900;
   font-size: 13px;
-  min-width: 82px;
+  min-width: 92px;
   text-align:right;
 }
