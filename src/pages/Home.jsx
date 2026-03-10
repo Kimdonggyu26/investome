@@ -21,22 +21,20 @@ export default function Home() {
       <Header />
 
       <main className="homePage">
-        <div className="homeShell">
-          <div className="homeMainColumn">
-            <section className="homeTopSection">
-              <div className="homeTopGrid">
-                <RankingTable />
-                <FxRates />
-              </div>
-            </section>
+        <div className="container homeContainer">
+          <section className="homeTopSection">
+            <div className="homeTopGrid">
+              <RankingTable />
+              <FxRates />
+            </div>
+          </section>
 
-            <section className="homeNewsSection">
-              <NewsList limit={12} />
-            </section>
-          </div>
+          <section className="homeNewsSection">
+            <NewsList limit={12} />
+          </section>
 
-          <aside className="homeSidebar">
-            <div className="homeSidebarSticky">
+          <aside className="homeRightFloat">
+            <div className="homeRightFloatSticky">
               <CommunityFeed />
             </div>
           </aside>
