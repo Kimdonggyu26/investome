@@ -1,7 +1,15 @@
 import "./TopTickerBar.css";
 
-function formatPrice(value) {
+function formatPrice(value, symbol) {
   if (typeof value !== "number" || !isFinite(value)) return "불러오는중";
+
+  if (symbol === "KOSPI" || symbol === "NASDAQ") {
+    return value.toLocaleString("ko-KR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+
   return `₩${Math.round(value).toLocaleString("ko-KR")}`;
 }
 
@@ -17,7 +25,7 @@ function TickerItem({ symbol, price, change }) {
   return (
     <div className="tickerItem">
       <span className="tickerSymbol">{symbol}</span>
-      <span className="tickerPrice">{formatPrice(price)}</span>
+      <span className="tickerPrice">{formatPrice(price, symbol)}</span>
       <span className={`tickerChange ${dir}`}>{formatChange(change)}</span>
     </div>
   );
@@ -33,6 +41,8 @@ export default function TopTickerBar({
     { symbol: "BTC", price: prices?.BTC, change: changes?.BTC },
     { symbol: "ETH", price: prices?.ETH, change: changes?.ETH },
     { symbol: "XRP", price: prices?.XRP, change: changes?.XRP },
+    { symbol: "KOSPI", price: prices?.KOSPI, change: changes?.KOSPI },
+    { symbol: "NASDAQ", price: prices?.NASDAQ, change: changes?.NASDAQ },
   ];
 
   const tickerItems = (
@@ -45,17 +55,6 @@ export default function TopTickerBar({
           change={item.change}
         />
       ))}
-
-      <div className="tickerItem">
-        <span className="tickerSymbol">USD/KRW</span>
-        <span className="tickerPrice">1,325원</span>
-      </div>
-
-      <div className="tickerItem">
-        <span className="tickerSymbol">KOSPI</span>
-        <span className="tickerPrice">2,640</span>
-        <span className="tickerChange up">▲0.5%</span>
-      </div>
     </>
   );
 

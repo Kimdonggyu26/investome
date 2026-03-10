@@ -20,14 +20,43 @@ function parseRss(xml) {
   return items.map((chunk) => {
     const itemXml = chunk.split(/<\/item>/i)[0] || "";
     const sourceMatch = itemXml.match(/<source[^>]*>([\s\S]*?)<\/source>/i);
+    const desc = pick("description", itemXml);
 
     return {
       title: pick("title", itemXml),
       link: pick("link", itemXml),
       pubDate: pick("pubDate", itemXml),
       source: sourceMatch ? decodeHtml(sourceMatch[1].trim()) : "",
+      description: desc,
+      thumbnail: extractImageFromHtml(desc) || "",
     };
   });
+}
+
+function extractImageFromHtml(html = "") {
+  const imgMatch = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+  if (imgMatch?.[1]) return imgMatch[1];
+
+  const mediaMatch = html.match(/https?:\/\/[^"' ]+\.(?:jpg|jpeg|png|webp)/i);
+  if (mediaMatch?.[0]) return mediaMatch[0];
+
+  return "";
+}
+
+async function fetchText(url) {
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Investome Vercel)",
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    },
+    redirect: "follow",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Fetch failed: ${res.status}`);
+  }
+
+  return res.text();
 }
 
 async function fetchRss(query) {
@@ -35,13 +64,7 @@ async function fetchRss(query) {
     `https://news.google.com/rss/search?q=${encodeURIComponent(query)}` +
     `&hl=ko&gl=KR&ceid=KR:ko`;
 
-  const r = await fetch(rssUrl, {
-    headers: { "User-Agent": "Mozilla/5.0 (Investome Vercel)" },
-    redirect: "follow",
-  });
-
-  if (!r.ok) throw new Error(`News fetch failed: ${r.status}`);
-  return r.text();
+  return fetchText(rssUrl);
 }
 
 function uniqueBy(items, getKey) {
@@ -96,9 +119,48 @@ function getQueriesByCategory(category) {
   }
 }
 
+function absoluteUrl(url) {
+  if (!url) return "";
+  if (url.startsWith("//")) return `https:${url}`;
+  return url;
+}
+
+function pickMetaContent(html, property) {
+  const regex = new RegExp(
+    `<meta[^>]+(?:property|name)=["']${property}["'][^>]+content=["']([^"']+)["'][^>]*>`,
+    "i"
+  );
+  const match = html.match(regex);
+  return match?.[1] ? decodeHtml(match[1].trim()) : "";
+}
+
+async function enrichThumbnail(item) {
+  if (item.thumbnail) {
+    return {
+      ...item,
+      thumbnail: absoluteUrl(item.thumbnail),
+    };
+  }
+
+  try {
+    const html = await fetchText(item.link);
+    const ogImage =
+      pickMetaContent(html, "og:image") ||
+      pickMetaContent(html, "twitter:image") ||
+      extractImageFromHtml(html);
+
+    return {
+      ...item,
+      thumbnail: absoluteUrl(ogImage),
+    };
+  } catch {
+    return item;
+  }
+}
+
 export default async function handler(req, res) {
   try {
-    const limit = Math.min(100, Math.max(1, Number(req.query?.limit || "24")));
+    const limit = Math.min(60, Math.max(1, Number(req.query?.limit || "24")));
     const category = String(req.query?.category || "all").trim().toLowerCase();
     const q = String(req.query?.q || "").trim();
 
@@ -121,9 +183,15 @@ export default async function handler(req, res) {
       .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))
       .slice(0, limit);
 
+    const enriched = await Promise.all(
+      sorted.map((item, index) =>
+        index < 12 ? enrichThumbnail(item) : Promise.resolve(item)
+      )
+    );
+
     res.setHeader("Cache-Control", "s-maxage=180, stale-while-revalidate=600");
     res.status(200).json({
-      items: sorted,
+      items: enriched,
       category,
       query: q || null,
     });

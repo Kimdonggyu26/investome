@@ -57,6 +57,22 @@ function popularScore(item) {
   return s;
 }
 
+function Thumb({ src, alt, featured = false }) {
+  if (!src) {
+    return (
+      <div className={`newsThumbFallback ${featured ? "featured" : ""}`}>
+        <span>NEWS</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`newsThumb ${featured ? "featured" : ""}`}>
+      <img src={src} alt={alt} loading="lazy" />
+    </div>
+  );
+}
+
 export default function NewsList({
   title = "글로벌 경제 주요 소식",
   limit = 12,
@@ -102,12 +118,12 @@ export default function NewsList({
   const rest = pageMode ? view.slice(1) : view;
 
   return (
-    <div className={`card newsWrap ${pageMode ? "newsWrapPage" : ""}`} id="news">
+    <div className={`card newsWrap ${pageMode ? "newsWrapPage" : ""}`}>
       <div className="newsHeader">
         <div>
-          <h3 className="newsHeading">{title}</h3>
+          <h2 className="newsHeading">{title}</h2>
           <div className="newsDesc">
-            실시간으로 모아본 경제 · 증시 · 암호화폐 뉴스
+            카테고리별 최신 뉴스와 많이 보는 이슈를 빠르게 확인해보세요.
           </div>
         </div>
 
@@ -122,8 +138,8 @@ export default function NewsList({
             </button>
             <button
               type="button"
-              className={mode === "hot" ? "active" : ""}
-              onClick={() => setMode("hot")}
+              className={mode === "popular" ? "active" : ""}
+              onClick={() => setMode("popular")}
             >
               인기순
             </button>
@@ -154,12 +170,16 @@ export default function NewsList({
           className="newsFeatured"
           title="클릭해서 기사로 이동"
         >
-          <div className="newsFeaturedBadge">FEATURED</div>
-          <div className="newsFeaturedTitle">{featured.title}</div>
-          <div className="newsFeaturedMeta">
-            <span>{featured.source || "Google News"}</span>
-            <span className="newsDot">•</span>
-            <span>{ymdhm(featured.pubDate)}</span>
+          <Thumb src={featured.thumbnail} alt={featured.title} featured />
+
+          <div className="newsFeaturedBody">
+            <div className="newsFeaturedBadge">FEATURED</div>
+            <div className="newsFeaturedTitle">{featured.title}</div>
+            <div className="newsFeaturedMeta">
+              <span>{featured.source || "Google News"}</span>
+              <span className="newsDot">•</span>
+              <span>{ymdhm(featured.pubDate)}</span>
+            </div>
           </div>
         </a>
       )}
@@ -174,6 +194,8 @@ export default function NewsList({
             className="newsItem"
             title="클릭해서 기사로 이동"
           >
+            <Thumb src={n.thumbnail} alt={n.title} />
+
             <div className="newsMain">
               <span className="newsTitle">{n.title}</span>
               <div className="newsMeta">
