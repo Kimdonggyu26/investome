@@ -1,0 +1,82 @@
+.homePage {
+  padding: 14px 0 18px;
+}
+
+.homeShell {
+  width: min(1480px, calc(100% - 32px));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  align-items: start;
+}
+
+.homeMainColumn {
+  min-width: 0;
+}
+
+.homeTopSection {
+  margin-bottom: 18px;
+}
+
+.homeTopGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.homeNewsSection {
+  min-width: 0;
+}
+
+.homeSidebar {
+  min-width: 0;
+}
+
+.homeSidebarSticky {
+  position: sticky;
+  top: 96px;
+}
+
+@media (max-width: 1280px) {
+  .homeShell {
+    width: min(1200px, calc(100% - 32px));
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 20px;
+  }
+
+  .homeTopGrid {
+    grid-template-columns: minmax(0, 1.8fr) minmax(260px, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .homeShell {
+    grid-template-columns: 1fr;
+  }
+
+  .homeSidebar {
+    order: 3;
+  }
+
+  .homeSidebarSticky {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .homePage {
+    padding-top: 12px;
+  }
+
+  .homeShell {
+    width: min(100%, calc(100% - 24px));
+    gap: 16px;
+  }
+
+  .homeTopGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}

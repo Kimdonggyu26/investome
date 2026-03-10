@@ -5,6 +5,7 @@ import RankingTable from "../components/RankingTable";
 import NewsList from "../components/NewsList";
 import CommunityFeed from "../components/CommunityFeed";
 import FxRates from "../components/FxRates";
+import "../styles/Home.css";
 
 export default function Home() {
   const { prices, changes, loading, error } = useTicker();
@@ -19,33 +20,27 @@ export default function Home() {
       />
       <Header />
 
-      <main>
-        <section style={{ padding: "14px 0 10px" }}>
-          <div className="container">
-            <FxRates />
-          </div>
-        </section>
+      <main className="homePage">
+        <div className="homeShell">
+          <div className="homeMainColumn">
+            <section className="homeTopSection">
+              <div className="homeTopGrid">
+                <RankingTable />
+                <FxRates />
+              </div>
+            </section>
 
-        <section style={{ padding: "0 0 12px" }}>
-          <div
-            className="container"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "2fr 1fr",
-              gap: 18,
-              alignItems: "start",
-            }}
-          >
-            <RankingTable />
-            <CommunityFeed />
+            <section className="homeNewsSection">
+              <NewsList limit={12} />
+            </section>
           </div>
-        </section>
 
-        <section style={{ padding: "0 0 18px" }}>
-          <div className="container">
-            <NewsList limit={12} />
-          </div>
-        </section>
+          <aside className="homeSidebar">
+            <div className="homeSidebarSticky">
+              <CommunityFeed />
+            </div>
+          </aside>
+        </div>
       </main>
 
       <footer style={{ padding: "20px 0 40px" }}>
