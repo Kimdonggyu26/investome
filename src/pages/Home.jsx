@@ -32,13 +32,11 @@ export default function Home() {
           <section className="homeNewsSection">
             <NewsList limit={12} />
           </section>
-
-          <aside className="homeRightFloat">
-            <div className="homeRightFloatSticky">
-              <CommunityFeed />
-            </div>
-          </aside>
         </div>
+
+        <aside className="homeRightFloat">
+          <CommunityFeed />
+        </aside>
       </main>
 
       <footer style={{ padding: "20px 0 40px" }}>

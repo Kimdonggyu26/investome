@@ -1,88 +1,55 @@
+import "../styles/CommunityFeed.css";
+
 const posts = [
   {
-    id: 1,
-    author: "익명",
-    time: "12분 전",
-    title: "오늘 비트코인 눌림목 어떻게 보시나요?",
-    likes: 14,
-    comments: 6,
+    category: "실시간",
+    title: "비트코인 11만 달러 부근 공방",
+    meta: "방금 전 · 조회 128",
   },
   {
-    id: 2,
-    author: "Donggyu",
-    time: "1시간 전",
-    title: "엔화 환율 다시 올라오는데 달러 매수 타이밍 고민됨",
-    likes: 9,
-    comments: 3,
+    category: "인기",
+    title: "엔비디아 조정, 지금 분할매수 괜찮을까?",
+    meta: "12분 전 · 댓글 18",
   },
   {
-    id: 3,
-    author: "익명",
-    time: "어제",
-    title: "나스닥 기술주 오늘 밤 반등 가능성 있을까요?",
-    likes: 22,
-    comments: 11,
+    category: "토론",
+    title: "한화에어로스페이스 눌림목 보는 사람?",
+    meta: "25분 전 · 댓글 9",
+  },
+  {
+    category: "관심",
+    title: "솔라나 다시 강세 전환 가능성",
+    meta: "39분 전 · 조회 302",
+  },
+  {
+    category: "요약",
+    title: "오늘 시장에서 가장 많이 언급된 종목",
+    meta: "1시간 전 · 조회 421",
   },
 ];
 
 export default function CommunityFeed() {
   return (
-    <div
-      className="card"
-      style={{
-        padding: 18,
-        borderRadius: 14,
-        background: "rgba(255,255,255,0.035)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        boxShadow: "0 18px 60px rgba(0,0,0,0.35)",
-      }}
-    >
-      <div style={{ fontWeight: 900, fontSize: 18 }}>커뮤니티 피드</div>
-      <div className="muted" style={{ marginTop: 4, fontSize: 12 }}>
-        Community Highlights
+    <section className="communityFloatPanel">
+      <div className="communityFloatHeader">
+        <div>
+          <div className="communityFloatEyebrow">COMMUNITY</div>
+          <h3 className="communityFloatTitle">커뮤니티 피드</h3>
+        </div>
+        <span className="communityFloatLive">LIVE</span>
       </div>
 
-      <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-        {posts.map((p) => (
-          <div
-            key={p.id}
-            style={{
-              padding: 12,
-              borderRadius: 12,
-              background: "rgba(255,255,255,0.02)",
-              border: "1px solid rgba(255,255,255,0.06)",
-            }}
-          >
-            <div
-              className="muted"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: 12,
-                marginBottom: 8,
-              }}
-            >
-              <span>{p.author}</span>
-              <span>{p.time}</span>
+      <div className="communityFloatList">
+        {posts.map((post, index) => (
+          <button key={index} type="button" className="communityFloatItem">
+            <div className="communityFloatItemTop">
+              <span className="communityFloatTag">{post.category}</span>
             </div>
-
-            <div style={{ fontWeight: 800, lineHeight: 1.4 }}>{p.title}</div>
-
-            <div
-              className="muted"
-              style={{
-                display: "flex",
-                gap: 14,
-                marginTop: 10,
-                fontSize: 12,
-              }}
-            >
-              <span>좋아요 {p.likes}</span>
-              <span>댓글 {p.comments}</span>
-            </div>
-          </div>
+            <div className="communityFloatItemTitle">{post.title}</div>
+            <div className="communityFloatItemMeta">{post.meta}</div>
+          </button>
         ))}
       </div>
-    </div>
+    </section>
   );
 }
