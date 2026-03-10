@@ -25,7 +25,7 @@
 /* 오른쪽 여백에 떠 있는 별도 패널 */
 .homeRightFloat {
   position: fixed;
-  top: 112px;
+  top: 128px;
   left: calc(50% + 640px);
   width: 290px;
   z-index: 20;
