@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import RankingTable from "../components/RankingTable";
 import NewsList from "../components/NewsList";
 import CommunityFeed from "../components/CommunityFeed";
+import FxRates from "../components/FxRates";
 
 export default function Home() {
   const { prices, changes, loading, error } = useTicker();
@@ -18,7 +19,13 @@ export default function Home() {
       />
       <Header />
 
-      <main style={{ paddingTop: 16 }}>
+      <main>
+        <section style={{ padding: "14px 0 10px" }}>
+          <div className="container">
+            <FxRates />
+          </div>
+        </section>
+
         <section style={{ padding: "0 0 12px" }}>
           <div
             className="container"
