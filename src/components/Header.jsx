@@ -4,11 +4,25 @@ import { SEARCH_ASSETS } from "../data/searchAssets";
 import "../styles/Header.css";
 
 function normalize(text = "") {
-  return String(text).trim().toLowerCase();
+  return String(text)
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "")
+    .replace(/[()\-_.]/g, "");
+}
+
+function splitTokens(text = "") {
+  return String(text)
+    .toLowerCase()
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
 }
 
 function scoreAsset(asset, keyword) {
+  const raw = String(keyword || "").trim().toLowerCase();
   const q = normalize(keyword);
+
   if (!q) return 0;
 
   const symbol = normalize(asset.symbol);
@@ -18,22 +32,43 @@ function scoreAsset(asset, keyword) {
 
   let score = 0;
 
-  if (symbol === q) score += 100;
-  if (name === q) score += 95;
-  if (en === q) score += 90;
-  if (aliases.includes(q)) score += 85;
+  if (symbol === q) score += 120;
+  if (name === q) score += 115;
+  if (en === q) score += 110;
+  if (aliases.includes(q)) score += 105;
 
-  if (symbol.startsWith(q)) score += 40;
-  if (name.startsWith(q)) score += 35;
-  if (en.startsWith(q)) score += 30;
+  if (symbol.startsWith(q)) score += 70;
+  if (name.startsWith(q)) score += 66;
+  if (en.startsWith(q)) score += 60;
 
-  if (symbol.includes(q)) score += 20;
-  if (name.includes(q)) score += 18;
-  if (en.includes(q)) score += 16;
+  if (symbol.includes(q)) score += 38;
+  if (name.includes(q)) score += 34;
+  if (en.includes(q)) score += 30;
 
   aliases.forEach((alias) => {
-    if (alias.includes(q)) score += 12;
+    if (alias.startsWith(q)) score += 28;
+    else if (alias.includes(q)) score += 18;
   });
+
+  const tokenMatches = [
+    asset.symbol,
+    asset.name,
+    asset.displayNameEN,
+    ...(asset.aliases || []),
+  ]
+    .filter(Boolean)
+    .flatMap((value) => splitTokens(value));
+
+  tokenMatches.forEach((token) => {
+    const n = normalize(token);
+    if (!n) return;
+    if (n === q) score += 44;
+    else if (n.startsWith(q)) score += 24;
+    else if (n.includes(q)) score += 14;
+  });
+
+  if (raw && String(asset.name || "").toLowerCase().includes(raw)) score += 18;
+  if (raw && String(asset.displayNameEN || "").toLowerCase().includes(raw)) score += 14;
 
   return score;
 }
@@ -57,12 +92,24 @@ export default function Header() {
     const q = normalize(query);
     if (!q) return [];
 
-    return [...SEARCH_ASSETS]
-      .map((asset) => ({
-        ...asset,
-        _score: scoreAsset(asset, q),
-      }))
-      .filter((asset) => asset._score > 0)
+    const deduped = new Map();
+
+    SEARCH_ASSETS.forEach((asset) => {
+      const score = scoreAsset(asset, query);
+      if (score <= 0) return;
+
+      const key = `${asset.market}-${asset.symbol}`;
+      const prev = deduped.get(key);
+
+      if (!prev || score > prev._score) {
+        deduped.set(key, {
+          ...asset,
+          _score: score,
+        });
+      }
+    });
+
+    return [...deduped.values()]
       .sort((a, b) => b._score - a._score)
       .slice(0, 8);
   }, [query]);
@@ -149,6 +196,12 @@ export default function Header() {
           >
             뉴스
           </Link>
+          <Link
+            to="/mypage"
+            className={location.pathname === "/mypage" ? "active" : ""}
+          >
+            마이페이지
+          </Link>
         </nav>
 
         <div className="headerSearchWrap" ref={wrapRef}>
@@ -158,7 +211,7 @@ export default function Header() {
             <input
               type="text"
               value={query}
-              placeholder="종목 검색 (예: BTC, 비트코인, 삼성전자, AAPL)"
+              placeholder="종목 검색 (예: BTC, 솔라나, 한화, 삼성전자, AAPL)"
               onChange={(e) => {
                 setQuery(e.target.value);
                 setOpen(true);
@@ -215,6 +268,12 @@ export default function Header() {
               )}
             </div>
           )}
+        </div>
+
+        <div className="headerActions">
+          <button type="button" className="loginBtn">
+            로그인
+          </button>
         </div>
       </div>
     </header>

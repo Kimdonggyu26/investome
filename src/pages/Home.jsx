@@ -1,7 +1,6 @@
 import { useTicker } from "../hooks/useTicker";
 import TopTickerBar from "../components/TopTickerBar";
 import Header from "../components/Header";
-import Hero from "../components/Hero";
 import RankingTable from "../components/RankingTable";
 import NewsList from "../components/NewsList";
 import CommunityFeed from "../components/CommunityFeed";
@@ -19,9 +18,7 @@ export default function Home() {
       />
       <Header />
 
-      <main>
-        <Hero prices={prices} />
-
+      <main style={{ paddingTop: 16 }}>
         <section style={{ padding: "0 0 12px" }}>
           <div
             className="container"
