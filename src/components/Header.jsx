@@ -1,40 +1,220 @@
-import { Link } from "react-router-dom";
-import "./Header.css";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { SEARCH_ASSETS } from "../data/searchAssets";
+import "../styles/Header.css";
+
+function normalize(text = "") {
+  return String(text).trim().toLowerCase();
+}
+
+function scoreAsset(asset, keyword) {
+  const q = normalize(keyword);
+  if (!q) return 0;
+
+  const symbol = normalize(asset.symbol);
+  const name = normalize(asset.name);
+  const en = normalize(asset.displayNameEN);
+  const aliases = (asset.aliases || []).map(normalize);
+
+  let score = 0;
+
+  if (symbol === q) score += 100;
+  if (name === q) score += 95;
+  if (en === q) score += 90;
+  if (aliases.includes(q)) score += 85;
+
+  if (symbol.startsWith(q)) score += 40;
+  if (name.startsWith(q)) score += 35;
+  if (en.startsWith(q)) score += 30;
+
+  if (symbol.includes(q)) score += 20;
+  if (name.includes(q)) score += 18;
+  if (en.includes(q)) score += 16;
+
+  aliases.forEach((alias) => {
+    if (alias.includes(q)) score += 12;
+  });
+
+  return score;
+}
+
+function marketLabel(market) {
+  if (market === "CRYPTO") return "CRYPTO";
+  if (market === "KOSPI") return "KOSPI";
+  return "NASDAQ";
+}
 
 export default function Header() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const wrapRef = useRef(null);
+
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const [focusIndex, setFocusIndex] = useState(-1);
+
+  const results = useMemo(() => {
+    const q = normalize(query);
+    if (!q) return [];
+
+    return [...SEARCH_ASSETS]
+      .map((asset) => ({
+        ...asset,
+        _score: scoreAsset(asset, q),
+      }))
+      .filter((asset) => asset._score > 0)
+      .sort((a, b) => b._score - a._score)
+      .slice(0, 8);
+  }, [query]);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (!wrapRef.current?.contains(e.target)) {
+        setOpen(false);
+        setFocusIndex(-1);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    setOpen(false);
+    setFocusIndex(-1);
+  }, [location.pathname]);
+
+  function moveToAsset(asset) {
+    setQuery("");
+    setOpen(false);
+    setFocusIndex(-1);
+    navigate(`/asset/${asset.market}/${asset.symbol}`);
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    if (results.length > 0) {
+      const picked = results[focusIndex >= 0 ? focusIndex : 0];
+      moveToAsset(picked);
+    }
+  }
+
+  function handleKeyDown(e) {
+    if (!open && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
+      setOpen(true);
+      return;
+    }
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setFocusIndex((prev) => {
+        const next = prev + 1;
+        return next >= results.length ? 0 : next;
+      });
+    }
+
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setFocusIndex((prev) => {
+        const next = prev - 1;
+        return next < 0 ? results.length - 1 : next;
+      });
+    }
+
+    if (e.key === "Escape") {
+      setOpen(false);
+      setFocusIndex(-1);
+    }
+  }
+
   return (
-    <header className="headerWrap">
-      <div className="container header">
-        <Link to="/" className="brand brandLink">
-          <div className="brandMark" aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M5 15.5L10.2 10.3L13.2 13.3L19 7.5"
-                stroke="rgba(80,255,170,0.95)"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M4 4.8C4 4.36 4.36 4 4.8 4H19.2C19.64 4 20 4.36 20 4.8V19.2C20 19.64 19.64 20 19.2 20H4.8C4.36 20 4 19.64 4 19.2V4.8Z"
-                stroke="rgba(14,165,255,0.55)"
-                strokeWidth="1.4"
-              />
-            </svg>
+    <header className="header">
+      <div className="container headerInner">
+        <Link to="/" className="brand">
+          <div className="brandLogo">📈</div>
+          <div className="brandText">
+            <div className="brandTitle">Investome</div>
+            <div className="brandSub">Market Intelligence</div>
           </div>
-          <span className="brandName">Investome</span>
         </Link>
 
         <nav className="nav">
-          <a className="navItem" href="/#ranking">랭킹</a>
-          <a className="navItem" href="/#charts">차트</a>
-          <Link className="navItem" to="/news">뉴스</Link>
-          <a className="navItem" href="/#community">커뮤니티</a>
+          <Link to="/" className={location.pathname === "/" ? "active" : ""}>
+            홈
+          </Link>
+          <Link
+            to="/news"
+            className={location.pathname === "/news" ? "active" : ""}
+          >
+            뉴스
+          </Link>
         </nav>
 
-        <div className="headerRight">
-          <button className="btn">검색</button>
-          <button className="btn primary">로그인</button>
+        <div className="headerSearchWrap" ref={wrapRef}>
+          <form className="headerSearch" onSubmit={handleSubmit}>
+            <span className="headerSearchIcon">⌕</span>
+
+            <input
+              type="text"
+              value={query}
+              placeholder="종목 검색 (예: BTC, 비트코인, 삼성전자, AAPL)"
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setOpen(true);
+                setFocusIndex(-1);
+              }}
+              onFocus={() => {
+                if (results.length > 0 || query.trim()) setOpen(true);
+              }}
+              onKeyDown={handleKeyDown}
+            />
+
+            {query && (
+              <button
+                type="button"
+                className="headerSearchClear"
+                onClick={() => {
+                  setQuery("");
+                  setOpen(false);
+                  setFocusIndex(-1);
+                }}
+                aria-label="검색어 지우기"
+              >
+                ×
+              </button>
+            )}
+          </form>
+
+          {open && query.trim() && (
+            <div className="searchDropdown">
+              {results.length === 0 ? (
+                <div className="searchEmpty">검색 결과가 없어요.</div>
+              ) : (
+                results.map((asset, index) => (
+                  <button
+                    key={`${asset.market}-${asset.symbol}`}
+                    type="button"
+                    className={`searchItem ${focusIndex === index ? "active" : ""}`}
+                    onMouseEnter={() => setFocusIndex(index)}
+                    onClick={() => moveToAsset(asset)}
+                  >
+                    <div className="searchItemMain">
+                      <div className="searchItemName">{asset.name}</div>
+                      <div className="searchItemMeta">
+                        {asset.symbol}
+                        {asset.displayNameEN ? ` · ${asset.displayNameEN}` : ""}
+                      </div>
+                    </div>
+
+                    <div className={`searchItemBadge ${asset.market.toLowerCase()}`}>
+                      {marketLabel(asset.market)}
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
         </div>
       </div>
     </header>
