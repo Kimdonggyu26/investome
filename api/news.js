@@ -125,6 +125,21 @@ function absoluteUrl(url) {
   return url;
 }
 
+function isBadThumbnail(url = "") {
+  const u = String(url).toLowerCase();
+
+  return (
+    !u ||
+    u.includes("gstatic.com") ||
+    u.includes("google.com") ||
+    u.includes("googleusercontent.com") ||
+    u.includes("news.google.com") ||
+    u.includes("/favicon") ||
+    u.includes("logo") ||
+    u.includes("default")
+  );
+}
+
 function pickMetaContent(html, property) {
   const regex = new RegExp(
     `<meta[^>]+(?:property|name)=["']${property}["'][^>]+content=["']([^"']+)["'][^>]*>`,
@@ -135,10 +150,12 @@ function pickMetaContent(html, property) {
 }
 
 async function enrichThumbnail(item) {
-  if (item.thumbnail) {
+  const currentThumb = absoluteUrl(item.thumbnail || "");
+
+  if (currentThumb && !isBadThumbnail(currentThumb)) {
     return {
       ...item,
-      thumbnail: absoluteUrl(item.thumbnail),
+      thumbnail: currentThumb,
     };
   }
 
@@ -149,12 +166,17 @@ async function enrichThumbnail(item) {
       pickMetaContent(html, "twitter:image") ||
       extractImageFromHtml(html);
 
+    const nextThumb = absoluteUrl(ogImage);
+
     return {
       ...item,
-      thumbnail: absoluteUrl(ogImage),
+      thumbnail: isBadThumbnail(nextThumb) ? "" : nextThumb,
     };
   } catch {
-    return item;
+    return {
+      ...item,
+      thumbnail: "",
+    };
   }
 }
 
