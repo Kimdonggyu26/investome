@@ -214,6 +214,7 @@ export default function RankingTable() {
             <tr>
               <th style={{ width: 76 }}>순위</th>
               <th>종목</th>
+              <th style={{ width: 170 }}></th>
               <th style={{ width: 170 }}>현재가</th>
               <th style={{ width: 120 }}>등락률</th>
             </tr>
