@@ -57,22 +57,6 @@ function popularScore(item) {
   return s;
 }
 
-function Thumb({ src, alt, featured = false }) {
-  if (!src) {
-    return (
-      <div className={`newsThumbFallback ${featured ? "featured" : ""}`}>
-        <span>NEWS</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`newsThumb ${featured ? "featured" : ""}`}>
-      <img src={src} alt={alt} loading="lazy" />
-    </div>
-  );
-}
-
 export default function NewsList({
   title = "글로벌 경제 주요 소식",
   limit = 12,
@@ -170,8 +154,6 @@ export default function NewsList({
           className="newsFeatured"
           title="클릭해서 기사로 이동"
         >
-          <Thumb src={featured.thumbnail} alt={featured.title} featured />
-
           <div className="newsFeaturedBody">
             <div className="newsFeaturedBadge">FEATURED</div>
             <div className="newsFeaturedTitle">{featured.title}</div>
@@ -194,8 +176,6 @@ export default function NewsList({
             className="newsItem"
             title="클릭해서 기사로 이동"
           >
-            <Thumb src={n.thumbnail} alt={n.title} />
-
             <div className="newsMain">
               <span className="newsTitle">{n.title}</span>
               <div className="newsMeta">
