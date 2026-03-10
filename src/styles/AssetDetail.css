@@ -787,3 +787,31 @@
     grid-template-columns: 1fr;
   }
 }
+
+.assetActionRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.watchBtn.active {
+  background: linear-gradient(135deg, rgba(255,198,77,0.18), rgba(14,165,255,0.12));
+  border-color: rgba(255,198,77,0.35);
+  box-shadow: 0 0 22px rgba(255,198,77,0.10);
+}
+
+.watchBtn.active:hover {
+  border-color: rgba(255,198,77,0.48);
+}
+
+@media (max-width: 640px) {
+  .assetActionRow {
+    width: 100%;
+  }
+
+  .assetActionRow .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

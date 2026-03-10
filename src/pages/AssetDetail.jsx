@@ -13,6 +13,7 @@ import TradingViewChart from "../components/TradingViewChart";
 import AssetNewsList from "../components/AssetNewsList";
 import AssetCommunity from "../components/AssetCommunity";
 import "../styles/AssetDetail.css";
+import { useWatchlist } from "../hooks/useWatchlist";
 
 function formatKRW(n) {
   if (typeof n !== "number" || !isFinite(n)) return "-";
@@ -131,6 +132,7 @@ export default function AssetDetail() {
 
   const [asset, setAsset] = useState(getFallbackAsset(market, symbol));
   const [assetLoading, setAssetLoading] = useState(true);
+  const { isWatched, toggleWatchlist } = useWatchlist();
 
   useEffect(() => {
     let alive = true;
@@ -213,6 +215,7 @@ export default function AssetDetail() {
 
   const changeAmount = calcChangeAmount(asset.priceKRW, asset.changePct);
   const { high, low } = calcRange(asset.priceKRW, asset.changePct);
+  const watched = isWatched(market, symbol);
 
   return (
     <>
@@ -242,9 +245,27 @@ export default function AssetDetail() {
                 </div>
               </div>
 
-              <Link className="btn" to="/">
-                ← 홈으로
-              </Link>
+              <div className="assetActionRow">
+                <button
+                  type="button"
+                  className={`btn watchBtn ${watched ? "active" : ""}`}
+                  onClick={() =>
+                    toggleWatchlist({
+                      market,
+                      symbol,
+                      name: asset.name,
+                      displayNameEN: asset.displayNameEN,
+                      iconUrl: asset.iconUrl,
+                    })
+                  }
+                >
+                  {watched ? "★ 관심종목 제거" : "☆ 관심종목 추가"}
+                </button>
+
+                <Link className="btn" to="/">
+                  ← 홈으로
+                </Link>
+              </div>
             </div>
 
             <div className="assetStatRow">

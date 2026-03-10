@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./RankingTable.css";
 import {
@@ -9,15 +9,6 @@ import {
 } from "../api/rankingApi";
 
 const MARKETS = ["KOSPI", "NASDAQ", "CRYPTO"];
-
-function formatCapKRW(n) {
-  if (typeof n !== "number" || !isFinite(n)) return "-";
-  const JO = 1_000_000_000_000;
-  const EOK = 100_000_000;
-  if (n >= JO) return `${Math.floor(n / JO).toLocaleString("ko-KR")}조`;
-  if (n >= EOK) return `${Math.floor(n / EOK).toLocaleString("ko-KR")}억`;
-  return "-";
-}
 
 function formatKRW(n) {
   if (typeof n !== "number" || !isFinite(n)) return "-";
@@ -48,6 +39,69 @@ function Avatar({ iconUrl, name }) {
 
   const initial = (name || "?").trim().slice(0, 1);
   return <div className="avatar avatarFallback">{initial}</div>;
+}
+
+function makeSparkPoints(symbol, pct) {
+  const base = String(symbol || "")
+    .split("")
+    .reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+
+  const points = [];
+  let value = 48 + ((base % 9) - 4);
+
+  for (let i = 0; i < 18; i += 1) {
+    const wave = Math.sin((base + i * 17) / 11) * 7;
+    const drift =
+      typeof pct === "number"
+        ? ((pct > 0 ? 1 : pct < 0 ? -1 : 0) * i * 0.8)
+        : Math.cos((base + i) / 9) * 0.6;
+
+    value = Math.max(12, Math.min(88, value + wave * 0.22 + drift * 0.24));
+    points.push(value);
+  }
+
+  return points;
+}
+
+function Sparkline({ symbol, pct }) {
+  const points = useMemo(() => makeSparkPoints(symbol, pct), [symbol, pct]);
+
+  const path = points
+    .map((y, i) => {
+      const x = (i / (points.length - 1)) * 100;
+      return `${x},${100 - y}`;
+    })
+    .join(" ");
+
+  const lineClass =
+    typeof pct === "number" && pct < 0
+      ? "sparkLine down"
+      : typeof pct === "number" && pct > 0
+        ? "sparkLine up"
+        : "sparkLine flat";
+
+  return (
+    <div className="sparkWrap" aria-hidden="true">
+      <svg viewBox="0 0 100 100" className="sparkSvg" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id={`spark-fill-${symbol}`} x1="0" x2="0" y1="0" y2="1">
+            <stop
+              offset="0%"
+              stopColor={pct < 0 ? "rgba(255,120,170,0.22)" : "rgba(80,255,170,0.22)"}
+            />
+            <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+          </linearGradient>
+        </defs>
+
+        <polyline
+          points={`0,100 ${path} 100,100`}
+          className="sparkArea"
+          fill={`url(#spark-fill-${symbol})`}
+        />
+        <polyline points={path} className={lineClass} />
+      </svg>
+    </div>
+  );
 }
 
 export default function RankingTable() {
@@ -132,7 +186,7 @@ export default function RankingTable() {
   return (
     <div className="rankingCard" id="ranking">
       <div className="rankingHeader">
-        <h3>시가총액 TOP30</h3>
+        <h3>TOP30 랭킹</h3>
 
         <div className="marketTabs">
           {MARKETS.map((m) => (
@@ -160,7 +214,7 @@ export default function RankingTable() {
             <tr>
               <th style={{ width: 76 }}>순위</th>
               <th>종목</th>
-              <th style={{ width: 170 }}>시가총액</th>
+              <th style={{ width: 170 }}>미니차트</th>
               <th style={{ width: 170 }}>현재가</th>
               <th style={{ width: 120 }}>등락률</th>
             </tr>
@@ -206,7 +260,9 @@ export default function RankingTable() {
                     </div>
                   </td>
 
-                  <td>{formatCapKRW(r.capKRW)}</td>
+                  <td>
+                    <Sparkline symbol={r.symbol} pct={r.changePct} />
+                  </td>
 
                   <td
                     className={valueClass}
@@ -234,6 +290,10 @@ export default function RankingTable() {
             })}
           </tbody>
         </table>
+      </div>
+
+      <div className="rankingHint">
+        미니차트는 현재 등락률 기반의 경향선이야. 실시간 틱 차트는 다음 단계에서 붙일 수 있어.
       </div>
     </div>
   );

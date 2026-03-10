@@ -1,5 +1,6 @@
 import MyPortfolio from "./MyPortfolio";
 import FxRates from "./FxRates";
+import WatchlistPanel from "./WatchlistPanel";
 
 export default function Hero({ prices }) {
   return (
@@ -13,7 +14,11 @@ export default function Hero({ prices }) {
             alignItems: "start",
           }}
         >
-          <MyPortfolio prices={prices} />
+          <div style={{ display: "grid", gap: 18 }}>
+            <WatchlistPanel />
+            <MyPortfolio prices={prices} />
+          </div>
+
           <FxRates />
         </div>
       </div>
