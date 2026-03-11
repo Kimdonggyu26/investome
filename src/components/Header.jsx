@@ -277,9 +277,9 @@ export default function Header() {
         </div>
 
         <div className="headerActions">
-          <button type="button" className="loginBtn">
+          <Link to="/login" className="loginBtn">
             로그인
-          </button>
+          </Link>
         </div>
       </div>
     </header>
