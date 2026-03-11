@@ -97,22 +97,26 @@ export default function AuthPage({ mode = "login" }) {
         <div className="authSingleWrap">
           <section className="authCard authCardSingle">
             <div className="authTopArea">
-              <div className="authTabRow">
-                <Link
-                  to="/login"
-                  className={`authTab ${isLogin ? "active" : ""}`}
-                >
-                  로그인
-                </Link>
-                <Link
-                  to="/signup"
-                  className={`authTab ${!isLogin ? "active" : ""}`}
-                >
-                  회원가입
-                </Link>
-              </div>
+                <div className="authTabRowWrap">
+                    <div className="authTabRow">
+                    <Link
+                        to="/login"
+                        className={`authTab ${isLogin ? "active" : ""}`}
+                    >
+                        로그인
+                    </Link>
+                    <Link
+                        to="/signup"
+                        className={`authTab ${!isLogin ? "active" : ""}`}
+                    >
+                        회원가입
+                    </Link>
+                    </div>
 
-              {!isLogin && <div className="authSpeechBubble">10초면 돼요</div>}
+                    <Link to="/signup" className="authSpeechBubble">
+                    10초면 충분해요!
+                    </Link>
+                </div>
             </div>
 
             <div className="authCardHeader">

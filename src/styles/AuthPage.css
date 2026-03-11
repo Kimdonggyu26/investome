@@ -27,8 +27,7 @@
 .authTopArea {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: flex-start;
 }
 
 .authTabRow {
@@ -239,22 +238,19 @@
     border-radius: 20px;
   }
 
-  .authTopArea {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
   .authSpeechBubble {
-    margin-top: 2px;
+    top: -14px;
+    right: -72px;
+    height: 34px;
+    padding: 0 12px;
+    font-size: 11px;
   }
 
   .authSpeechBubble::after {
-    left: 16px;
-    top: -5px;
-    border-left: 1px solid rgba(255,255,255,0.10);
-    border-bottom: none;
-    border-top: 1px solid rgba(255,255,255,0.10);
-    transform: rotate(45deg);
+    left: 14px;
+    bottom: -5px;
+    width: 9px;
+    height: 9px;
   }
 
   .authTitle {
@@ -264,4 +260,54 @@
   .authTab {
     min-width: 92px;
   }
+}
+
+.authTabRowWrap {
+  position: relative;
+  display: inline-block;
+}
+
+.authSpeechBubble {
+  position: absolute;
+  top: -16px;
+  right: -118px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.96);
+  color: #111827;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.22),
+    0 2px 8px rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.92);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.authSpeechBubble:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 28px rgba(0,0,0,0.26),
+    0 2px 10px rgba(255,255,255,0.14);
+}
+
+.authSpeechBubble::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  bottom: -6px;
+  width: 10px;
+  height: 10px;
+  background: rgba(255,255,255,0.96);
+  border-right: 1px solid rgba(255,255,255,0.92);
+  border-bottom: 1px solid rgba(255,255,255,0.92);
+  transform: rotate(45deg);
 }
