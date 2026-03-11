@@ -147,9 +147,16 @@ export default function FxRates() {
               </div>
 
               <div className="fxRight" style={{ color: col }}>
-                {typeof diff === "number" && typeof pct === "number"
-                  ? `${arrow} ${formatDiff(diff)} (${formatPct(pct)})`
-                  : "-"}
+                {typeof diff === "number" && typeof pct === "number" ? (
+                  <>
+                    <div className="fxPct">{formatPct(pct)}</div>
+                    <div className="fxDiff">
+                      {arrow} {formatDiff(diff)}
+                    </div>
+                  </>
+                ) : (
+                  "-"
+                )}
               </div>
             </div>
           );
