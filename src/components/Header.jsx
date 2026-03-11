@@ -87,6 +87,33 @@ export default function Header() {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [focusIndex, setFocusIndex] = useState(-1);
+  const [authUser, setAuthUser] = useState(null);
+
+  useEffect(() => {
+    const syncAuth = () => {
+      const loggedIn = localStorage.getItem("investome_logged_in") === "true";
+      const userRaw = localStorage.getItem("investome_user");
+
+      if (loggedIn && userRaw) {
+        try {
+          setAuthUser(JSON.parse(userRaw));
+        } catch {
+          setAuthUser(null);
+        }
+      } else {
+        setAuthUser(null);
+      }
+    };
+
+    syncAuth();
+    window.addEventListener("investome-auth-changed", syncAuth);
+    window.addEventListener("storage", syncAuth);
+
+    return () => {
+      window.removeEventListener("investome-auth-changed", syncAuth);
+      window.removeEventListener("storage", syncAuth);
+    };
+  }, []);
 
   const results = useMemo(() => {
     const q = normalize(query);
@@ -173,6 +200,15 @@ export default function Header() {
       setOpen(false);
       setFocusIndex(-1);
     }
+  }
+
+  function handleLogout() {
+    localStorage.removeItem("investome_logged_in");
+    localStorage.removeItem("investome_user");
+    localStorage.removeItem("investome_keep_login");
+    setAuthUser(null);
+    window.dispatchEvent(new Event("investome-auth-changed"));
+    navigate("/");
   }
 
   return (
@@ -277,9 +313,26 @@ export default function Header() {
         </div>
 
         <div className="headerActions">
-          <Link to="/login" className="loginBtn">
-            로그인
-          </Link>
+          {authUser ? (
+            <div className="authUserBox">
+              <div className="authUserInfo">
+                <span className="authUserBadge">MY</span>
+                <span className="authUserName">{authUser.nickname || "사용자"}</span>
+              </div>
+
+              <Link to="/mypage" className="headerGhostBtn">
+                마이페이지
+              </Link>
+
+              <button type="button" className="headerGhostBtn" onClick={handleLogout}>
+                로그아웃
+              </button>
+            </div>
+          ) : (
+            <Link to="/login" className="loginBtn">
+              로그인
+            </Link>
+          )}
         </div>
       </div>
     </header>
