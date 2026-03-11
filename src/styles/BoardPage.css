@@ -1,6 +1,5 @@
 .boardPage{
-  padding: 20px 0 44px;
-  background: var(--bg);
+  padding: 18px 0 40px;
 }
 
 .boardHero{
@@ -8,52 +7,43 @@
   justify-content:space-between;
   align-items:flex-end;
   gap: 18px;
-  padding: 28px 24px;
-  border-radius: 22px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background:
-    radial-gradient(circle at top right, rgba(14,165,255,0.10), transparent 26%),
-    radial-gradient(circle at left center, rgba(124,77,255,0.08), transparent 30%),
-    rgba(255,255,255,0.03);
-  box-shadow: 0 18px 50px rgba(0,0,0,0.25);
-  margin-bottom: 18px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .boardEyebrow{
   font-size: 11px;
   font-weight: 900;
-  letter-spacing: 1px;
-  color: rgba(255,255,255,0.52);
-  margin-bottom: 10px;
+  letter-spacing: 1.2px;
+  color: rgba(255,255,255,0.46);
+  margin-bottom: 8px;
 }
 
 .boardTitle{
   margin: 0;
-  font-size: 38px;
+  font-size: 34px;
   line-height: 1.1;
-  letter-spacing: -1px;
+  font-weight: 900;
 }
 
 .boardDesc{
-  margin: 14px 0 0;
-  color: rgba(255,255,255,0.64);
-  font-size: 15px;
+  margin: 10px 0 0;
+  color: rgba(255,255,255,0.62);
+  font-size: 14px;
   line-height: 1.7;
-  max-width: 760px;
 }
 
 .boardWriteBtn{
-  height: 46px;
+  height: 44px;
   padding: 0 18px;
-  border-radius: 14px;
-  border: none;
-  background: linear-gradient(135deg, #0ea5ff, #5b7cff);
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: linear-gradient(135deg, rgba(14,165,255,0.20), rgba(124,77,255,0.16));
   color: rgba(255,255,255,0.96);
   font-size: 14px;
   font-weight: 900;
   cursor: pointer;
   box-shadow: 0 12px 28px rgba(0,0,0,0.18);
-  flex-shrink: 0;
 }
 
 .boardToolbar{
@@ -97,15 +87,19 @@
   flex-wrap: wrap;
 }
 
+.boardSearch select,
 .boardSearch input{
   height: 40px;
-  width: 260px;
   border-radius: 12px;
   border: 1px solid rgba(255,255,255,0.10);
   background: rgba(255,255,255,0.03);
   color: rgba(255,255,255,0.88);
   padding: 0 12px;
   outline: none;
+}
+
+.boardSearch input{
+  width: 220px;
 }
 
 .boardSearch button{
@@ -150,8 +144,8 @@
 }
 
 .boardRow{
-  min-height: 74px;
-  padding: 12px 18px;
+  min-height: 62px;
+  padding: 0 18px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
   transition: background .18s ease;
 }
@@ -185,20 +179,6 @@
   cursor: pointer;
 }
 
-.boardNoticeBadge{
-  height: 22px;
-  padding: 0 8px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  font-size: 11px;
-  font-weight: 900;
-  color: #dff6ff;
-  background: rgba(14,165,255,0.16);
-  border: 1px solid rgba(14,165,255,0.22);
-  flex-shrink: 0;
-}
-
 .boardSubjectText{
   font-size: 14px;
   font-weight: 800;
@@ -215,20 +195,38 @@
   flex-shrink: 0;
 }
 
-.boardExcerpt{
-  margin-top: 8px;
-  font-size: 12px;
-  color: rgba(255,255,255,0.50);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.boardEmpty{
+  padding: 28px 18px;
+  color: rgba(255,255,255,0.62);
+  text-align: center;
+  font-size: 14px;
 }
 
-.boardEmpty{
-  padding: 34px 20px;
-  text-align: center;
-  color: rgba(255,255,255,0.55);
-  font-size: 14px;
+.boardBottom{
+  display:flex;
+  justify-content:center;
+  margin-top: 18px;
+}
+
+.boardPager{
+  display:flex;
+  gap: 8px;
+}
+
+.boardPager button{
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.78);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.boardPager button.active{
+  color: white;
+  background: linear-gradient(135deg, rgba(14,165,255,0.22), rgba(124,77,255,0.16));
 }
 
 @media (max-width: 1024px){
@@ -239,11 +237,6 @@
 }
 
 @media (max-width: 768px){
-  .boardHero{
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
   .boardTableHead{
     display:none;
   }
@@ -255,15 +248,19 @@
     min-height: auto;
   }
 
+  .boardNo,
+  .boardAuthor,
+  .boardDate,
+  .boardViews,
+  .boardLikes{
+    font-size: 12px;
+  }
+
   .boardSubjectText{
     white-space: normal;
   }
 
-  .boardExcerpt{
-    white-space: normal;
-  }
-
   .boardSearch input{
-    width: 180px;
+    width: 160px;
   }
 }

@@ -1,9 +1,7 @@
 import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
-import WatchlistPanel from "../components/WatchlistPanel";
 import MyPortfolio from "../components/MyPortfolio";
 import { useTicker } from "../hooks/useTicker";
-import "../styles/MyPage.css";
 
 export default function MyPage() {
   const { prices, changes, loading, error } = useTicker();
@@ -18,12 +16,9 @@ export default function MyPage() {
       />
       <Header />
 
-      <main className="myPage">
-        <div className="container myPageContainer">
-          <section className="myDashboardGrid">
-            <WatchlistPanel />
-            <MyPortfolio prices={prices} />
-          </section>
+      <main style={{ padding: "18px 0 40px", background: "var(--bg)" }}>
+        <div className="container">
+          <MyPortfolio prices={prices} />
         </div>
       </main>
     </>
