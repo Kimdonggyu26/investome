@@ -5,7 +5,6 @@
   border:1px solid rgba(255,255,255,0.08);
   box-shadow: 0 18px 60px rgba(0,0,0,0.35);
   position: relative;
-
   height: 100%;
   min-height: 614px;
   display: flex;
@@ -39,7 +38,7 @@
   color:#aaa;
   cursor:pointer;
   font-size:13px;
-  transition:all .2s ease;
+  transition:all .22s ease;
 }
 
 .marketTabs button:hover{
@@ -84,6 +83,16 @@
   border: 3px solid rgba(10,12,18,0.9);
   border-radius: 999px;
   box-shadow: 0 0 16px rgba(14,165,255,0.35);
+}
+
+.rankingDataLayer{
+  transition: opacity .26s ease, transform .26s ease, filter .26s ease;
+}
+
+.rankingDataLayer.isSwitching{
+  opacity: .74;
+  transform: scale(0.995);
+  filter: saturate(.9);
 }
 
 .rankingTable{
@@ -238,6 +247,100 @@
   margin-top: 12px;
   font-size: 12px;
   color: rgba(255,255,255,0.48);
+}
+
+.rankingLoadingOverlay{
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 14px;
+  background:
+    linear-gradient(180deg, rgba(11,15,23,0.04), rgba(11,15,23,0.12));
+  backdrop-filter: blur(6px);
+  animation: rankingOverlayFade .22s ease;
+}
+
+.rankingLoadingGlow{
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      100deg,
+      rgba(255,255,255,0) 18%,
+      rgba(255,255,255,0.05) 36%,
+      rgba(14,165,255,0.10) 50%,
+      rgba(255,255,255,0.04) 63%,
+      rgba(255,255,255,0) 82%
+    );
+  transform: translateX(-100%);
+  animation: rankingSweep 1.15s ease infinite;
+}
+
+.rankingLoadingLabel{
+  position: relative;
+  z-index: 2;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 900;
+  color: #dff6ff;
+  background: rgba(14,165,255,0.16);
+  border: 1px solid rgba(14,165,255,0.30);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.22);
+}
+
+.rankingSkeletonWrap{
+  padding: 14px 14px 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.rankingSkeletonRow{
+  display: grid;
+  grid-template-columns: 52px minmax(180px, 1fr) 150px 150px 100px;
+  gap: 12px;
+  align-items: center;
+}
+
+.rankingSkeleton{
+  height: 16px;
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,0.05),
+      rgba(255,255,255,0.12),
+      rgba(255,255,255,0.05)
+    );
+  background-size: 220% 100%;
+  animation: skeletonShimmer 1.15s linear infinite;
+}
+
+.rankingSkeleton.rank{ width: 34px; }
+.rankingSkeleton.name{ height: 20px; }
+.rankingSkeleton.chart{ height: 42px; border-radius: 12px; }
+.rankingSkeleton.price{ width: 120px; justify-self: end; }
+.rankingSkeleton.change{ width: 74px; justify-self: end; }
+
+@keyframes rankingOverlayFade{
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes rankingSweep{
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes skeletonShimmer{
+  0% { background-position: 200% 0; }
+  100% { background-position: -20% 0; }
 }
 
 @keyframes rowPulseUp{

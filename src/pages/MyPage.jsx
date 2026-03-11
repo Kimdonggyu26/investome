@@ -1,8 +1,8 @@
 import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
-import WatchlistPanel from "../components/WatchlistPanel";
 import MyPortfolio from "../components/MyPortfolio";
 import { useTicker } from "../hooks/useTicker";
+import "../styles/MyPage.css";
 
 export default function MyPage() {
   const { prices, changes, loading, error } = useTicker();
@@ -17,88 +17,36 @@ export default function MyPage() {
       />
       <Header />
 
-      <main style={{ padding: "18px 0 40px", background: "var(--bg)" }}>
-        <div className="container" style={{ display: "grid", gap: 18 }}>
-          <section
-            className="card"
-            style={{
-              position: "relative",
-              overflow: "hidden",
-              padding: "28px 24px",
-              border: "1px solid rgba(255,255,255,0.08)",
-              background: "rgba(255,255,255,0.03)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 18,
-                alignItems: "center",
-                flexWrap: "wrap",
-              }}
-            >
+      <main className="myPage">
+        <div className="container myPageContainer">
+          <section className="myHero card">
+            <div className="myHeroBadge">MY PAGE</div>
+
+            <div className="myHeroTop">
               <div>
-                <div
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 8,
-                    height: 30,
-                    padding: "0 12px",
-                    borderRadius: 999,
-                    fontSize: 12,
-                    fontWeight: 900,
-                    color: "#dff6ff",
-                    background: "rgba(14,165,255,0.16)",
-                    border: "1px solid rgba(14,165,255,0.28)",
-                    marginBottom: 14,
-                  }}
-                >
-                  MY PAGE
-                </div>
-
-                <h1
-                  style={{
-                    margin: 0,
-                    fontSize: 38,
-                    lineHeight: 1.15,
-                    letterSpacing: "-1px",
-                  }}
-                >
-                  내 관심종목과 포트폴리오
-                </h1>
-
-                <p
-                  style={{
-                    margin: "14px 0 0",
-                    color: "rgba(255,255,255,0.66)",
-                    fontSize: 15,
-                    lineHeight: 1.7,
-                    maxWidth: 760,
-                  }}
-                >
-                  관심종목과 포트폴리오를 한 페이지에서 확인할 수 있도록 기본 구조를 먼저 잡아뒀어요.
+                <h1 className="myHeroTitle">내 자산 흐름과 포트폴리오</h1>
+                <p className="myHeroDesc">
+                  지금은 기본 대시보드 형태로 구성했고, 다음 단계에서는 내가 보유한 종목을
+                  직접 추가해서 원형차트, 자산 흐름 그래프, 종목별 비중까지 한눈에 볼 수
+                  있도록 확장하면 돼.
                 </p>
+              </div>
+
+              <div className="myHeroSide">
+                <div className="myMiniMetric">
+                  <span className="label">상태</span>
+                  <strong>Portfolio Beta</strong>
+                </div>
+                <div className="myMiniMetric">
+                  <span className="label">기반</span>
+                  <strong>실시간 가격 + 로컬 보유수량</strong>
+                </div>
               </div>
             </div>
           </section>
 
-          <section>
-            <div
-              className="container"
-              style={{
-                width: "100%",
-                padding: 0,
-                display: "grid",
-                gridTemplateColumns: "1.1fr 1.2fr",
-                gap: 18,
-                alignItems: "start",
-              }}
-            >
-              <WatchlistPanel />
-              <MyPortfolio prices={prices} />
-            </div>
+          <section className="myDashboard">
+            <MyPortfolio prices={prices} />
           </section>
         </div>
       </main>

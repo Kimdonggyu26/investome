@@ -53,7 +53,7 @@ function makeSparkPoints(symbol, pct) {
     const wave = Math.sin((base + i * 17) / 11) * 7;
     const drift =
       typeof pct === "number"
-        ? ((pct > 0 ? 1 : pct < 0 ? -1 : 0) * i * 0.8)
+        ? (pct > 0 ? 1 : pct < 0 ? -1 : 0) * i * 0.8
         : Math.cos((base + i) / 9) * 0.6;
 
     value = Math.max(12, Math.min(88, value + wave * 0.22 + drift * 0.24));
@@ -104,6 +104,22 @@ function Sparkline({ symbol, pct }) {
   );
 }
 
+function TableSkeleton() {
+  return (
+    <div className="rankingSkeletonWrap">
+      {Array.from({ length: 8 }).map((_, idx) => (
+        <div className="rankingSkeletonRow" key={idx}>
+          <div className="rankingSkeleton rank" />
+          <div className="rankingSkeleton name" />
+          <div className="rankingSkeleton chart" />
+          <div className="rankingSkeleton price" />
+          <div className="rankingSkeleton change" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function RankingTable() {
   const navigate = useNavigate();
 
@@ -111,6 +127,8 @@ export default function RankingTable() {
   const [rows, setRows] = useState([]);
   const [err, setErr] = useState(null);
   const [flashMap, setFlashMap] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSwitching, setIsSwitching] = useState(false);
 
   const prevRowsRef = useRef([]);
   const flashTimerRef = useRef(null);
@@ -118,9 +136,17 @@ export default function RankingTable() {
   useEffect(() => {
     let alive = true;
 
-    async function fetchRows() {
+    async function fetchRows({ initial = false } = {}) {
+      const startAt = Date.now();
+
       try {
         setErr(null);
+
+        if (initial && prevRowsRef.current.length === 0) {
+          setIsLoading(true);
+        } else {
+          setIsSwitching(true);
+        }
 
         let nextRows = [];
 
@@ -132,6 +158,13 @@ export default function RankingTable() {
         } else {
           const realOrNull = await fetchNasdaqTop30KRW().catch(() => null);
           nextRows = realOrNull ?? getKoreanDummyTop30("NASDAQ");
+        }
+
+        const elapsed = Date.now() - startAt;
+        const minimumOverlay = 220;
+
+        if (elapsed < minimumOverlay) {
+          await new Promise((resolve) => setTimeout(resolve, minimumOverlay - elapsed));
         }
 
         if (!alive) return;
@@ -167,14 +200,19 @@ export default function RankingTable() {
             setFlashMap({});
           }, 1100);
         }
+
+        setIsLoading(false);
+        setIsSwitching(false);
       } catch (e) {
         if (!alive) return;
         setErr(e);
+        setIsLoading(false);
+        setIsSwitching(false);
       }
     }
 
-    fetchRows();
-    const t = setInterval(fetchRows, 20_000);
+    fetchRows({ initial: true });
+    const t = setInterval(() => fetchRows({ initial: false }), 20_000);
 
     return () => {
       alive = false;
@@ -209,91 +247,106 @@ export default function RankingTable() {
       )}
 
       <div className="rankingScroll luxuryScroll">
-        <table className="rankingTable">
-          <thead>
-            <tr>
-              <th style={{ width: 76 }}>순위</th>
-              <th>종목</th>
-              <th style={{ width: 170 }}></th>
-              <th style={{ width: 170 }}>현재가</th>
-              <th style={{ width: 120 }}>등락률</th>
-            </tr>
-          </thead>
+        {isLoading && rows.length === 0 ? (
+          <TableSkeleton />
+        ) : (
+          <>
+            <div className={`rankingDataLayer ${isSwitching ? "isSwitching" : ""}`}>
+              <table className="rankingTable">
+                <thead>
+                  <tr>
+                    <th style={{ width: 76 }}>순위</th>
+                    <th>종목</th>
+                    <th style={{ width: 170 }}></th>
+                    <th style={{ width: 170 }}>현재가</th>
+                    <th style={{ width: 120 }}>등락률</th>
+                  </tr>
+                </thead>
 
-          <tbody>
-            {rows.map((r) => {
-              const flash = flashMap[r.symbol];
-              const rowFlashClass =
-                flash === "up"
-                  ? "rowFlashUp"
-                  : flash === "down"
-                    ? "rowFlashDown"
-                    : "";
+                <tbody>
+                  {rows.map((r) => {
+                    const flash = flashMap[r.symbol];
+                    const rowFlashClass =
+                      flash === "up"
+                        ? "rowFlashUp"
+                        : flash === "down"
+                          ? "rowFlashDown"
+                          : "";
 
-              const valueClass =
-                flash === "up"
-                  ? "valueUpdate valueGlowUp"
-                  : flash === "down"
-                    ? "valueUpdate valueGlowDown"
-                    : "";
+                    const valueClass =
+                      flash === "up"
+                        ? "valueUpdate valueGlowUp"
+                        : flash === "down"
+                          ? "valueUpdate valueGlowDown"
+                          : "";
 
-              return (
-                <tr
-                  key={`${market}-${r.rank}-${r.symbol}`}
-                  className={rowFlashClass}
-                  onClick={() => navigate(`/asset/${market}/${r.symbol}`)}
-                  title="클릭해서 상세보기"
-                >
-                  <td className="rankCell">{r.rank}</td>
+                    return (
+                      <tr
+                        key={`${market}-${r.rank}-${r.symbol}`}
+                        className={rowFlashClass}
+                        onClick={() => navigate(`/asset/${market}/${r.symbol}`)}
+                        title="클릭해서 상세보기"
+                      >
+                        <td className="rankCell">{r.rank}</td>
 
-                  <td>
-                    <div className="nameCell">
-                      <Avatar iconUrl={r.iconUrl} name={r.name} />
-                      <div className="nameText">
-                        <div className="nameMain">{r.name}</div>
-                        <div className="muted nameSub">
-                          {r.displayNameEN && r.displayNameEN !== r.name
-                            ? `${r.symbol} · ${r.displayNameEN}`
-                            : r.symbol}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
+                        <td>
+                          <div className="nameCell">
+                            <Avatar iconUrl={r.iconUrl} name={r.name} />
+                            <div className="nameText">
+                              <div className="nameMain">{r.name}</div>
+                              <div className="muted nameSub">
+                                {r.displayNameEN && r.displayNameEN !== r.name
+                                  ? `${r.symbol} · ${r.displayNameEN}`
+                                  : r.symbol}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
 
-                  <td>
-                    <Sparkline symbol={r.symbol} pct={r.changePct} />
-                  </td>
+                        <td>
+                          <Sparkline symbol={r.symbol} pct={r.changePct} />
+                        </td>
 
-                  <td
-                    className={valueClass}
-                    style={{
-                      color: colorByChange(r.changePct),
-                      fontWeight: 900,
-                    }}
-                  >
-                    {formatKRW(r.priceKRW)}
-                  </td>
+                        <td
+                          className={valueClass}
+                          style={{
+                            color: colorByChange(r.changePct),
+                            fontWeight: 900,
+                          }}
+                        >
+                          {formatKRW(r.priceKRW)}
+                        </td>
 
-                  <td
-                    className={valueClass}
-                    style={{
-                      color: colorByChange(r.changePct),
-                      fontWeight: 900,
-                    }}
-                  >
-                    {typeof r.changePct === "number"
-                      ? `${r.changePct > 0 ? "+" : ""}${r.changePct.toFixed(2)}%`
-                      : "-"}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                        <td
+                          className={valueClass}
+                          style={{
+                            color: colorByChange(r.changePct),
+                            fontWeight: 900,
+                          }}
+                        >
+                          {typeof r.changePct === "number"
+                            ? `${r.changePct > 0 ? "+" : ""}${r.changePct.toFixed(2)}%`
+                            : "-"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {isSwitching && (
+              <div className="rankingLoadingOverlay" aria-hidden="true">
+                <div className="rankingLoadingGlow" />
+                <div className="rankingLoadingLabel">시장 데이터 전환 중</div>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       <div className="rankingHint">
-        미니차트는 현재 등락률 기반의 경향선이야. 실시간 틱 차트는 다음 단계에서 붙일 수 있어.
+        미니차트는 등락 방향을 빠르게 보여주는 보조 지표예요.
       </div>
     </div>
   );

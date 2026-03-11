@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { useTicker } from "../hooks/useTicker";
 import TopTickerBar from "../components/TopTickerBar";
 import Header from "../components/Header";
@@ -31,21 +30,7 @@ export default function Home() {
           </section>
 
           <section className="homeNewsSection">
-            <div className="homeNewsSectionHeader">
-              <div>
-                <div className="homeNewsEyebrow">REALTIME NEWS</div>
-                <h2 className="homeNewsTitle">글로벌 경제 주요 소식</h2>
-                <p className="homeNewsDesc">
-                  홈에서는 핵심 뉴스만 먼저 보여주고, 실시간 뉴스 페이지에서 더 많이 확인할 수 있어.
-                </p>
-              </div>
-
-              <Link to="/news" className="homeNewsMoreBtn">
-                실시간 뉴스 더보기
-              </Link>
-            </div>
-
-            <NewsList limit={6} />
+            <NewsList limit={6} moreLink="/news" />
           </section>
         </div>
 

@@ -1,0 +1,458 @@
+.myPage{
+  padding: 18px 0 40px;
+  background: var(--bg);
+}
+
+.myPageContainer{
+  display: grid;
+  gap: 18px;
+}
+
+.myHero{
+  position: relative;
+  overflow: hidden;
+  padding: 28px 24px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background:
+    radial-gradient(circle at top right, rgba(14,165,255,0.12), transparent 28%),
+    radial-gradient(circle at left center, rgba(124,77,255,0.10), transparent 32%),
+    rgba(255,255,255,0.03);
+}
+
+.myHeroBadge{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #dff6ff;
+  background: rgba(14,165,255,0.16);
+  border: 1px solid rgba(14,165,255,0.28);
+  margin-bottom: 14px;
+}
+
+.myHeroTop{
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.myHeroTitle{
+  margin: 0;
+  font-size: 38px;
+  line-height: 1.15;
+  letter-spacing: -1px;
+}
+
+.myHeroDesc{
+  margin: 14px 0 0;
+  color: rgba(255,255,255,0.66);
+  font-size: 15px;
+  line-height: 1.7;
+  max-width: 820px;
+}
+
+.myHeroSide{
+  display: grid;
+  gap: 10px;
+  min-width: 260px;
+}
+
+.myMiniMetric{
+  min-width: 220px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  box-shadow: 0 14px 32px rgba(0,0,0,0.18);
+}
+
+.myMiniMetric .label{
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .8px;
+  color: rgba(255,255,255,0.48);
+}
+
+.myMiniMetric strong{
+  font-size: 14px;
+  color: rgba(255,255,255,0.94);
+}
+
+.myDashboard{
+  display: grid;
+}
+
+.portfolioDashboard{
+  display: grid;
+  gap: 18px;
+}
+
+.portfolioTopGrid{
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, .9fr);
+  gap: 18px;
+}
+
+.portfolioBottomGrid{
+  display: grid;
+  grid-template-columns: minmax(0, .95fr) minmax(0, 1.25fr);
+  gap: 18px;
+}
+
+.portfolioHeroCard,
+.portfolioAllocationCard,
+.portfolioFlowCard,
+.portfolioHoldingsCard{
+  padding: 20px;
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.24);
+}
+
+.portfolioHeroHead,
+.portfolioCardHead{
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.portfolioEyebrow{
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.48);
+  margin-bottom: 8px;
+}
+
+.portfolioTitle{
+  margin: 0;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+}
+
+.portfolioTitleSm{
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.3px;
+}
+
+.portfolioLiveBadge,
+.portfolioGhostTag{
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.9);
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.05);
+}
+
+.portfolioLiveBadge{
+  color: #dff6ff;
+  border-color: rgba(14,165,255,0.28);
+  background: rgba(14,165,255,0.16);
+}
+
+.portfolioTotalValue{
+  margin-top: 22px;
+  font-size: 38px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.portfolioPnl{
+  margin-top: 10px;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.portfolioPnlRate{
+  font-weight: 700;
+  opacity: .92;
+}
+
+.portfolioStatsGrid{
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.portfolioStatCard{
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.portfolioStatCard .label,
+.portfolioFlowMeta .label{
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .8px;
+  color: rgba(255,255,255,0.48);
+}
+
+.portfolioStatCard strong,
+.portfolioFlowMeta strong{
+  font-size: 16px;
+  color: rgba(255,255,255,0.95);
+}
+
+.portfolioAllocationBody{
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+}
+
+.portfolioRing{
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  padding: 16px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.08),
+    0 24px 50px rgba(0,0,0,0.25);
+}
+
+.portfolioRingInner{
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #0f1420;
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+}
+
+.portfolioRingInner span{
+  font-size: 12px;
+  color: rgba(255,255,255,0.52);
+  margin-bottom: 8px;
+}
+
+.portfolioRingInner strong{
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.portfolioLegend{
+  display: grid;
+  gap: 12px;
+}
+
+.portfolioLegendItem{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.portfolioLegendDot{
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.portfolioLegendText{
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+  align-items: center;
+}
+
+.portfolioLegendText strong{
+  font-size: 14px;
+}
+
+.portfolioLegendText span{
+  font-size: 13px;
+  color: rgba(255,255,255,0.58);
+}
+
+.portfolioFlowBox{
+  margin-top: 18px;
+  height: 260px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  overflow: hidden;
+  position: relative;
+}
+
+.portfolioFlowSvg{
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.portfolioFlowArea{
+  opacity: .85;
+}
+
+.portfolioFlowLine{
+  filter: drop-shadow(0 0 12px rgba(54,213,255,0.25));
+}
+
+.portfolioFlowMeta{
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.portfolioFlowMeta > div{
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.portfolioHoldingList{
+  margin-top: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.portfolioHoldingItem{
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.portfolioHoldingTop{
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.portfolioHoldingIdentity{
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.portfolioCoinBadge{
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: white;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
+}
+
+.portfolioHoldingName{
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.portfolioHoldingSub{
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+}
+
+.portfolioHoldingValue{
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.portfolioHoldingMetaRow{
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: rgba(255,255,255,0.62);
+}
+
+.portfolioHoldingBar{
+  margin-top: 12px;
+  width: 100%;
+  height: 9px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.06);
+}
+
+.portfolioHoldingFill{
+  height: 100%;
+  border-radius: 999px;
+  box-shadow: 0 0 18px rgba(54,213,255,0.18);
+}
+
+.tone0{ background: linear-gradient(135deg, #36d5ff, #4c7dff); }
+.tone1{ background: linear-gradient(135deg, #65f3b1, #18c58f); }
+.tone2{ background: linear-gradient(135deg, #8f7bff, #5b7cff); }
+.tone3{ background: linear-gradient(135deg, #ff9bc2, #ff6e9e); }
+.tone4{ background: linear-gradient(135deg, #ffd36b, #ff9f43); }
+
+@media (max-width: 980px){
+  .portfolioTopGrid,
+  .portfolioBottomGrid{
+    grid-template-columns: 1fr;
+  }
+
+  .portfolioAllocationBody{
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .portfolioLegend{
+    width: 100%;
+  }
+}
+
+@media (max-width: 720px){
+  .myHeroTitle{
+    font-size: 30px;
+  }
+
+  .portfolioTotalValue{
+    font-size: 30px;
+  }
+
+  .portfolioStatsGrid,
+  .portfolioFlowMeta{
+    grid-template-columns: 1fr;
+  }
+}
