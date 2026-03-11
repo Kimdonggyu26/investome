@@ -113,9 +113,9 @@ export default function AuthPage({ mode = "login" }) {
                     </Link>
                     </div>
 
-                    <Link to="/signup" className="authSpeechBubble">
-                    10초면 충분해요!
-                    </Link>
+                    <div className="authSignupHint">
+                        10초면 돼요!
+                    </div>
                 </div>
             </div>
 
