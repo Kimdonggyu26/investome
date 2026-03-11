@@ -5,6 +5,11 @@
   border:1px solid rgba(255,255,255,0.08);
   box-shadow: 0 18px 60px rgba(0,0,0,0.35);
   position: relative;
+
+  height: 100%;
+  min-height: 614px;
+  display: flex;
+  flex-direction: column;
 }
 
 .rankingHeader{
@@ -51,8 +56,10 @@
 }
 
 .rankingScroll{
-  max-height:460px;
-  overflow:auto;
+  flex: 1;
+  min-height: 0;
+  max-height: 520px;
+  overflow: auto;
   border-radius:12px;
   border:1px solid rgba(255,255,255,0.08);
   background: rgba(255,255,255,0.02);
