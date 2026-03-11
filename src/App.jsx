@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import AssetDetail from "./pages/AssetDetail";
 import NewsPage from "./pages/NewsPage";
 import MyPage from "./pages/MyPage";
+import BoardPage from "./pages/BoardPage";
 
 export default function App() {
   return (
@@ -10,6 +11,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/news" element={<NewsPage />} />
       <Route path="/mypage" element={<MyPage />} />
+      <Route path="/board" element={<BoardPage />} />
       <Route path="/asset/:market/:symbol" element={<AssetDetail />} />
     </Routes>
   );

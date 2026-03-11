@@ -194,13 +194,19 @@ export default function Header() {
             to="/news"
             className={location.pathname === "/news" ? "active" : ""}
           >
-            뉴스
+            실시간 뉴스
           </Link>
           <Link
             to="/mypage"
             className={location.pathname === "/mypage" ? "active" : ""}
           >
             마이페이지
+          </Link>
+          <Link
+            to="/board"
+            className={location.pathname === "/board" ? "active" : ""}
+          >
+            게시판
           </Link>
         </nav>
 

@@ -42,7 +42,6 @@
   margin-top: 14px;
   display: grid;
   gap: 12px;
-
   flex: 1;
   align-content: start;
 }
@@ -94,12 +93,22 @@
 .fxMeta{
   display:flex;
   flex-direction:column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .fxValue{
   font-weight: 900;
-  font-size: 15px;
+  font-size: 31px;
+  line-height: 1;
+  letter-spacing: -0.6px;
+  color: rgba(255,255,255,0.98);
+  text-shadow: 0 0 14px rgba(255,255,255,0.06);
+}
+
+.fxValue .fxUnit{
+  margin-left: 2px;
+  font-size: 16px;
+  color: rgba(255,255,255,0.82);
 }
 
 .fxLabel{
@@ -110,6 +119,29 @@
 .fxRight{
   font-weight: 900;
   font-size: 13px;
-  min-width: 92px;
+  min-width: 110px;
   text-align:right;
+}
+
+.fxRight.up{
+  color: #5fffb2;
+}
+
+.fxRight.down{
+  color: #ff6b9a;
+}
+
+@media (max-width: 768px) {
+  .fxCard{
+    min-height: auto;
+  }
+
+  .fxValue{
+    font-size: 26px;
+  }
+
+  .fxRight{
+    min-width: 96px;
+    font-size: 12px;
+  }
 }

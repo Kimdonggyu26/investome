@@ -1,0 +1,259 @@
+.boardPage{
+  padding: 18px 0 40px;
+}
+
+.boardHero{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap: 18px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.boardEyebrow{
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+  color: rgba(255,255,255,0.46);
+  margin-bottom: 8px;
+}
+
+.boardTitle{
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.1;
+  font-weight: 900;
+}
+
+.boardDesc{
+  margin: 10px 0 0;
+  color: rgba(255,255,255,0.62);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.boardWriteBtn{
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: linear-gradient(135deg, rgba(14,165,255,0.20), rgba(124,77,255,0.16));
+  color: rgba(255,255,255,0.96);
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+}
+
+.boardToolbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap: 16px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.boardTabs{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.boardTabs button{
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.72);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.boardTabs button.active{
+  color: white;
+  background: linear-gradient(135deg, rgba(14,165,255,0.22), rgba(124,77,255,0.16));
+  border-color: rgba(255,255,255,0.12);
+}
+
+.boardSearch{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.boardSearch select,
+.boardSearch input{
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.88);
+  padding: 0 12px;
+  outline: none;
+}
+
+.boardSearch input{
+  width: 220px;
+}
+
+.boardSearch button{
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.92);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.boardTableWrap{
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.025);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.26);
+}
+
+.boardTableHead,
+.boardRow{
+  display:grid;
+  grid-template-columns: 90px minmax(0, 1fr) 140px 100px 90px 90px;
+  align-items:center;
+}
+
+.boardTableHead{
+  min-height: 52px;
+  padding: 0 18px;
+  background: rgba(6,10,18,0.78);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  font-size: 13px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.72);
+}
+
+.boardTableBody{
+  display:flex;
+  flex-direction:column;
+}
+
+.boardRow{
+  min-height: 62px;
+  padding: 0 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: background .18s ease;
+}
+
+.boardRow:hover{
+  background: rgba(255,255,255,0.03);
+}
+
+.boardNo,
+.boardAuthor,
+.boardDate,
+.boardViews,
+.boardLikes{
+  font-size: 13px;
+  color: rgba(255,255,255,0.70);
+}
+
+.boardSubject{
+  min-width: 0;
+}
+
+.boardSubjectBtn{
+  width: 100%;
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.boardSubjectText{
+  font-size: 14px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.94);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.boardComments{
+  font-size: 13px;
+  font-weight: 900;
+  color: #4cc3ff;
+  flex-shrink: 0;
+}
+
+.boardBottom{
+  display:flex;
+  justify-content:center;
+  margin-top: 18px;
+}
+
+.boardPager{
+  display:flex;
+  gap: 8px;
+}
+
+.boardPager button{
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.78);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.boardPager button.active{
+  color: white;
+  background: linear-gradient(135deg, rgba(14,165,255,0.22), rgba(124,77,255,0.16));
+}
+
+@media (max-width: 1024px){
+  .boardTableHead,
+  .boardRow{
+    grid-template-columns: 70px minmax(0, 1fr) 100px 80px 70px 70px;
+  }
+}
+
+@media (max-width: 768px){
+  .boardTableHead{
+    display:none;
+  }
+
+  .boardRow{
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 14px 16px;
+    min-height: auto;
+  }
+
+  .boardNo,
+  .boardAuthor,
+  .boardDate,
+  .boardViews,
+  .boardLikes{
+    font-size: 12px;
+  }
+
+  .boardSubjectText{
+    white-space: normal;
+  }
+
+  .boardSearch input{
+    width: 160px;
+  }
+}

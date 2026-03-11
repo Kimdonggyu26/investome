@@ -2,7 +2,7 @@ import "../styles/CommunityFeed.css";
 
 const posts = [
   {
-    category: "실시간",
+    category: "HOT",
     title: "비트코인 11만 달러 부근 공방",
     meta: "방금 전 · 조회 128",
   },
@@ -33,8 +33,8 @@ export default function CommunityFeed() {
     <section className="communityFloatPanel">
       <div className="communityFloatHeader">
         <div>
-          <div className="communityFloatEyebrow">COMMUNITY</div>
-          <h3 className="communityFloatTitle">커뮤니티 피드</h3>
+          <div className="communityFloatEyebrow">TRENDING NOW</div>
+          <h3 className="communityFloatTitle">실시간 인기 글</h3>
         </div>
         <span className="communityFloatLive">LIVE</span>
       </div>

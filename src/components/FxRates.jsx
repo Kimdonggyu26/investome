@@ -12,7 +12,7 @@ const FX = [
 
 function fmt(n) {
   if (typeof n !== "number" || !isFinite(n)) return "-";
-  return `${n.toLocaleString("ko-KR", { maximumFractionDigits: 2 })}원`;
+  return n.toLocaleString("ko-KR", { maximumFractionDigits: 2 });
 }
 
 function diffValue(now, base) {
@@ -136,7 +136,10 @@ export default function FxRates() {
                 </div>
 
                 <div className="fxMeta">
-                  <div className="fxValue">{fmt(now)}</div>
+                  <div className="fxValue">
+                    {fmt(now)}
+                    {fmt(now) !== "-" && <span className="fxUnit">원</span>}
+                  </div>
                   <div className="fxLabel">{c.label}</div>
                 </div>
               </div>
