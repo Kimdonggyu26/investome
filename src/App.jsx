@@ -4,6 +4,7 @@ import AssetDetail from "./pages/AssetDetail";
 import NewsPage from "./pages/NewsPage";
 import MyPage from "./pages/MyPage";
 import BoardPage from "./pages/BoardPage";
+import BoardWritePage from "./pages/BoardWritePage";
 import AuthPage from "./pages/AuthPage";
 
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
       <Route path="/news" element={<NewsPage />} />
       <Route path="/mypage" element={<MyPage />} />
       <Route path="/board" element={<BoardPage />} />
+      <Route path="/board/write" element={<BoardWritePage />} />
       <Route path="/login" element={<AuthPage mode="login" />} />
       <Route path="/signup" element={<AuthPage mode="signup" />} />
       <Route path="/asset/:market/:symbol" element={<AssetDetail />} />
