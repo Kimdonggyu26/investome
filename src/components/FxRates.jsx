@@ -87,6 +87,7 @@ export default function FxRates() {
 
     load();
     const t = setInterval(load, 30_000);
+
     return () => {
       mounted = false;
       clearInterval(t);
@@ -117,8 +118,9 @@ export default function FxRates() {
 
           const diff = diffValue(now, base);
           const pct = changePct(now, base);
-
           const col = color(diff);
+          const valueText = fmt(now);
+
           const arrow =
             typeof diff === "number"
               ? diff > 0
@@ -137,14 +139,14 @@ export default function FxRates() {
 
                 <div className="fxMeta">
                   <div className="fxValue">
-                    {fmt(now)}
-                    {fmt(now) !== "-" && <span className="fxUnit">원</span>}
+                    {valueText}
+                    {valueText !== "-" && <span className="fxUnit">원</span>}
                   </div>
                   <div className="fxLabel">{c.label}</div>
                 </div>
               </div>
 
-              <div className={`fxRight ${item.change >= 0 ? "up" : "down"}`}>
+              <div className="fxRight" style={{ color: col }}>
                 {typeof diff === "number" && typeof pct === "number"
                   ? `${arrow} ${formatDiff(diff)} (${formatPct(pct)})`
                   : "-"}
