@@ -144,8 +144,8 @@
 }
 
 .boardRow{
-  min-height: 62px;
-  padding: 0 18px;
+  min-height: 74px;
+  padding: 12px 18px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
   transition: background .18s ease;
 }
@@ -179,6 +179,20 @@
   cursor: pointer;
 }
 
+.boardNoticeBadge{
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 900;
+  color: #dff6ff;
+  background: rgba(14,165,255,0.16);
+  border: 1px solid rgba(14,165,255,0.22);
+  flex-shrink: 0;
+}
+
 .boardSubjectText{
   font-size: 14px;
   font-weight: 800;
@@ -193,6 +207,15 @@
   font-weight: 900;
   color: #4cc3ff;
   flex-shrink: 0;
+}
+
+.boardExcerpt{
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.50);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .boardEmpty{
@@ -257,6 +280,10 @@
   }
 
   .boardSubjectText{
+    white-space: normal;
+  }
+
+  .boardExcerpt{
     white-space: normal;
   }
 
