@@ -24,6 +24,13 @@
   margin: 0 auto;
 }
 
+.authTopArea {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .authTabRow {
   display: inline-flex;
   gap: 8px;
@@ -52,6 +59,35 @@
   color: white;
   background: linear-gradient(135deg, rgba(14,165,255,0.22), rgba(124,77,255,0.18));
   box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+}
+
+.authSpeechBubble {
+  position: relative;
+  flex-shrink: 0;
+  margin-top: 2px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(79,172,254,0.16), rgba(124,77,255,0.16));
+  border: 1px solid rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.96);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+  white-space: nowrap;
+}
+
+.authSpeechBubble::after {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 14px;
+  width: 10px;
+  height: 10px;
+  background: rgba(92, 135, 255, 0.22);
+  border-left: 1px solid rgba(255,255,255,0.10);
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  transform: rotate(45deg);
 }
 
 .authCardHeader {
@@ -175,55 +211,6 @@
   box-shadow: 0 20px 38px rgba(0,0,0,0.28);
 }
 
-.authDivider {
-  position: relative;
-  margin: 22px 0 16px;
-  text-align: center;
-}
-
-.authDivider::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  border-top: 1px solid rgba(255,255,255,0.08);
-}
-
-.authDivider span {
-  position: relative;
-  z-index: 1;
-  display: inline-block;
-  padding: 0 12px;
-  background: rgba(14,18,26,1);
-  color: rgba(255,255,255,0.42);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.authSocialRow {
-  display: grid;
-  gap: 10px;
-}
-
-.authSocialBtn {
-  width: 100%;
-  height: 48px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.035);
-  color: rgba(255,255,255,0.90);
-  font-size: 14px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: .18s ease;
-}
-
-.authSocialBtn:hover {
-  background: rgba(255,255,255,0.055);
-  border-color: rgba(255,255,255,0.16);
-}
-
 .authBottomText {
   margin-top: 18px;
   font-size: 13px;
@@ -250,6 +237,24 @@
   .authCard {
     padding: 22px 18px;
     border-radius: 20px;
+  }
+
+  .authTopArea {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .authSpeechBubble {
+    margin-top: 2px;
+  }
+
+  .authSpeechBubble::after {
+    left: 16px;
+    top: -5px;
+    border-left: 1px solid rgba(255,255,255,0.10);
+    border-bottom: none;
+    border-top: 1px solid rgba(255,255,255,0.10);
+    transform: rotate(45deg);
   }
 
   .authTitle {

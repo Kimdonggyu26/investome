@@ -96,19 +96,23 @@ export default function AuthPage({ mode = "login" }) {
       <main className="authPage">
         <div className="authSingleWrap">
           <section className="authCard authCardSingle">
-            <div className="authTabRow">
-              <Link
-                to="/login"
-                className={`authTab ${isLogin ? "active" : ""}`}
-              >
-                로그인
-              </Link>
-              <Link
-                to="/signup"
-                className={`authTab ${!isLogin ? "active" : ""}`}
-              >
-                회원가입
-              </Link>
+            <div className="authTopArea">
+              <div className="authTabRow">
+                <Link
+                  to="/login"
+                  className={`authTab ${isLogin ? "active" : ""}`}
+                >
+                  로그인
+                </Link>
+                <Link
+                  to="/signup"
+                  className={`authTab ${!isLogin ? "active" : ""}`}
+                >
+                  회원가입
+                </Link>
+              </div>
+
+              {!isLogin && <div className="authSpeechBubble">10초면 돼요</div>}
             </div>
 
             <div className="authCardHeader">
@@ -118,7 +122,7 @@ export default function AuthPage({ mode = "login" }) {
               <p className="authSub">
                 {isLogin
                   ? "계정으로 로그인해서 관심종목, 포트폴리오, 게시판 활동을 관리해보세요."
-                  : "Investome에서 사용할 계정을 만들고 나만의 투자 환경을 준비해보세요."}
+                  : "빠르게 가입하고 관심종목, 포트폴리오, 게시판 기능을 이용해보세요."}
               </p>
             </div>
 
@@ -218,22 +222,6 @@ export default function AuthPage({ mode = "login" }) {
                 {isLogin ? "로그인" : "회원가입"}
               </button>
             </form>
-
-            <div className="authDivider">
-              <span>또는</span>
-            </div>
-
-            <div className="authSocialRow">
-              <button type="button" className="authSocialBtn">
-                Google로 계속하기
-              </button>
-              <button type="button" className="authSocialBtn">
-                Kakao로 계속하기
-              </button>
-              <button type="button" className="authSocialBtn">
-                Naver로 계속하기
-              </button>
-            </div>
 
             <div className="authBottomText">
               {isLogin ? (
