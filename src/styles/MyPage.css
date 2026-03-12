@@ -991,3 +991,256 @@
     align-items: flex-start;
   }
 }
+
+/* ===== Guest MyPage ===== */
+
+.mypageGuestWrap{
+  min-height: calc(100vh - 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px 56px;
+  position: relative;
+}
+
+.mypageGuestCard{
+  width: 100%;
+  max-width: 980px;
+  min-height: 540px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 32px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background:
+    radial-gradient(circle at 18% 20%, rgba(14,165,255,0.16), transparent 28%),
+    radial-gradient(circle at 82% 75%, rgba(124,77,255,0.16), transparent 30%),
+    linear-gradient(180deg, rgba(15,23,42,0.94), rgba(8,15,28,0.96));
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.34),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+  padding: 56px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.mypageGuestGlow{
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.mypageGuestGlow1{
+  top: -40px;
+  left: -30px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(54,213,255,0.18), transparent 68%);
+}
+
+.mypageGuestGlow2{
+  right: -30px;
+  bottom: -50px;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(124,77,255,0.16), transparent 68%);
+}
+
+.mypageGuestBadge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: rgba(222,239,255,0.88);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  margin-bottom: 22px;
+  backdrop-filter: blur(12px);
+}
+
+.mypageGuestIconWrap{
+  width: 108px;
+  height: 108px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(135deg, rgba(14,165,255,0.18), rgba(124,77,255,0.18));
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow:
+    0 20px 50px rgba(0,0,0,0.24),
+    inset 0 1px 0 rgba(255,255,255,0.07);
+  margin-bottom: 24px;
+  animation: mypageGuestFloat 3.6s ease-in-out infinite;
+}
+
+.mypageGuestIcon{
+  font-size: 42px;
+  color: #f4fbff;
+  transform: rotate(18deg);
+  opacity: 0.95;
+}
+
+.mypageGuestTitle{
+  margin: 0;
+  font-size: clamp(32px, 4vw, 48px);
+  line-height: 1.15;
+  font-weight: 900;
+  letter-spacing: -1.2px;
+  color: #f8fbff;
+}
+
+.mypageGuestDesc{
+  margin: 18px 0 0;
+  font-size: 15px;
+  line-height: 1.9;
+  color: rgba(255,255,255,0.64);
+}
+
+.mypageGuestFeatureRow{
+  width: 100%;
+  max-width: 760px;
+  margin-top: 34px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.mypageGuestFeature{
+  border-radius: 20px;
+  padding: 20px 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+  transition:
+    transform .2s ease,
+    border-color .2s ease,
+    background .2s ease,
+    box-shadow .2s ease;
+}
+
+.mypageGuestFeature:hover{
+  transform: translateY(-3px);
+  border-color: rgba(86,180,255,0.18);
+  background: rgba(255,255,255,0.055);
+  box-shadow:
+    0 14px 28px rgba(0,0,0,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.mypageGuestFeature strong{
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+  color: #f6fbff;
+  margin-bottom: 8px;
+}
+
+.mypageGuestFeature span{
+  display: block;
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.58);
+}
+
+.mypageGuestActionRow{
+  margin-top: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.mypageGuestLoginBtn,
+.mypageGuestHomeBtn{
+  min-width: 160px;
+  height: 48px;
+  padding: 0 18px;
+  border-radius: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-weight: 800;
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    border-color .18s ease,
+    background .18s ease,
+    filter .18s ease;
+}
+
+.mypageGuestLoginBtn{
+  color: #ffffff;
+  border: 1px solid rgba(86,180,255,0.30);
+  background: linear-gradient(135deg, rgba(14,165,255,0.24), rgba(124,77,255,0.18));
+  box-shadow:
+    0 16px 34px rgba(0,0,0,0.24),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.mypageGuestLoginBtn:hover{
+  transform: translateY(-2px);
+  border-color: rgba(86,180,255,0.46);
+  box-shadow:
+    0 22px 40px rgba(0,0,0,0.28),
+    0 0 24px rgba(14,165,255,0.10);
+  filter: brightness(1.04);
+}
+
+.mypageGuestHomeBtn{
+  color: rgba(255,255,255,0.88);
+  border: 1px solid rgba(255,255,255,0.09);
+  background: rgba(255,255,255,0.04);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.mypageGuestHomeBtn:hover{
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,0.16);
+  background: rgba(255,255,255,0.06);
+}
+
+@keyframes mypageGuestFloat{
+  0%{ transform: translateY(0px); }
+  50%{ transform: translateY(-8px); }
+  100%{ transform: translateY(0px); }
+}
+
+@media (max-width: 900px){
+  .mypageGuestCard{
+    padding: 42px 22px;
+    border-radius: 26px;
+    min-height: 500px;
+  }
+
+  .mypageGuestFeatureRow{
+    grid-template-columns: 1fr;
+    max-width: 480px;
+  }
+
+  .mypageGuestTitle{
+    font-size: 32px;
+  }
+
+  .mypageGuestDesc{
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  .mypageGuestLoginBtn,
+  .mypageGuestHomeBtn{
+    width: 100%;
+    max-width: 260px;
+  }
+}
