@@ -137,8 +137,8 @@
 /* 코인/종목 상세페이지: 헤더보다 조금 아래 */
 .assetDetailFloatingWatch{
   position: fixed;
-  top: 132px;
-  left: calc(50% - 930px);
+  top: 165px;
+  left: calc(50% - 860px);
   width: 250px;
   z-index: 20;
 }
@@ -146,7 +146,7 @@
 /* 마이페이지: 포트폴리오랑 안 겹치게 더 왼쪽 */
 .myPageFloatingWatch{
   position: fixed;
-  top: 132px;
+  top: 165px;
   left: calc(50% - 930px);
   width: 250px;
   z-index: 20;
@@ -154,7 +154,10 @@
 
 /* 화면이 좁아지면 겹치기 전에 숨김 */
 @media (max-width: 1880px){
-  .assetDetailFloatingWatch,
+  .assetDetailFloatingWatch{
+    left: 32px;
+  }
+
   .myPageFloatingWatch{
     left: 24px;
   }
