@@ -13,13 +13,11 @@ function subtractDay(dateStr, days) {
   return formatDate(d);
 }
 
-function toKoreanTodayLabel() {
-  return formatDate(new Date());
-}
-
 async function fetchRates(date) {
-  // 1 KRW 기준으로 각 통화값 조회 후 역산
-  const url = `${API}/${date}?from=KRW&to=USD,JPY,CNY,EUR,AUD`;
+  // EUR 기준으로 받아서 각 통화의 KRW 환율로 변환
+  // 예) json.rates.KRW = 1580, json.rates.USD = 1.09 라면
+  // 1 USD = 1580 / 1.09 KRW
+  const url = `${API}/${date}?from=EUR&to=KRW,USD,JPY,CNY,AUD`;
   const res = await fetch(url);
 
   if (!res.ok) {
@@ -29,21 +27,30 @@ async function fetchRates(date) {
   const json = await res.json();
   const rates = json?.rates || {};
 
-  const invert = (v) => {
-    if (typeof v !== "number" || !isFinite(v) || v === 0) {
-      throw new Error("invalid fx rate");
-    }
-    return 1 / v;
-  };
+  const krw = rates.KRW;
+  const usd = rates.USD;
+  const jpy = rates.JPY;
+  const cny = rates.CNY;
+  const aud = rates.AUD;
+
+  if (
+    typeof krw !== "number" ||
+    typeof usd !== "number" ||
+    typeof jpy !== "number" ||
+    typeof cny !== "number" ||
+    typeof aud !== "number"
+  ) {
+    throw new Error("invalid fx response");
+  }
 
   return {
     actualDate: json.date,
     rates: {
-      USDKRW: invert(rates.USD),
-      JPYKRW: invert(rates.JPY),
-      CNYKRW: invert(rates.CNY),
-      EURKRW: invert(rates.EUR),
-      AUDKRW: invert(rates.AUD),
+      USDKRW: krw / usd,
+      JPYKRW: krw / jpy,
+      CNYKRW: krw / cny,
+      EURKRW: krw,
+      AUDKRW: krw / aud,
     },
   };
 }
@@ -56,7 +63,7 @@ async function findLatestAvailableRates(startDate, maxBacktrack = 10) {
       const result = await fetchRates(target);
       return result;
     } catch {
-      // 다음 날짜 재시도
+      // 이전 날짜 재시도
     }
   }
 
@@ -73,7 +80,7 @@ export async function fetchFx() {
   );
 
   return {
-    updatedDate: toKoreanTodayLabel(),
+    updatedDate: latestResult.actualDate,
     baseDate: latestResult.actualDate,
     previousDate: previousResult.actualDate,
     ...latestResult.rates,
