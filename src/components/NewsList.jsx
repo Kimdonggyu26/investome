@@ -145,6 +145,7 @@ export default function NewsList({
     <div className={`card newsWrap ${pageMode ? "newsWrapPage" : ""}`}>
       <div className="newsHeader">
         <div>
+          <div className="sectionLiveBadge newsLiveBadge">LIVE</div>
           <h2 className="newsHeading">{title}</h2>
           <div className="newsSub">Real-Time Market Headlines</div>
           <div className="newsDesc">
@@ -156,7 +157,7 @@ export default function NewsList({
           <div className="newsTabs">
             <button
               type="button"
-              className={mode === "latest" ? "active" : ""} 
+              className={mode === "latest" ? "active" : ""}
               onClick={() => setMode("latest")}
             >
               최신순
@@ -221,33 +222,27 @@ export default function NewsList({
             </a>
           )}
 
-          <div className={`newsGrid ${pageMode ? "newsGridPage" : ""}`}>
-            {rest.map((n, idx) => (
-              <a
-                key={`${n.link}-${idx}`}
-                href={n.link}
-                target="_blank"
-                rel="noreferrer"
-                className="newsItem"
-                title="클릭해서 기사로 이동"
-              >
-                <div className="newsMain">
-                  <span className="newsTitle">{n.title}</span>
+          <div className="newsList">
+            {!err &&
+              rest.map((item, idx) => (
+                <a
+                  key={`${item.link}-${idx}`}
+                  href={item.link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="newsItem"
+                >
+                  <div className="newsItemTitle">{item.title}</div>
                   <div className="newsMeta">
-                    <span className="newsSource">{n.source || "Google News"}</span>
+                    <span>{item.source || "Google News"}</span>
                     <span className="newsDot">•</span>
-                    <span className="newsDate">{ymdhm(n.pubDate)}</span>
+                    <span>{ymdhm(item.pubDate)}</span>
                   </div>
-                </div>
-              </a>
-            ))}
+                </a>
+              ))}
           </div>
 
-          {isSwitching && (
-            <div className="newsLoadingOverlay" aria-hidden="true">
-              <div className="newsLoadingSweep" />
-            </div>
-          )}
+          {isSwitching && <div className="newsLoadingOverlay"><div className="newsLoadingSweep" /></div>}
         </div>
       )}
     </div>

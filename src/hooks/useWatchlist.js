@@ -56,6 +56,7 @@ export function useWatchlist() {
             name: asset.name,
             displayNameEN: asset.displayNameEN || asset.name,
             iconUrl: asset.iconUrl || "",
+            coinId: asset.coinId || "",
             addedAt: new Date().toISOString(),
           },
           ...items,

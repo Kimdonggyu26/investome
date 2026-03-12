@@ -14,6 +14,7 @@ import AssetNewsList from "../components/AssetNewsList";
 import AssetCommunity from "../components/AssetCommunity";
 import "../styles/AssetDetail.css";
 import { useWatchlist } from "../hooks/useWatchlist";
+import { fetchAssetQuote } from "../api/portfolioApi";
 
 function formatKRW(n) {
   if (typeof n !== "number" || !isFinite(n)) return "-";
@@ -37,9 +38,10 @@ function calcRange(price, pct) {
     return { high: null, low: null };
   }
 
-  const volatility = typeof pct === "number" && isFinite(pct)
-    ? Math.max(1.2, Math.min(6, Math.abs(pct) * 1.8))
-    : 2.2;
+  const volatility =
+    typeof pct === "number" && isFinite(pct)
+      ? Math.max(1.2, Math.min(6, Math.abs(pct) * 1.8))
+      : 2.2;
 
   const high = price * (1 + volatility / 100);
   const low = price * (1 - volatility / 100);
@@ -102,6 +104,7 @@ function getFallbackAsset(market, symbol) {
     name: symbol,
     displayNameEN: symbol,
     iconUrl: "",
+    coinId: "",
     capKRW: null,
     priceKRW: null,
     changePct: null,
@@ -132,7 +135,7 @@ export default function AssetDetail() {
 
   const [asset, setAsset] = useState(getFallbackAsset(market, symbol));
   const [assetLoading, setAssetLoading] = useState(true);
-  const { isWatched, toggleWatchlist } = useWatchlist();
+  const { watchlist, isWatched, toggleWatchlist } = useWatchlist();
 
   useEffect(() => {
     let alive = true;
@@ -140,6 +143,41 @@ export default function AssetDetail() {
     async function loadAsset() {
       try {
         setAssetLoading(true);
+
+        const watchedItem =
+          watchlist.find(
+            (item) =>
+              String(item.market).toUpperCase() === String(market).toUpperCase() &&
+              String(item.symbol).toUpperCase() === String(symbol).toUpperCase()
+          ) || null;
+
+        const liveQuote = await fetchAssetQuote({
+          market,
+          symbol,
+          name: watchedItem?.name || symbol,
+          coinId: watchedItem?.coinId || "",
+        }).catch(() => null);
+
+        if (liveQuote?.symbol) {
+          if (!alive) return;
+
+          setAsset({
+            market,
+            symbol: liveQuote.symbol || symbol,
+            name: liveQuote.name || watchedItem?.name || symbol,
+            displayNameEN:
+              liveQuote.displayNameEN ||
+              liveQuote.name ||
+              watchedItem?.name ||
+              symbol,
+            iconUrl: liveQuote.iconUrl || watchedItem?.iconUrl || "",
+            coinId: liveQuote.coinId || watchedItem?.coinId || "",
+            capKRW: liveQuote.capKRW ?? null,
+            priceKRW: liveQuote.priceKRW ?? null,
+            changePct: liveQuote.changePct ?? null,
+          });
+          return;
+        }
 
         let rows = [];
 
@@ -155,7 +193,10 @@ export default function AssetDetail() {
 
         if (!alive) return;
 
-        const found = rows.find((row) => String(row.symbol).toUpperCase() === String(symbol).toUpperCase());
+        const found = rows.find(
+          (row) =>
+            String(row.symbol).toUpperCase() === String(symbol).toUpperCase()
+        );
 
         setAsset(
           found
@@ -165,6 +206,7 @@ export default function AssetDetail() {
                 name: found.name,
                 displayNameEN: found.displayNameEN || found.name,
                 iconUrl: found.iconUrl || "",
+                coinId: found.coinId || watchedItem?.coinId || "",
                 capKRW: found.capKRW ?? null,
                 priceKRW: found.priceKRW ?? null,
                 changePct: found.changePct ?? null,
@@ -186,7 +228,7 @@ export default function AssetDetail() {
       alive = false;
       clearInterval(t);
     };
-  }, [market, symbol]);
+  }, [market, symbol, watchlist]);
 
   const tradingViewSymbol = useMemo(
     () => getTradingViewSymbol(market, symbol),
@@ -223,183 +265,214 @@ export default function AssetDetail() {
       <Header />
 
       <main className="assetDetailPage">
-        <div className="container" style={{ display: "grid", gap: 18 }}>
-          <section className="card assetTopCard assetHeroGlow">
-            <div className="assetTopHead">
-              <div className="assetIdentity">
-                <AssetLogo iconUrl={asset.iconUrl} name={asset.name} />
-
+        <div className="container assetDetailLayout">
+          <aside className="assetLeftFloat">
+            <div className="assetWatchFloat">
+              <div className="assetWatchFloatHead">
                 <div>
-                  <div className="assetMarketBadge">{marketLabel}</div>
-                  <h1 className="assetName">{asset.name}</h1>
-                  <div className="assetSymbolRow">
-                    <span>{symbol}</span>
-                    {asset.displayNameEN &&
-                    asset.displayNameEN !== asset.name ? (
-                      <>
-                        <span>•</span>
-                        <span>{asset.displayNameEN}</span>
-                      </>
-                    ) : null}
+                  <div className="assetWatchFloatEyebrow">MY WATCHLIST</div>
+                  <h3 className="assetWatchFloatTitle">나의 관심종목</h3>
+                </div>
+                <span className="assetWatchFloatBadge">LIVE</span>
+              </div>
+
+              <div className="assetWatchFloatList">
+                {watchlist.slice(0, 6).length === 0 ? (
+                  <div className="assetWatchFloatEmpty">
+                    관심종목을 추가하면 여기에 보여줘요.
                   </div>
-                </div>
-              </div>
-
-              <div className="assetActionRow">
-                <button
-                  type="button"
-                  className={`btn watchBtn ${watched ? "active" : ""}`}
-                  onClick={() =>
-                    toggleWatchlist({
-                      market,
-                      symbol,
-                      name: asset.name,
-                      displayNameEN: asset.displayNameEN,
-                      iconUrl: asset.iconUrl,
-                    })
-                  }
-                >
-                  {watched ? "★ 관심종목 제거" : "☆ 관심종목 추가"}
-                </button>
-
-                <Link className="btn" to="/">
-                  ← 홈으로
-                </Link>
+                ) : (
+                  watchlist.slice(0, 6).map((item) => (
+                    <Link
+                      key={`${item.market}-${item.symbol}`}
+                      to={`/asset/${item.market}/${item.symbol}`}
+                      className={`assetWatchFloatItem ${
+                        item.market === market && item.symbol === symbol ? "active" : ""
+                      }`}
+                    >
+                      <span className="assetWatchFloatName">{item.name}</span>
+                      <span className="assetWatchFloatMeta">{item.symbol}</span>
+                    </Link>
+                  ))
+                )}
               </div>
             </div>
+          </aside>
 
-            <div className="assetStatRow">
-              <div className="assetStatCard primary">
-                <div className="assetStatLabel">현재가</div>
-                <div className="assetPrice">
-                  {assetLoading ? "불러오는중" : formatKRW(asset.priceKRW)}
-                </div>
-                <div className="assetStatHint">
-                  {assetLoading ? "-" : `${marketLabel} 실시간 반영`}
-                </div>
-              </div>
+          <div style={{ display: "grid", gap: 18 }}>
+            <section className="card assetTopCard assetHeroGlow">
+              <div className="assetTopHead">
+                <div className="assetIdentity">
+                  <AssetLogo iconUrl={asset.iconUrl} name={asset.name} />
 
-              <div className={`assetStatCard ${getChangeClass(asset.changePct)}`}>
-                <div className="assetStatLabel">등락률</div>
-                <div className={`assetChange ${getChangeClass(asset.changePct)}`}>
-                  {assetLoading ? "불러오는중" : formatChange(asset.changePct)}
-                </div>
-                <div className="assetStatHint">
-                  {assetLoading ? "-" : formatSignedKRW(changeAmount)}
-                </div>
-              </div>
-            </div>
-
-            <div className="assetMetaGrid">
-              <div className="assetMetaCard blue">
-                <div className="assetMetaLabel">시장</div>
-                <div className="assetMetaValue">{marketLabel}</div>
-              </div>
-
-              <div className="assetMetaCard purple">
-                <div className="assetMetaLabel">심볼</div>
-                <div className="assetMetaValue">{symbol}</div>
-              </div>
-
-              <div className="assetMetaCard green">
-                <div className="assetMetaLabel">시가총액</div>
-                <div className="assetMetaValue">
-                  {showCap ? formatCapKRW(asset.capKRW) : "-"}
-                </div>
-              </div>
-
-              <div className="assetMetaCard orange">
-                <div className="assetMetaLabel">뉴스 검색어</div>
-                <div className="assetMetaValue">{asset.name}</div>
-              </div>
-            </div>
-          </section>
-
-          <section className="assetMainGrid">
-            <TradingViewChart
-              symbol={tradingViewSymbol}
-              title={`${asset.name} · ${symbol}`}
-            />
-
-            <div className="assetPanel">
-              <div className="assetPanelHead">
-                <div>
-                  <div className="assetPanelTitle">현재 정보</div>
-                  <div className="assetPanelSub">핵심 정보 요약</div>
-                </div>
-              </div>
-
-              <div className="assetInfoList">
-                <div className="assetInfoItem emphasis">
-                  <div className="assetInfoItemLabel">종목명</div>
-                  <div className="assetInfoItemValue">{asset.name}</div>
-                </div>
-
-                <div className="assetInfoMiniGrid">
-                  <div className="assetMiniCard high">
-                    <div className="assetMiniLabel">예상 High</div>
-                    <div className="assetMiniValue">
-                      {assetLoading ? "불러오는중" : formatKRW(high)}
-                    </div>
-                  </div>
-
-                  <div className="assetMiniCard low">
-                    <div className="assetMiniLabel">예상 Low</div>
-                    <div className="assetMiniValue">
-                      {assetLoading ? "불러오는중" : formatKRW(low)}
+                  <div>
+                    <div className="assetMarketBadge">{marketLabel}</div>
+                    <h1 className="assetName">{asset.name}</h1>
+                    <div className="assetSymbolRow">
+                      <span>{symbol}</span>
+                      {asset.displayNameEN && asset.displayNameEN !== asset.name ? (
+                        <>
+                          <span>•</span>
+                          <span>{asset.displayNameEN}</span>
+                        </>
+                      ) : null}
                     </div>
                   </div>
                 </div>
 
-                <div className="assetInfoItem">
-                  <div className="assetInfoItemLabel">심볼</div>
-                  <div className="assetInfoItemValue">{symbol}</div>
-                </div>
+                <div className="assetActionRow">
+                  <button
+                    type="button"
+                    className={`btn watchBtn ${watched ? "active" : ""}`}
+                    onClick={() =>
+                      toggleWatchlist({
+                        market,
+                        symbol,
+                        name: asset.name,
+                        displayNameEN: asset.displayNameEN,
+                        iconUrl: asset.iconUrl,
+                        coinId: asset.coinId,
+                      })
+                    }
+                  >
+                    {watched ? "★ 관심종목 제거" : "☆ 관심종목 추가"}
+                  </button>
 
-                <div className="assetInfoItem">
-                  <div className="assetInfoItemLabel">현재가</div>
-                  <div className="assetInfoItemValue">
+                  <Link className="btn" to="/">
+                    ← 홈으로
+                  </Link>
+                </div>
+              </div>
+
+              <div className="assetStatRow">
+                <div className="assetStatCard primary">
+                  <div className="assetStatLabel">현재가</div>
+                  <div className="assetPrice">
                     {assetLoading ? "불러오는중" : formatKRW(asset.priceKRW)}
                   </div>
+                  <div className="assetStatHint">
+                    {assetLoading ? "-" : `${marketLabel} 실시간 반영`}
+                  </div>
                 </div>
 
-                <div className="assetInfoItem">
-                  <div className="assetInfoItemLabel">등락률</div>
-                  <div className={`assetInfoItemValue ${getChangeClass(asset.changePct)}`}>
+                <div className={`assetStatCard ${getChangeClass(asset.changePct)}`}>
+                  <div className="assetStatLabel">등락률</div>
+                  <div className={`assetChange ${getChangeClass(asset.changePct)}`}>
                     {assetLoading ? "불러오는중" : formatChange(asset.changePct)}
                   </div>
-                </div>
-
-                <div className="assetInfoItem">
-                  <div className="assetInfoItemLabel">변동 금액</div>
-                  <div className="assetInfoItemValue">
-                    {assetLoading ? "불러오는중" : formatSignedKRW(changeAmount)}
+                  <div className="assetStatHint">
+                    {assetLoading ? "-" : formatSignedKRW(changeAmount)}
                   </div>
                 </div>
+              </div>
 
-                <div className="assetInfoItem">
-                  <div className="assetInfoItemLabel">시가총액</div>
-                  <div className="assetInfoItemValue">
+              <div className="assetMetaGrid">
+                <div className="assetMetaCard blue">
+                  <div className="assetMetaLabel">시장</div>
+                  <div className="assetMetaValue">{marketLabel}</div>
+                </div>
+
+                <div className="assetMetaCard purple">
+                  <div className="assetMetaLabel">심볼</div>
+                  <div className="assetMetaValue">{symbol}</div>
+                </div>
+
+                <div className="assetMetaCard green">
+                  <div className="assetMetaLabel">시가총액</div>
+                  <div className="assetMetaValue">
                     {showCap ? formatCapKRW(asset.capKRW) : "-"}
                   </div>
                 </div>
+
+                <div className="assetMetaCard orange">
+                  <div className="assetMetaLabel">뉴스 검색어</div>
+                  <div className="assetMetaValue">{asset.name}</div>
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
 
-          <section className="assetBottomGrid">
-            <AssetNewsList
-              assetName={asset.name}
-              query={newsQuery}
-              limit={8}
-            />
+            <section className="assetMainGrid">
+              <TradingViewChart
+                symbol={tradingViewSymbol}
+                title={`${asset.name} · ${symbol}`}
+              />
 
-            <AssetCommunity
-              market={market}
-              symbol={symbol}
-              assetName={asset.name}
-            />
-          </section>
+              <div className="assetPanel">
+                <div className="assetPanelHead">
+                  <div>
+                    <div className="assetPanelTitle">현재 정보</div>
+                    <div className="assetPanelSub">핵심 정보 요약</div>
+                  </div>
+                </div>
+
+                <div className="assetInfoList">
+                  <div className="assetInfoItem emphasis">
+                    <div className="assetInfoItemLabel">종목명</div>
+                    <div className="assetInfoItemValue">{asset.name}</div>
+                  </div>
+
+                  <div className="assetInfoMiniGrid">
+                    <div className="assetMiniCard high">
+                      <div className="assetMiniLabel">예상 High</div>
+                      <div className="assetMiniValue">
+                        {assetLoading ? "불러오는중" : formatKRW(high)}
+                      </div>
+                    </div>
+
+                    <div className="assetMiniCard low">
+                      <div className="assetMiniLabel">예상 Low</div>
+                      <div className="assetMiniValue">
+                        {assetLoading ? "불러오는중" : formatKRW(low)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="assetInfoItem">
+                    <div className="assetInfoItemLabel">심볼</div>
+                    <div className="assetInfoItemValue">{symbol}</div>
+                  </div>
+
+                  <div className="assetInfoItem">
+                    <div className="assetInfoItemLabel">현재가</div>
+                    <div className="assetInfoItemValue">
+                      {assetLoading ? "불러오는중" : formatKRW(asset.priceKRW)}
+                    </div>
+                  </div>
+
+                  <div className="assetInfoItem">
+                    <div className="assetInfoItemLabel">등락률</div>
+                    <div className={`assetInfoItemValue ${getChangeClass(asset.changePct)}`}>
+                      {assetLoading ? "불러오는중" : formatChange(asset.changePct)}
+                    </div>
+                  </div>
+
+                  <div className="assetInfoItem">
+                    <div className="assetInfoItemLabel">변동 금액</div>
+                    <div className="assetInfoItemValue">
+                      {assetLoading ? "불러오는중" : formatSignedKRW(changeAmount)}
+                    </div>
+                  </div>
+
+                  <div className="assetInfoItem">
+                    <div className="assetInfoItemLabel">시가총액</div>
+                    <div className="assetInfoItemValue">
+                      {showCap ? formatCapKRW(asset.capKRW) : "-"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="assetBottomGrid">
+              <AssetNewsList assetName={asset.name} query={newsQuery} limit={8} />
+
+              <AssetCommunity
+                market={market}
+                symbol={symbol}
+                assetName={asset.name}
+              />
+            </section>
+          </div>
         </div>
       </main>
     </>

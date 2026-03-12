@@ -167,3 +167,39 @@ export function getKoreanDummyTop30(market) {
     ? makeDummyRows("KOSPI", kospiNames)
     : makeDummyRows("NASDAQ", nasdaqNames);
 }
+
+function toNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function normalizeRow(row, index) {
+  return {
+    rank: row.rank ?? index + 1,
+    name: row.name ?? "-",
+    displayNameEN: row.displayNameEN ?? "",
+    symbol: (row.symbol || "-").toUpperCase(),
+    iconUrl: row.iconUrl ?? "",
+    coinId: row.coinId ?? "",
+    capKRW: toNumber(row.capKRW),
+    priceKRW: toNumber(row.priceKRW),
+    changePct: toNumber(row.changePct),
+  };
+}
+
+function toCryptoRow(coin, index) {
+  return {
+    rank: coin.market_cap_rank ?? index + 1,
+    name: coin.name ?? "-",
+    symbol: (coin.symbol || "-").toUpperCase(),
+    iconUrl: coin.image ?? "",
+    coinId: coin.id ?? "",
+    capKRW: typeof coin.market_cap === "number" ? coin.market_cap : null,
+    priceKRW: typeof coin.current_price === "number" ? coin.current_price : null,
+    changePct:
+      typeof coin.price_change_percentage_24h === "number"
+        ? coin.price_change_percentage_24h
+        : null,
+  };
+}
+

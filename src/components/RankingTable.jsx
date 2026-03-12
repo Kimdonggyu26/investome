@@ -225,6 +225,7 @@ export default function RankingTable() {
     <div className="rankingCard" id="ranking">
       <div className="rankingHeader">
         <div>
+          <div className="sectionLiveBadge">LIVE</div>
           <h3>TOP30 랭킹</h3>
           <div className="rankingSub">Top 30 Market Movers</div>
         </div>
@@ -244,113 +245,91 @@ export default function RankingTable() {
       </div>
 
       {err && (
-        <div className="muted" style={{ marginBottom: 10 }}>
+        <div className="rankingHint" style={{ marginBottom: 12 }}>
           데이터를 불러오지 못했어요.
         </div>
       )}
 
-      <div className="rankingScroll luxuryScroll">
-        {isLoading && rows.length === 0 ? (
-          <TableSkeleton />
-        ) : (
-          <>
-            <div className={`rankingDataLayer ${isSwitching ? "isSwitching" : ""}`}>
-              <table className="rankingTable">
-                <thead>
-                  <tr>
-                    <th style={{ width: 76 }}>순위</th>
-                    <th>종목</th>
-                    <th style={{ width: 170 }}></th>
-                    <th style={{ width: 170 }}>현재가</th>
-                    <th style={{ width: 120 }}>등락률</th>
-                  </tr>
-                </thead>
+      {isLoading && rows.length === 0 ? (
+        <TableSkeleton />
+      ) : (
+        <div className="rankingScroll luxuryScroll">
+          <div className={`rankingDataLayer ${isSwitching ? "isSwitching" : ""}`}>
+            <table className="rankingTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>종목</th>
+                  <th>추세</th>
+                  <th>현재가</th>
+                  <th>등락률</th>
+                </tr>
+              </thead>
 
-                <tbody>
-                  {rows.map((r) => {
-                    const flash = flashMap[r.symbol];
-                    const rowFlashClass =
-                      flash === "up"
-                        ? "rowFlashUp"
-                        : flash === "down"
-                          ? "rowFlashDown"
-                          : "";
+              <tbody>
+                {rows.map((row) => {
+                  const flash = flashMap[row.symbol];
+                  const rowFlashClass =
+                    flash === "up"
+                      ? "rowFlashUp"
+                      : flash === "down"
+                        ? "rowFlashDown"
+                        : "";
 
-                    const valueClass =
-                      flash === "up"
-                        ? "valueUpdate valueGlowUp"
-                        : flash === "down"
-                          ? "valueUpdate valueGlowDown"
-                          : "";
+                  const valueFlashClass =
+                    flash === "up"
+                      ? "valueGlowUp"
+                      : flash === "down"
+                        ? "valueGlowDown"
+                        : "";
 
-                    return (
-                      <tr
-                        key={`${market}-${r.rank}-${r.symbol}`}
-                        className={rowFlashClass}
-                        onClick={() => navigate(`/asset/${market}/${r.symbol}`)}
-                        title="클릭해서 상세보기"
-                      >
-                        <td className="rankCell">{r.rank}</td>
+                  return (
+                    <tr
+                      key={`${row.symbol}-${row.rank}`}
+                      className={rowFlashClass}
+                      onClick={() => navigate(`/asset/${market}/${row.symbol}`)}
+                    >
+                      <td className="rankCell">{row.rank}</td>
 
-                        <td>
-                          <div className="nameCell">
-                            <Avatar iconUrl={r.iconUrl} name={r.name} />
-                            <div className="nameText">
-                              <div className="nameMain">{r.name}</div>
-                              <div className="muted nameSub">
-                                {r.displayNameEN && r.displayNameEN !== r.name
-                                  ? `${r.symbol} · ${r.displayNameEN}`
-                                  : r.symbol}
-                              </div>
+                      <td>
+                        <div className="nameCell">
+                          <Avatar iconUrl={row.iconUrl} name={row.name} />
+                          <div className="nameText">
+                            <div className="nameMain">{row.name}</div>
+                            <div className="nameSub">
+                              {row.symbol}
+                              {row.displayNameEN ? ` · ${row.displayNameEN}` : ""}
                             </div>
                           </div>
-                        </td>
+                        </div>
+                      </td>
 
-                        <td>
-                          <Sparkline symbol={r.symbol} pct={r.changePct} />
-                        </td>
+                      <td>
+                        <Sparkline symbol={row.symbol} pct={row.changePct} />
+                      </td>
 
-                        <td
-                          className={valueClass}
-                          style={{
-                            color: colorByChange(r.changePct),
-                            fontWeight: 900,
-                          }}
-                        >
-                          {formatKRW(r.priceKRW)}
-                        </td>
+                      <td className={`valueUpdate ${valueFlashClass}`}>
+                        {formatKRW(row.priceKRW)}
+                      </td>
 
-                        <td
-                          className={valueClass}
-                          style={{
-                            color: colorByChange(r.changePct),
-                            fontWeight: 900,
-                          }}
-                        >
-                          {typeof r.changePct === "number"
-                            ? `${r.changePct > 0 ? "+" : ""}${r.changePct.toFixed(2)}%`
-                            : "-"}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                      <td
+                        className={`valueUpdate ${valueFlashClass}`}
+                        style={{ color: colorByChange(row.changePct), fontWeight: 800 }}
+                      >
+                        {typeof row.changePct === "number"
+                          ? `${row.changePct > 0 ? "+" : ""}${row.changePct.toFixed(2)}%`
+                          : "-"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
-            {isSwitching && (
-              <div className="rankingLoadingOverlay" aria-hidden="true">
-                <div className="rankingLoadingGlow" />
-                <div className="rankingLoadingLabel">시장 데이터 전환 중</div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      <div className="rankingHint">
-        가격은 20초마다 갱신됩니다.
-      </div>
+      <div className="rankingHint">20초마다 최신 시세 기준으로 자동 갱신돼요.</div>
     </div>
   );
 }

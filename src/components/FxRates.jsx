@@ -66,6 +66,14 @@ function formatDiff(v) {
   })}원`;
 }
 
+function formatToday() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}.${m}.${d}`;
+}
+
 export default function FxRates() {
   const [fx, setFx] = useState(null);
   const [err, setErr] = useState(null);
@@ -98,11 +106,12 @@ export default function FxRates() {
     <div className="fxCard" id="fx">
       <div className="fxHeader">
         <div>
+          <div className="sectionLiveBadge fxLiveBadge">LIVE</div>
           <div className="fxTitle">오늘의 환율</div>
           <div className="fxSub">Today's Exchange Rate</div>
         </div>
 
-        <div className="fxUpdated">{fx?.updatedDate || "-"}</div>
+        <div className="fxUpdated">{formatToday()}</div>
       </div>
 
       {err && (
@@ -126,8 +135,8 @@ export default function FxRates() {
               ? diff > 0
                 ? "▲"
                 : diff < 0
-                ? "▼"
-                : "•"
+                  ? "▼"
+                  : "•"
               : "";
 
           return (
