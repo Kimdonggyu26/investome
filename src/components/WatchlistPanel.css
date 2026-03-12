@@ -128,29 +128,39 @@
   box-shadow: 0 0 16px rgba(14,165,255,0.35);
 }
 
-/* 상세페이지: 기존 가운데 구조 유지 + 왼쪽 여백에 띄우기 */
-.assetDetailShell{
+/* 바깥 래퍼 */
+.assetDetailShell,
+.myPageFloatingShell{
   position: relative;
 }
 
+/* 코인/종목 상세페이지: 헤더보다 조금 아래 */
 .assetDetailFloatingWatch{
   position: fixed;
-  top: 118px;
-  left: max(20px, calc(50% - 860px));
+  top: 132px;
+  left: calc(50% - 930px);
   width: 250px;
   z-index: 20;
 }
 
-/* 마이페이지도 같은 방식 */
+/* 마이페이지: 포트폴리오랑 안 겹치게 더 왼쪽 */
 .myPageFloatingWatch{
   position: fixed;
-  top: 118px;
-  left: max(20px, calc(50% - 860px));
+  top: 132px;
+  left: calc(50% - 930px);
   width: 250px;
   z-index: 20;
 }
 
-@media (max-width: 1680px){
+/* 화면이 좁아지면 겹치기 전에 숨김 */
+@media (max-width: 1880px){
+  .assetDetailFloatingWatch,
+  .myPageFloatingWatch{
+    left: 24px;
+  }
+}
+
+@media (max-width: 1540px){
   .assetDetailFloatingWatch,
   .myPageFloatingWatch{
     display: none;
