@@ -1407,3 +1407,463 @@
     transform: translateX(-50%) scale(0.575);
   }
 }
+
+/* ===== MyPage page layout fix ===== */
+
+.myPageMain{
+  width: 100%;
+  min-height: calc(100vh - 120px);
+  padding: 26px 0 56px;
+}
+
+.myPageMain .portfolioDashboard{
+  width: min(1320px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+/* ===== Guest Preview Filled Mock ===== */
+
+.mypagePreviewShell{
+  position: relative;
+  width: 100%;
+  height: 430px;
+  overflow: hidden;
+  border-radius: 26px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+  box-shadow:
+    0 24px 60px rgba(0,0,0,0.24),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.mypagePreviewShell::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(7,12,24,0.08), rgba(7,12,24,0.22));
+  z-index: 2;
+  pointer-events: none;
+}
+
+.mypagePreviewShell::after{
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 110px;
+  background: linear-gradient(to top, rgba(7,12,24,0.72), rgba(7,12,24,0));
+  z-index: 2;
+  pointer-events: none;
+}
+
+.mypagePreviewOverlay{
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 16px;
+}
+
+.mypagePreviewBadge{
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8,15,28,0.62);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #f8fbff;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.16);
+}
+
+.mypagePreviewScale{
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) scale(0.78);
+  transform-origin: top center;
+  width: 1320px;
+  filter: blur(.35px) saturate(.97);
+  opacity: .95;
+  transition: transform .35s ease, filter .35s ease, opacity .35s ease;
+}
+
+.mypagePreviewShell:hover .mypagePreviewScale{
+  transform: translateX(-50%) scale(0.8);
+  filter: blur(0) saturate(1);
+  opacity: 1;
+}
+
+.mypagePreviewMock{
+  width: 100%;
+  min-height: 840px;
+  padding: 18px;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(14,165,255,0.08), transparent 26%),
+    radial-gradient(circle at 80% 78%, rgba(124,77,255,0.08), transparent 24%),
+    linear-gradient(180deg, rgba(5,13,27,0.98), rgba(3,10,20,0.99));
+}
+
+.mypagePreviewMockTop,
+.mypagePreviewMockBottom{
+  display: grid;
+  gap: 16px;
+}
+
+.mypagePreviewMockTop{
+  grid-template-columns: 1.45fr .95fr;
+  margin-bottom: 16px;
+}
+
+.mypagePreviewMockBottom{
+  grid-template-columns: .95fr 1.25fr;
+}
+
+.mypagePreviewMockCard{
+  border-radius: 26px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.028), rgba(255,255,255,0.018));
+  box-shadow:
+    0 20px 40px rgba(0,0,0,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  padding: 22px;
+  color: #fff;
+}
+
+.mypagePreviewMockCard h4{
+  margin: 6px 0 0;
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: -0.6px;
+}
+
+.mypagePreviewMiniEyebrow{
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  color: rgba(184,220,255,.68);
+}
+
+.mypagePreviewTotal{
+  margin-top: 18px;
+  font-size: 56px;
+  font-weight: 900;
+  letter-spacing: -1.5px;
+}
+
+.mypagePreviewProfit{
+  margin-top: 8px;
+  color: #49d3ff;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.mypagePreviewSummaryRow{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.mypagePreviewMiniStat{
+  min-height: 92px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.07);
+  background: rgba(255,255,255,.03);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.mypagePreviewMiniStat span{
+  font-size: 14px;
+  color: rgba(255,255,255,.56);
+}
+
+.mypagePreviewMiniStat strong{
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.mypagePreviewAccentBar{
+  margin-top: 18px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.05);
+  overflow: hidden;
+}
+
+.mypagePreviewAccentFill{
+  width: 62%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #37d5ff, #7d52ff);
+}
+
+.mypagePreviewAllocBody{
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.mypagePreviewRing{
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  background:
+    conic-gradient(
+      #37d5ff 0deg 148deg,
+      #5cb4ff 148deg 190deg,
+      #68f1b6 190deg 310deg,
+      #ffc15c 310deg 360deg
+    );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+}
+
+.mypagePreviewRingInner{
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  background: #071326;
+  border: 1px solid rgba(255,255,255,.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.mypagePreviewRingInner span{
+  color: rgba(255,255,255,.56);
+  font-size: 14px;
+}
+
+.mypagePreviewRingInner strong{
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.mypagePreviewLegend{
+  flex: 1;
+  display: grid;
+  gap: 12px;
+}
+
+.mypagePreviewLegendItem{
+  min-height: 58px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.028);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.mypagePreviewLegendItem .dot{
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.mypagePreviewLegendItem .dot.btc{ background: #37d5ff; }
+.mypagePreviewLegendItem .dot.ss{ background: #68f1b6; }
+.mypagePreviewLegendItem .dot.tsla{ background: #7d52ff; }
+
+.mypagePreviewLegendItem strong{
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.mypagePreviewLegendItem em{
+  margin-left: auto;
+  font-style: normal;
+  color: rgba(255,255,255,.72);
+  font-weight: 800;
+}
+
+.mypagePreviewFlowBox{
+  margin-top: 18px;
+  height: 220px;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.022);
+  overflow: hidden;
+}
+
+.mypagePreviewFlowSvg{
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.mypagePreviewFlowMeta{
+  margin-top: 16px;
+  display: flex;
+  gap: 14px;
+}
+
+.mypagePreviewFlowMeta > div{
+  flex: 1;
+  min-height: 78px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.mypagePreviewFlowMeta span{
+  color: rgba(255,255,255,.56);
+  font-size: 14px;
+}
+
+.mypagePreviewFlowMeta strong{
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.mypagePreviewHoldingList{
+  margin-top: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.mypagePreviewHoldingItem{
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.028);
+  padding: 16px 18px;
+}
+
+.mypagePreviewHoldingTop{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.mypagePreviewHoldingTop strong{
+  display: block;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.mypagePreviewHoldingTop span{
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+  color: rgba(255,255,255,.54);
+}
+
+.mypagePreviewHoldingTop b{
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.mypagePreviewHoldingMeta{
+  margin-top: 10px;
+  color: rgba(255,255,255,.58);
+  font-size: 14px;
+}
+
+.mypagePreviewHoldingBottom{
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mypagePreviewHoldingBottom em{
+  font-style: normal;
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.mypagePreviewHoldingBottom em.up{
+  color: #4dd7ff;
+}
+
+.mypagePreviewHoldingBottom span{
+  color: rgba(255,255,255,.66);
+  font-weight: 700;
+}
+
+.mypagePreviewHoldingBar{
+  margin-top: 12px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.05);
+  overflow: hidden;
+}
+
+.mypagePreviewHoldingBar .fill{
+  height: 100%;
+  border-radius: inherit;
+}
+
+.mypagePreviewHoldingBar .fill.btc{
+  background: linear-gradient(90deg, #37d5ff, #59a9ff);
+}
+
+.mypagePreviewHoldingBar .fill.ss{
+  background: linear-gradient(90deg, #68f1b6, #1fcf91);
+}
+
+.mypagePreviewHoldingBar .fill.tsla{
+  background: linear-gradient(90deg, #8b77ff, #7d52ff);
+}
+
+@media (max-width: 1100px){
+  .myPageMain .portfolioDashboard{
+    width: min(1320px, calc(100% - 20px));
+  }
+
+  .mypagePreviewScale{
+    width: 1240px;
+    transform: translateX(-50%) scale(.7);
+  }
+
+  .mypagePreviewShell:hover .mypagePreviewScale{
+    transform: translateX(-50%) scale(.72);
+  }
+}
+
+@media (max-width: 900px){
+  .myPageMain{
+    padding: 18px 0 42px;
+  }
+
+  .mypagePreviewShell{
+    height: 320px;
+  }
+
+  .mypagePreviewScale{
+    width: 1160px;
+    transform: translateX(-50%) scale(.56);
+  }
+
+  .mypagePreviewShell:hover .mypagePreviewScale{
+    transform: translateX(-50%) scale(.575);
+  }
+}
