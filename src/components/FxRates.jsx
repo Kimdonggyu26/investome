@@ -3,16 +3,19 @@ import { fetchFx } from "../api/fxApi";
 import "./FxRates.css";
 
 const FX = [
-  { key: "USDKRW", label: "미국 / USD", flag: "https://flagcdn.com/w40/us.png" },
-  { key: "JPYKRW", label: "일본 / JPY", flag: "https://flagcdn.com/w40/jp.png" },
-  { key: "CNYKRW", label: "중국 / CNY", flag: "https://flagcdn.com/w40/cn.png" },
-  { key: "EURKRW", label: "유럽 / EUR", flag: "https://flagcdn.com/w40/eu.png" },
-  { key: "AUDKRW", label: "호주 / AUD", flag: "https://flagcdn.com/w40/au.png" },
+  { key: "USDKRW", label: "미국 달러", code: "USD", flag: "https://flagcdn.com/w40/us.png" },
+  { key: "JPYKRW", label: "일본 엔", code: "JPY", flag: "https://flagcdn.com/w40/jp.png" },
+  { key: "CNYKRW", label: "중국 위안", code: "CNY", flag: "https://flagcdn.com/w40/cn.png" },
+  { key: "EURKRW", label: "유로", code: "EUR", flag: "https://flagcdn.com/w40/eu.png" },
+  { key: "AUDKRW", label: "호주 달러", code: "AUD", flag: "https://flagcdn.com/w40/au.png" },
 ];
 
 function fmt(n) {
   if (typeof n !== "number" || !isFinite(n)) return "-";
-  return n.toLocaleString("ko-KR", { maximumFractionDigits: 2 });
+  return n.toLocaleString("ko-KR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
 function diffValue(now, base) {
@@ -40,11 +43,11 @@ function changePct(now, base) {
   return ((now - base) / base) * 100;
 }
 
-function color(v) {
-  if (typeof v !== "number") return "rgba(255,255,255,0.55)";
-  if (v > 0) return "rgba(80,255,170,0.95)";
-  if (v < 0) return "rgba(255,120,170,0.95)";
-  return "rgba(255,255,255,0.55)";
+function getDirection(v) {
+  if (typeof v !== "number" || !isFinite(v)) return "neutral";
+  if (v > 0) return "up";
+  if (v < 0) return "down";
+  return "neutral";
 }
 
 function formatPct(p) {
@@ -95,87 +98,80 @@ export default function FxRates() {
   }, []);
 
   return (
-    <div className="fxCard" id="fx">
+    <section className="fxCard" id="fx">
       <div className="fxHeader">
-        <div>
-          <div className="fxTitle">오늘의 환율</div>
-          <div className="fxSub">Today's Exchange Rate</div>
-        </div>
+        <div className="fxHeading">
+          <div className="fxEyebrow">
+            <span className="fxLiveBadge">
+              <span className="fxLiveDot" />
+              LIVE FX
+            </span>
+            <span className="fxDatePill">기준일 {fx?.updatedDate || "-"}</span>
+          </div>
 
-        <div className="fxUpdated">{fx?.updatedDate || "-"}</div>
+          <div className="fxTitle">오늘의 환율</div>
+          <div className="fxSub">주요 통화의 원화 기준 시세와 전일 대비 흐름</div>
+        </div>
       </div>
 
       {err && (
-        <div className="muted" style={{ marginTop: 10 }}>
-          환율을 불러오지 못했어요.
+        <div className="fxError">
+          환율 데이터를 불러오지 못했어요.
         </div>
       )}
 
       <div className="fxList">
-        {FX.map((c) => {
-          const now = fx?.[c.key];
-          const base = fx?.changes?.[c.key];
+        {FX.map((item) => {
+          const now = fx?.[item.key];
+          const base = fx?.changes?.[item.key];
 
           const diff = diffValue(now, base);
           const pct = changePct(now, base);
-          const col = color(diff);
-          const valueText = fmt(now);
-
-          const arrow =
-            typeof diff === "number"
-              ? diff > 0
-                ? "▲"
-                : diff < 0
-                ? "▼"
-                : "•"
-              : "";
+          const direction = getDirection(diff);
 
           return (
-            <div className="fxRow" key={c.key}>
-              <div className="fxLeft">
+            <article className="fxRow" key={item.key}>
+              <div className="fxRowMain">
                 <div className="fxFlag" aria-hidden="true">
-                  <img src={c.flag} alt="" />
+                  <img src={item.flag} alt="" />
                 </div>
 
                 <div className="fxMeta">
-                  <div className="fxValue">
-                    {valueText}
-                    {valueText !== "-" && <span className="fxUnit">원</span>}
+                  <div className="fxTopLine">
+                    <span className="fxName">{item.label}</span>
+                    <span className="fxCode">{item.code}</span>
                   </div>
-                  <div className="fxLabel">{c.label}</div>
+
+                  <div className="fxPrice">
+                    {fmt(now)}
+                    {now !== null && now !== undefined && (
+                      <span className="fxUnit">원</span>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="fxRight" style={{ color: col }}>
-                {typeof diff === "number" && typeof pct === "number" ? (
-                  <>
-                    <div className="fxPct">{formatPct(pct)}</div>
-                    <div className="fxDiff">
-                      {arrow} {formatDiff(diff)}
-                    </div>
-                  </>
-                ) : (
-                  "-"
-                )}
+              <div className="fxRight">
+                <div className={`fxChangeBadge ${direction}`}>
+                  <span className="fxArrow">
+                    {direction === "up" ? "▲" : direction === "down" ? "▼" : "•"}
+                  </span>
+                  <span>{formatPct(pct)}</span>
+                </div>
+
+                <div className={`fxDiff ${direction}`}>
+                  전일 대비 {formatDiff(diff)}
+                </div>
               </div>
-            </div>
+            </article>
           );
         })}
       </div>
 
-      <div
-        style={{
-          marginTop: 14,
-          paddingTop: 10,
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          fontSize: 11,
-          color: "rgba(255,255,255,0.45)",
-          textAlign: "right",
-          letterSpacing: ".3px",
-        }}
-      >
-        Data Source : Frankfurter
+      <div className="fxFooter">
+        <span>Data Source</span>
+        <strong>Frankfurter</strong>
       </div>
-    </div>
+    </section>
   );
 }
