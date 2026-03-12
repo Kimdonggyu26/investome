@@ -8,7 +8,7 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  align-self: start; /* 랭킹 카드 높이에 억지로 맞춰져서 밑공간 뜨는 현상 방지 */
+  height: 100%;
 }
 
 .fxHeader{
@@ -152,7 +152,7 @@
 }
 
 .fxSource{
-  margin-top: 14px;
+  margin-top: auto;
   padding-top: 12px;
   border-top: 1px solid rgba(255,255,255,0.06);
   font-size: 11px;
