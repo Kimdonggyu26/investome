@@ -4,7 +4,6 @@
   background: rgba(255,255,255,0.035);
   border: 1px solid rgba(255,255,255,0.08);
   box-shadow: 0 18px 60px rgba(0,0,0,0.35);
-
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -19,6 +18,9 @@
   margin-bottom: 14px;
 }
 
+.sectionTickerBadge{
+  margin-bottom: 10px;
+}
 
 .fxTitle{
   font-weight: 900;
@@ -26,10 +28,6 @@
   line-height: 1.15;
   letter-spacing: -0.3px;
   color: rgba(255,255,255,0.97);
-}
-
-.fxLiveBadge{
-  margin-bottom: 10px;
 }
 
 .fxSub{
@@ -165,82 +163,4 @@
   text-align: right;
   letter-spacing: .3px;
   line-height: 1;
-}
-
-@media (max-width: 1024px){
-  .fxCard{
-    align-self: stretch;
-  }
-
-  .fxValue{
-    font-size: 24px;
-  }
-
-  .fxPct{
-    font-size: 18px;
-  }
-}
-
-@media (max-width: 768px){
-  .fxCard{
-    padding: 16px;
-  }
-
-  .fxHeader{
-    margin-bottom: 12px;
-  }
-
-  .fxTitle{
-    font-size: 19px;
-  }
-
-  .fxSub{
-    font-size: 12px;
-  }
-
-  .fxUpdated{
-    font-size: 11px;
-    padding: 6px 10px;
-  }
-
-  .fxRow{
-    min-height: 78px;
-    padding: 13px 12px;
-    gap: 12px;
-  }
-
-  .fxFlag{
-    width: 36px;
-    height: 36px;
-  }
-
-  .fxFlag img{
-    width: 19px;
-    height: 19px;
-  }
-
-  .fxValue{
-    font-size: 20px;
-  }
-
-  .fxUnit{
-    font-size: 11px;
-  }
-
-  .fxLabel{
-    font-size: 12px;
-  }
-
-  .fxRight{
-    min-width: 96px;
-  }
-
-  .fxPct{
-    font-size: 16px;
-  }
-
-  .fxDiff{
-    font-size: 11px;
-    margin-top: 4px;
-  }
 }

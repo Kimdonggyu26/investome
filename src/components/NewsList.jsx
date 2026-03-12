@@ -145,7 +145,11 @@ export default function NewsList({
     <div className={`card newsWrap ${pageMode ? "newsWrapPage" : ""}`}>
       <div className="newsHeader">
         <div>
-          <div className="sectionLiveBadge newsLiveBadge">LIVE</div>
+          <div className="tickerLiveBadge live sectionTickerBadge">
+            <span className="tickerLiveDot" />
+            <span>LIVE</span>
+          </div>
+
           <h2 className="newsHeading">{title}</h2>
           <div className="newsSub">Real-Time Market Headlines</div>
           <div className="newsDesc">
@@ -242,7 +246,11 @@ export default function NewsList({
               ))}
           </div>
 
-          {isSwitching && <div className="newsLoadingOverlay"><div className="newsLoadingSweep" /></div>}
+          {isSwitching && (
+            <div className="newsLoadingOverlay">
+              <div className="newsLoadingSweep" />
+            </div>
+          )}
         </div>
       )}
     </div>

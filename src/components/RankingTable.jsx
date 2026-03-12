@@ -225,7 +225,11 @@ export default function RankingTable() {
     <div className="rankingCard" id="ranking">
       <div className="rankingHeader">
         <div>
-          <div className="sectionLiveBadge">LIVE</div>
+          <div className="tickerLiveBadge live sectionTickerBadge">
+            <span className="tickerLiveDot" />
+            <span>LIVE</span>
+          </div>
+
           <h3>TOP30 랭킹</h3>
           <div className="rankingSub">Top 30 Market Movers</div>
         </div>

@@ -19,21 +19,8 @@
   gap: 14px;
 }
 
-.sectionLiveBadge{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  height:26px;
-  padding:0 10px;
-  border-radius:999px;
-  margin-bottom:10px;
-  font-size:11px;
-  font-weight:900;
-  letter-spacing:.6px;
-  color:#dff6ff;
-  background:rgba(14,165,255,0.14);
-  border:1px solid rgba(14,165,255,0.28);
-  box-shadow:0 10px 24px rgba(14,165,255,0.10);
+.sectionTickerBadge{
+  margin-bottom: 10px;
 }
 
 .rankingHeader h3{
@@ -43,7 +30,13 @@
   letter-spacing:.2px;
 }
 
-/* 아래는 기존 그대로 */
+.rankingSub{
+  margin-top: 6px;
+  color: rgba(255,255,255,0.58);
+  font-size: 13px;
+  line-height: 1.3;
+}
+
 .marketTabs{
   display:flex;
   gap:8px;
@@ -241,25 +234,9 @@
   position: relative;
 }
 
-.rowFlashUp{
-  animation: rowPulseUp 1.05s cubic-bezier(.22,1,.36,1);
-}
-
-.rowFlashDown{
-  animation: rowPulseDown 1.05s cubic-bezier(.22,1,.36,1);
-}
-
 .valueUpdate{
   position: relative;
   will-change: transform, filter;
-}
-
-.valueGlowUp{
-  animation: luxuryUp 1.05s cubic-bezier(.22,1,.36,1);
-}
-
-.valueGlowDown{
-  animation: luxuryDown 1.05s cubic-bezier(.22,1,.36,1);
 }
 
 .rankingHint{

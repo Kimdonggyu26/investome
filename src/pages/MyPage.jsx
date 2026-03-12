@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
 import MyPortfolio from "../components/MyPortfolio";
+import WatchlistPanel from "../components/WatchlistPanel";
 import { useTicker } from "../hooks/useTicker";
 import "../styles/MyPage.css";
 
@@ -274,7 +275,19 @@ export default function MyPage() {
       <Header />
 
       <main className="myPageMain">
-        {isLoggedIn ? <MyPortfolio /> : <MyPageGuestView />}
+        {isLoggedIn ? (
+          <div className="myPageLoggedLayout">
+            <aside className="myPageWatchCol">
+              <WatchlistPanel />
+            </aside>
+
+            <div className="myPageMainCol">
+              <MyPortfolio />
+            </div>
+          </div>
+        ) : (
+          <MyPageGuestView />
+        )}
       </main>
     </>
   );

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
+import WatchlistPanel from "../components/WatchlistPanel";
 import { useTicker } from "../hooks/useTicker";
 import {
   fetchCryptoTop30KRW,
@@ -266,40 +267,11 @@ export default function AssetDetail() {
 
       <main className="assetDetailPage">
         <div className="container assetDetailLayout">
-          <aside className="assetLeftFloat">
-            <div className="assetWatchFloat">
-              <div className="assetWatchFloatHead">
-                <div>
-                  <div className="assetWatchFloatEyebrow">MY WATCHLIST</div>
-                  <h3 className="assetWatchFloatTitle">나의 관심종목</h3>
-                </div>
-                <span className="assetWatchFloatBadge">LIVE</span>
-              </div>
-
-              <div className="assetWatchFloatList">
-                {watchlist.slice(0, 6).length === 0 ? (
-                  <div className="assetWatchFloatEmpty">
-                    관심종목을 추가하면 여기에 보여줘요.
-                  </div>
-                ) : (
-                  watchlist.slice(0, 6).map((item) => (
-                    <Link
-                      key={`${item.market}-${item.symbol}`}
-                      to={`/asset/${item.market}/${item.symbol}`}
-                      className={`assetWatchFloatItem ${
-                        item.market === market && item.symbol === symbol ? "active" : ""
-                      }`}
-                    >
-                      <span className="assetWatchFloatName">{item.name}</span>
-                      <span className="assetWatchFloatMeta">{item.symbol}</span>
-                    </Link>
-                  ))
-                )}
-              </div>
-            </div>
+          <aside className="assetDetailWatchCol">
+            <WatchlistPanel />
           </aside>
 
-          <div style={{ display: "grid", gap: 18 }}>
+          <div className="assetDetailMainCol">
             <section className="card assetTopCard assetHeroGlow">
               <div className="assetTopHead">
                 <div className="assetIdentity">

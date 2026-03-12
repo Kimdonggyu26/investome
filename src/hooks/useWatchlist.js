@@ -53,8 +53,8 @@ export function useWatchlist() {
           {
             market: asset.market,
             symbol: asset.symbol,
-            name: asset.name,
-            displayNameEN: asset.displayNameEN || asset.name,
+            name: asset.name || asset.symbol,
+            displayNameEN: asset.displayNameEN || asset.name || asset.symbol,
             iconUrl: asset.iconUrl || "",
             coinId: asset.coinId || "",
             addedAt: new Date().toISOString(),

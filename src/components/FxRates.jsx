@@ -106,7 +106,11 @@ export default function FxRates() {
     <div className="fxCard" id="fx">
       <div className="fxHeader">
         <div>
-          <div className="sectionLiveBadge fxLiveBadge">LIVE</div>
+          <div className="tickerLiveBadge live sectionTickerBadge">
+            <span className="tickerLiveDot" />
+            <span>LIVE</span>
+          </div>
+
           <div className="fxTitle">오늘의 환율</div>
           <div className="fxSub">Today's Exchange Rate</div>
         </div>
