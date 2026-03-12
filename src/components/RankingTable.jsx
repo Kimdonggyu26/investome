@@ -5,9 +5,10 @@ export default function RankingTable({
   title = "TOP30 랭킹",
   subtitle = "Top 30 Market Movers",
   market = "CRYPTO",
-  tabs,
-  rows = [],
-  footerText = "가격은 20초마다 갱신됩니다.",
+  categories = [],
+  activeCategory,
+  onChangeCategory,
+  items = [],
 }) {
   return (
     <section className="homePanel rankingCard">
@@ -24,7 +25,16 @@ export default function RankingTable({
         </div>
 
         <div className="rankingTabs">
-          {tabs}
+          {categories.map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              className={activeCategory === tab ? "active" : ""}
+              onClick={() => onChangeCategory?.(tab)}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -41,14 +51,62 @@ export default function RankingTable({
               </tr>
             </thead>
             <tbody>
-              {rows}
+              {items.map((item, index) => (
+                <tr key={item.symbol || item.name || index}>
+                  <td>
+                    <span className="rankingRank">{index + 1}</span>
+                  </td>
+
+                  <td>
+                    <div className="rankingCoin">
+                      <div className="rankingCoinIcon">
+                        <img src={item.image} alt={item.name} />
+                      </div>
+                      <div className="rankingCoinText">
+                        <div className="rankingCoinName">{item.name}</div>
+                        <div className="rankingCoinSymbol">{item.symbol}</div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td>
+                    <div className="rankingSpark">
+                      {item.sparkline ? (
+                        <img src={item.sparkline} alt={`${item.name} chart`} />
+                      ) : null}
+                    </div>
+                  </td>
+
+                  <td>
+                    <div className="rankingPrice">{item.price}</div>
+                  </td>
+
+                  <td>
+                    <div
+                      className={`rankingChange ${
+                        String(item.change).startsWith("-") ? "down" : "up"
+                      }`}
+                    >
+                      {item.change}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+
+              {items.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="rankingEmpty">
+                    데이터를 불러오는 중입니다.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
       <div className="homePanelFooter">
-        <span>{footerText}</span>
+        <span>가격은 20초마다 갱신됩니다.</span>
       </div>
     </section>
   );
