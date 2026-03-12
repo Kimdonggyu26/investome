@@ -159,31 +159,10 @@ export default function AssetDetail() {
           coinId: watchedItem?.coinId || "",
         }).catch(() => null);
 
-        if (liveQuote?.symbol) {
-          if (!alive) return;
-
-          setAsset({
-            market,
-            symbol: liveQuote.symbol || symbol,
-            name: liveQuote.name || watchedItem?.name || symbol,
-            displayNameEN:
-              liveQuote.displayNameEN ||
-              liveQuote.name ||
-              watchedItem?.name ||
-              symbol,
-            iconUrl: liveQuote.iconUrl || watchedItem?.iconUrl || "",
-            coinId: liveQuote.coinId || watchedItem?.coinId || "",
-            capKRW: liveQuote.capKRW ?? null,
-            priceKRW: liveQuote.priceKRW ?? null,
-            changePct: liveQuote.changePct ?? null,
-          });
-          return;
-        }
-
         let rows = [];
 
         if (market === "CRYPTO") {
-          rows = await fetchCryptoTop30KRW();
+          rows = await fetchCryptoTop30KRW().catch(() => []);
         } else if (market === "KOSPI") {
           const real = await fetchKospiTop30KRW().catch(() => null);
           rows = real ?? getKoreanDummyTop30("KOSPI");
@@ -192,28 +171,45 @@ export default function AssetDetail() {
           rows = real ?? getKoreanDummyTop30("NASDAQ");
         }
 
+        const found =
+          rows.find(
+            (row) =>
+              String(row.symbol).toUpperCase() === String(symbol).toUpperCase()
+          ) || null;
+
         if (!alive) return;
 
-        const found = rows.find(
-          (row) =>
-            String(row.symbol).toUpperCase() === String(symbol).toUpperCase()
-        );
+        const resolvedName =
+          found?.name ||
+          watchedItem?.name ||
+          liveQuote?.displayNameEN ||
+          liveQuote?.name ||
+          symbol;
 
-        setAsset(
-          found
-            ? {
-                market,
-                symbol,
-                name: found.name,
-                displayNameEN: found.displayNameEN || found.name,
-                iconUrl: found.iconUrl || "",
-                coinId: found.coinId || watchedItem?.coinId || "",
-                capKRW: found.capKRW ?? null,
-                priceKRW: found.priceKRW ?? null,
-                changePct: found.changePct ?? null,
-              }
-            : getFallbackAsset(market, symbol)
-        );
+        const resolvedDisplayName =
+          found?.displayNameEN ||
+          watchedItem?.displayNameEN ||
+          liveQuote?.displayNameEN ||
+          liveQuote?.name ||
+          resolvedName;
+
+        const resolvedIcon =
+          found?.iconUrl ||
+          watchedItem?.iconUrl ||
+          liveQuote?.iconUrl ||
+          "";
+
+        setAsset({
+          market,
+          symbol: liveQuote?.symbol || symbol,
+          name: resolvedName,
+          displayNameEN: resolvedDisplayName,
+          iconUrl: resolvedIcon,
+          coinId: liveQuote?.coinId || found?.coinId || watchedItem?.coinId || "",
+          capKRW: liveQuote?.capKRW ?? found?.capKRW ?? null,
+          priceKRW: liveQuote?.priceKRW ?? found?.priceKRW ?? null,
+          changePct: liveQuote?.changePct ?? found?.changePct ?? null,
+        });
       } catch {
         if (!alive) return;
         setAsset(getFallbackAsset(market, symbol));
@@ -266,12 +262,12 @@ export default function AssetDetail() {
       <Header />
 
       <main className="assetDetailPage">
-        <div className="container assetDetailLayout">
-          <aside className="assetDetailWatchCol">
+        <div className="assetDetailShell">
+          <aside className="assetDetailFloatingWatch">
             <WatchlistPanel />
           </aside>
 
-          <div className="assetDetailMainCol">
+          <div className="container">
             <section className="card assetTopCard assetHeroGlow">
               <div className="assetTopHead">
                 <div className="assetIdentity">

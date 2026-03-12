@@ -276,14 +276,12 @@ export default function MyPage() {
 
       <main className="myPageMain">
         {isLoggedIn ? (
-          <div className="myPageLoggedLayout">
-            <aside className="myPageWatchCol">
+          <div className="myPageFloatingShell">
+            <aside className="myPageFloatingWatch">
               <WatchlistPanel />
             </aside>
 
-            <div className="myPageMainCol">
-              <MyPortfolio />
-            </div>
+            <MyPortfolio />
           </div>
         ) : (
           <MyPageGuestView />

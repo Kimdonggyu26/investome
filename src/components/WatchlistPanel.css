@@ -28,7 +28,7 @@
 .watchlistPanelList{
   display: grid;
   gap: 8px;
-  max-height: 252px; /* 3개 넘으면 스크롤 */
+  max-height: 252px;
   overflow: auto;
   padding-right: 4px;
 }
@@ -128,48 +128,31 @@
   box-shadow: 0 0 16px rgba(14,165,255,0.35);
 }
 
-.assetDetailLayout{
-  display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
-  gap: 18px;
-  align-items: start;
+/* 상세페이지: 기존 가운데 구조 유지 + 왼쪽 여백에 띄우기 */
+.assetDetailShell{
+  position: relative;
 }
 
-.assetDetailWatchCol{
-  position: sticky;
-  top: 120px;
+.assetDetailFloatingWatch{
+  position: fixed;
+  top: 118px;
+  left: max(20px, calc(50% - 860px));
+  width: 250px;
+  z-index: 20;
 }
 
-.assetDetailMainCol{
-  min-width: 0;
+/* 마이페이지도 같은 방식 */
+.myPageFloatingWatch{
+  position: fixed;
+  top: 118px;
+  left: max(20px, calc(50% - 860px));
+  width: 250px;
+  z-index: 20;
 }
 
-.myPageLoggedLayout{
-  width: min(1280px, calc(100% - 40px));
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
-  gap: 18px;
-  align-items: start;
-}
-
-.myPageWatchCol{
-  position: sticky;
-  top: 120px;
-}
-
-.myPageMainCol{
-  min-width: 0;
-}
-
-@media (max-width: 1280px){
-  .assetDetailLayout,
-  .myPageLoggedLayout{
-    grid-template-columns: 1fr;
-  }
-
-  .assetDetailWatchCol,
-  .myPageWatchCol{
-    position: static;
+@media (max-width: 1680px){
+  .assetDetailFloatingWatch,
+  .myPageFloatingWatch{
+    display: none;
   }
 }
