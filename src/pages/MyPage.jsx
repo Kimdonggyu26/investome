@@ -2,12 +2,22 @@ import { Link } from "react-router-dom";
 import MyPortfolio from "../components/MyPortfolio";
 import "../styles/MyPage.css";
 
+function MyPagePreview() {
+  return (
+    <div className="mypagePreviewShell">
+      <div className="mypagePreviewOverlay">
+        <div className="mypagePreviewBadge">LOGIN TO UNLOCK</div>
+      </div>
+
+      <div className="mypagePreviewScale">
+        <MyPortfolio />
+      </div>
+    </div>
+  );
+}
+
 export default function MyPage() {
-  const isLoggedIn = false; 
-  // 나중에 백엔드 연결 시 예:
-  // const isLoggedIn = !!loginUser;
-  // const isLoggedIn = !!user;
-  // const isLoggedIn = !!sessionUser;
+  const isLoggedIn = localStorage.getItem("investome_logged_in") === "true";
 
   if (!isLoggedIn) {
     return (
@@ -45,6 +55,18 @@ export default function MyPage() {
               <strong>실시간 반영 UI</strong>
               <span>세련된 흐름으로 자연스럽게</span>
             </div>
+          </div>
+
+          <div className="mypageGuestPreviewSection">
+            <div className="mypageGuestPreviewTop">
+              <div>
+                <span className="mypageGuestPreviewEyebrow">PREVIEW</span>
+                <h3>로그인하면 이런 화면을 볼 수 있어요</h3>
+              </div>
+              <span className="mypageGuestPreviewChip">My Portfolio</span>
+            </div>
+
+            <MyPagePreview />
           </div>
 
           <div className="mypageGuestActionRow">

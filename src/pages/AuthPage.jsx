@@ -68,9 +68,8 @@ export default function AuthPage({ mode = "login" }) {
         keepLogin ? "true" : "false"
       );
 
-      alert("프론트 기준 로그인 상태로 전환했어요.");
-      navigate("/");
       window.dispatchEvent(new Event("investome-auth-changed"));
+      navigate("/mypage");
       return;
     }
 
