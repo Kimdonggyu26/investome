@@ -163,19 +163,7 @@ export default function FxRates() {
         })}
       </div>
 
-      <div
-        style={{
-          marginTop: 14,
-          paddingTop: 10,
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          fontSize: 11,
-          color: "rgba(255,255,255,0.45)",
-          textAlign: "right",
-          letterSpacing: ".3px",
-        }}
-      >
-        Data Source : Frankfurter
-      </div>
+      <div className="fxSource">Data Source : Frankfurter</div>
     </div>
   );
 }
