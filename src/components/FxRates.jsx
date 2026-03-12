@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchFx } from "../api/fxApi";
+import "../styles/homeSections.css";
 import "./FxRates.css";
 
 const FX = [
@@ -89,7 +90,7 @@ export default function FxRates() {
     };
 
     load();
-    const t = setInterval(load, 30_000);
+    const t = setInterval(load, 30000);
 
     return () => {
       mounted = false;
@@ -98,77 +99,73 @@ export default function FxRates() {
   }, []);
 
   return (
-    <section className="fxCard" id="fx">
-      <div className="fxHeader">
-        <div className="fxHeading">
-          <div className="fxEyebrow">
-            <span className="fxLiveBadge">
-              <span className="fxLiveDot" />
+    <section className="homePanel fxCard" id="fx">
+      <div className="homePanelHeader">
+        <div className="homePanelHeading">
+          <div className="homePanelEyebrow">
+            <span className="homePanelBadge">
+              <span className="homePanelBadgeDot" />
               LIVE FX
             </span>
-            <span className="fxDatePill">기준일 {fx?.updatedDate || "-"}</span>
+            <span className="homePanelMeta">기준일 {fx?.updatedDate || "-"}</span>
           </div>
-
-          <div className="fxTitle">오늘의 환율</div>
-          <div className="fxSub">주요 통화의 원화 기준 시세와 전일 대비 흐름</div>
+          <div className="homePanelTitle">오늘의 환율</div>
+          <div className="homePanelSub">주요 통화의 원화 기준 시세와 전일 대비 흐름</div>
         </div>
       </div>
 
-      {err && (
-        <div className="fxError">
-          환율 데이터를 불러오지 못했어요.
+      {err && <div className="fxError">환율 데이터를 불러오지 못했어요.</div>}
+
+      <div className="homePanelBody">
+        <div className="fxList">
+          {FX.map((item) => {
+            const now = fx?.[item.key];
+            const base = fx?.changes?.[item.key];
+            const diff = diffValue(now, base);
+            const pct = changePct(now, base);
+            const direction = getDirection(diff);
+
+            return (
+              <article className="fxRow" key={item.key}>
+                <div className="fxRowMain">
+                  <div className="fxFlag" aria-hidden="true">
+                    <img src={item.flag} alt="" />
+                  </div>
+
+                  <div className="fxMeta">
+                    <div className="fxTopLine">
+                      <span className="fxName">{item.label}</span>
+                      <span className="fxCode">{item.code}</span>
+                    </div>
+
+                    <div className="fxPrice">
+                      {fmt(now)}
+                      {now !== null && now !== undefined && (
+                        <span className="fxUnit">원</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="fxRight">
+                  <div className={`fxChangeBadge ${direction}`}>
+                    <span className="fxArrow">
+                      {direction === "up" ? "▲" : direction === "down" ? "▼" : "•"}
+                    </span>
+                    <span>{formatPct(pct)}</span>
+                  </div>
+
+                  <div className={`fxDiff ${direction}`}>
+                    전일 대비 {formatDiff(diff)}
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
-      )}
-
-      <div className="fxList">
-        {FX.map((item) => {
-          const now = fx?.[item.key];
-          const base = fx?.changes?.[item.key];
-
-          const diff = diffValue(now, base);
-          const pct = changePct(now, base);
-          const direction = getDirection(diff);
-
-          return (
-            <article className="fxRow" key={item.key}>
-              <div className="fxRowMain">
-                <div className="fxFlag" aria-hidden="true">
-                  <img src={item.flag} alt="" />
-                </div>
-
-                <div className="fxMeta">
-                  <div className="fxTopLine">
-                    <span className="fxName">{item.label}</span>
-                    <span className="fxCode">{item.code}</span>
-                  </div>
-
-                  <div className="fxPrice">
-                    {fmt(now)}
-                    {now !== null && now !== undefined && (
-                      <span className="fxUnit">원</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="fxRight">
-                <div className={`fxChangeBadge ${direction}`}>
-                  <span className="fxArrow">
-                    {direction === "up" ? "▲" : direction === "down" ? "▼" : "•"}
-                  </span>
-                  <span>{formatPct(pct)}</span>
-                </div>
-
-                <div className={`fxDiff ${direction}`}>
-                  전일 대비 {formatDiff(diff)}
-                </div>
-              </div>
-            </article>
-          );
-        })}
       </div>
 
-      <div className="fxFooter">
+      <div className="homePanelFooter">
         <span>Data Source</span>
         <strong>Frankfurter</strong>
       </div>

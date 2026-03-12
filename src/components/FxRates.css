@@ -1,134 +1,18 @@
 .fxCard{
-  position: relative;
-  padding: 20px;
-  border-radius: 24px;
-  background:
-    radial-gradient(circle at top left, rgba(14,165,255,0.14), transparent 34%),
-    linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.028));
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow:
-    0 24px 70px rgba(0,0,0,0.34),
-    inset 0 1px 0 rgba(255,255,255,0.05);
-  backdrop-filter: blur(12px);
-  min-height: 560px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.fxCard::after{
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    140deg,
-    transparent 0%,
-    rgba(255,255,255,0.02) 24%,
-    transparent 48%,
-    rgba(14,165,255,0.03) 72%,
-    transparent 100%
-  );
-  pointer-events: none;
-}
-
-.fxHeader{
-  position: relative;
-  z-index: 1;
-}
-
-.fxHeading{
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.fxEyebrow{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.fxLiveBadge{
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 12px;
-  border-radius: 999px;
-  background: rgba(14,165,255,0.14);
-  border: 1px solid rgba(14,165,255,0.28);
-  color: #dff6ff;
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.8px;
-  box-shadow: 0 0 20px rgba(14,165,255,0.10);
-}
-
-.fxLiveDot{
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #51e4ff;
-  box-shadow: 0 0 0 0 rgba(81,228,255,0.55);
-  animation: fxPulse 1.7s infinite;
-}
-
-.fxDatePill{
-  display: inline-flex;
-  align-items: center;
-  height: 32px;
-  padding: 0 12px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.76);
-  font-size: 12px;
-  font-weight: 700;
-  backdrop-filter: blur(8px);
-}
-
-.fxTitle{
-  font-size: 24px;
-  line-height: 1.1;
-  font-weight: 950;
-  letter-spacing: -0.5px;
-  color: rgba(255,255,255,0.98);
-}
-
-.fxSub{
-  font-size: 13px;
-  color: rgba(255,255,255,0.58);
-  letter-spacing: -0.1px;
-}
-
-.fxError{
-  margin-top: 14px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(255,120,170,0.08);
-  border: 1px solid rgba(255,120,170,0.18);
-  color: rgba(255,210,225,0.94);
-  font-size: 13px;
+  min-height: 100%;
 }
 
 .fxList{
-  position: relative;
-  z-index: 1;
-  margin-top: 18px;
   display: grid;
   gap: 12px;
-  flex: 1;
-  align-content: start;
 }
 
 .fxRow{
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
-  padding: 16px 16px;
+  padding: 16px;
   border-radius: 20px;
   background:
     linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.02));
@@ -141,7 +25,7 @@
     border-color .18s ease,
     box-shadow .18s ease,
     background .18s ease;
-  min-height: 94px;
+  min-height: 0;
 }
 
 .fxRow:hover{
@@ -185,7 +69,7 @@
 .fxMeta{
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
   min-width: 0;
 }
 
@@ -198,7 +82,7 @@
 }
 
 .fxName{
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   color: rgba(255,255,255,0.92);
   letter-spacing: -0.2px;
@@ -219,27 +103,31 @@
 }
 
 .fxPrice{
-  font-size: 24px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  font-size: 22px;
   line-height: 1;
   font-weight: 950;
   letter-spacing: -0.5px;
   color: rgba(255,255,255,0.98);
+  white-space: nowrap;
 }
 
 .fxUnit{
-  margin-left: 4px;
   font-size: 12px;
   font-weight: 800;
   color: rgba(255,255,255,0.64);
+  transform: translateY(-2px);
 }
 
 .fxRight{
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  justify-content: center;
   gap: 8px;
-  min-width: 136px;
-  flex-shrink: 0;
+  min-width: 122px;
 }
 
 .fxChangeBadge{
@@ -253,6 +141,7 @@
   font-weight: 900;
   letter-spacing: -0.2px;
   border: 1px solid transparent;
+  white-space: nowrap;
 }
 
 .fxChangeBadge.up{
@@ -282,6 +171,7 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: -0.1px;
+  white-space: nowrap;
 }
 
 .fxDiff.up{
@@ -296,55 +186,11 @@
   color: rgba(255,255,255,0.54);
 }
 
-.fxFooter{
-  position: relative;
-  z-index: 1;
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  color: rgba(255,255,255,0.42);
-  letter-spacing: 0.4px;
-}
-
-.fxFooter strong{
-  color: rgba(255,255,255,0.68);
-  font-weight: 800;
-}
-
-@keyframes fxPulse{
-  0%{
-    box-shadow: 0 0 0 0 rgba(81,228,255,0.55);
-  }
-  70%{
-    box-shadow: 0 0 0 10px rgba(81,228,255,0);
-  }
-  100%{
-    box-shadow: 0 0 0 0 rgba(81,228,255,0);
-  }
-}
-
 @media (max-width: 768px){
-  .fxCard{
-    min-height: auto;
-    padding: 16px;
-    border-radius: 20px;
-  }
-
-  .fxTitle{
-    font-size: 21px;
-  }
-
-  .fxSub{
-    font-size: 12px;
-  }
-
   .fxRow{
-    min-height: 88px;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 12px;
     padding: 14px;
     border-radius: 18px;
   }
@@ -364,17 +210,11 @@
   }
 
   .fxRight{
-    min-width: 110px;
-    gap: 6px;
-  }
-
-  .fxChangeBadge{
-    height: 30px;
-    padding: 0 10px;
-    font-size: 12px;
+    min-width: 0;
+    align-items: flex-start;
   }
 
   .fxDiff{
-    font-size: 11px;
+    white-space: normal;
   }
 }

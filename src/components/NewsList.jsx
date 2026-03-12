@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchNews } from "../api/newsApi";
+import "../styles/homeSections.css";
 import "../styles/NewsList.css";
 
 const CATEGORIES = [
@@ -102,7 +103,9 @@ export default function NewsList({
         const minimumOverlay = 220;
 
         if (elapsed < minimumOverlay) {
-          await new Promise((resolve) => setTimeout(resolve, minimumOverlay - elapsed));
+          await new Promise((resolve) =>
+            setTimeout(resolve, minimumOverlay - elapsed)
+          );
         }
 
         if (!alive) return;
@@ -142,13 +145,28 @@ export default function NewsList({
   const rest = pageMode ? view.slice(1) : view;
 
   return (
-    <div className={`card newsWrap ${pageMode ? "newsWrapPage" : ""}`}>
-      <div className="newsHeader">
-        <div>
-          <h2 className="newsHeading">{title}</h2>
-          <div className="newsSub">Real-Time Market Headlines</div>
-          <div className="newsDesc">
-            카테고리별 최신 뉴스와 많이 보는 이슈를 빠르게 확인해보세요.
+    <section className={`homePanel newsWrap ${pageMode ? "newsWrapPage" : ""}`}>
+      <div className="homePanelHeader newsHeader">
+        <div className="homePanelHeading">
+          <div className="homePanelEyebrow">
+            <span className="homePanelBadge">
+              <span className="homePanelBadgeDot" />
+              NEWS FLOW
+            </span>
+            <span className="homePanelMeta">
+              {category === "all"
+                ? "GLOBAL"
+                : category === "crypto"
+                ? "CRYPTO"
+                : category === "domestic"
+                ? "KOREA"
+                : "WORLD"}
+            </span>
+          </div>
+
+          <div className="homePanelTitle">{title}</div>
+          <div className="homePanelSub">
+            핵심 뉴스만 빠르게 훑는 실시간 뉴스 브리핑
           </div>
         </div>
 
@@ -195,61 +213,63 @@ export default function NewsList({
         )}
       </div>
 
-      {err && <div className="muted">뉴스를 불러오지 못했어요.</div>}
+      {err && <div className="fxError">뉴스를 불러오지 못했어요.</div>}
 
-      {isLoading && items.length === 0 ? (
-        <NewsSkeleton />
-      ) : (
-        <div className={`newsContentShell ${isSwitching ? "isSwitching" : ""}`}>
-          {!err && pageMode && featured && (
-            <a
-              href={featured.link}
-              target="_blank"
-              rel="noreferrer"
-              className="newsFeatured"
-              title="클릭해서 기사로 이동"
-            >
-              <div className="newsFeaturedBody">
-                <div className="newsFeaturedBadge">FEATURED</div>
-                <div className="newsFeaturedTitle">{featured.title}</div>
-                <div className="newsFeaturedMeta">
-                  <span>{featured.source || "Google News"}</span>
-                  <span className="newsDot">•</span>
-                  <span>{ymdhm(featured.pubDate)}</span>
-                </div>
-              </div>
-            </a>
-          )}
-
-          <div className={`newsGrid ${pageMode ? "newsGridPage" : ""}`}>
-            {rest.map((n, idx) => (
+      <div className="homePanelBody">
+        {isLoading && items.length === 0 ? (
+          <NewsSkeleton />
+        ) : (
+          <div className={`newsContentShell ${isSwitching ? "isSwitching" : ""}`}>
+            {!err && pageMode && featured && (
               <a
-                key={`${n.link}-${idx}`}
-                href={n.link}
+                href={featured.link}
                 target="_blank"
                 rel="noreferrer"
-                className="newsItem"
+                className="newsFeatured"
                 title="클릭해서 기사로 이동"
               >
-                <div className="newsMain">
-                  <span className="newsTitle">{n.title}</span>
-                  <div className="newsMeta">
-                    <span className="newsSource">{n.source || "Google News"}</span>
+                <div className="newsFeaturedBody">
+                  <div className="newsFeaturedBadge">FEATURED</div>
+                  <div className="newsFeaturedTitle">{featured.title}</div>
+                  <div className="newsFeaturedMeta">
+                    <span>{featured.source || "Google News"}</span>
                     <span className="newsDot">•</span>
-                    <span className="newsDate">{ymdhm(n.pubDate)}</span>
+                    <span>{ymdhm(featured.pubDate)}</span>
                   </div>
                 </div>
               </a>
-            ))}
-          </div>
+            )}
 
-          {isSwitching && (
-            <div className="newsLoadingOverlay" aria-hidden="true">
-              <div className="newsLoadingSweep" />
+            <div className={`newsGrid ${pageMode ? "newsGridPage" : ""}`}>
+              {rest.map((n, idx) => (
+                <a
+                  key={`${n.link}-${idx}`}
+                  href={n.link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="newsItem"
+                  title="클릭해서 기사로 이동"
+                >
+                  <div className="newsItemTop">
+                    <span className="newsSource">{n.source || "Google News"}</span>
+                    <span className="newsDate">{ymdhm(n.pubDate)}</span>
+                  </div>
+
+                  <div className="newsMain">
+                    <span className="newsTitle">{n.title}</span>
+                  </div>
+                </a>
+              ))}
             </div>
-          )}
-        </div>
-      )}
-    </div>
+
+            {isSwitching && (
+              <div className="newsLoadingOverlay" aria-hidden="true">
+                <div className="newsLoadingSweep" />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
