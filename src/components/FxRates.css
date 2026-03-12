@@ -1,220 +1,175 @@
 .fxCard{
-  min-height: 100%;
+  padding: 18px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 18px 60px rgba(0,0,0,0.35);
+
+  height: 100%;
+  min-height: 560px;
+  display: flex;
+  flex-direction: column;
 }
 
-.fxList{
-  display: grid;
+.fxHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
   gap: 12px;
 }
 
-.fxRow{
+.fxTitle{
+  font-weight: 900;
+  font-size: 18px;
+}
+
+.fxSub{
+  margin-top: 4px;
+  color: rgba(255,255,255,0.55);
+  font-size: 12px;
+}
+
+.fxUpdated{
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.fxList{
+  margin-top: 14px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
+  gap: 12px;
+  flex: 1;
+  align-content: start;
+}
+
+.fxRow{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
   gap: 16px;
-  padding: 16px;
-  border-radius: 20px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.02));
-  border: 1px solid rgba(255,255,255,0.07);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.04),
-    0 10px 30px rgba(0,0,0,0.16);
-  transition:
-    transform .18s ease,
-    border-color .18s ease,
-    box-shadow .18s ease,
-    background .18s ease;
-  min-height: 0;
+  padding: 14px 14px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.015));
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+  min-height: 86px;
 }
 
 .fxRow:hover{
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   border-color: rgba(14,165,255,0.22);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.05),
-    0 16px 40px rgba(0,0,0,0.22),
-    0 0 24px rgba(14,165,255,0.08);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.25), 0 0 22px rgba(14,165,255,0.10);
 }
 
-.fxRowMain{
-  display: flex;
-  align-items: center;
-  gap: 14px;
+.fxLeft{
+  display:flex;
+  align-items:center;
+  gap: 12px;
   min-width: 0;
 }
 
 .fxFlag{
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(14,165,255,0.22), rgba(0,0,0,0.24));
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: radial-gradient(circle at 30% 30%, rgba(14,165,255,0.22), rgba(0,0,0,0.25));
   border: 1px solid rgba(255,255,255,0.12);
-  box-shadow: 0 0 20px rgba(14,165,255,0.10);
+  box-shadow: 0 0 18px rgba(14,165,255,0.10);
   overflow: hidden;
   flex-shrink: 0;
 }
 
 .fxFlag img{
-  width: 24px;
-  height: 24px;
-  object-fit: cover;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
+  object-fit: cover;
 }
 
 .fxMeta{
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
+  display:flex;
+  flex-direction:column;
+  gap: 6px;
   min-width: 0;
 }
 
-.fxTopLine{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  flex-wrap: wrap;
-}
-
-.fxName{
-  font-size: 14px;
-  font-weight: 800;
-  color: rgba(255,255,255,0.92);
-  letter-spacing: -0.2px;
-}
-
-.fxCode{
-  display: inline-flex;
-  align-items: center;
-  height: 22px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.62);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.4px;
-}
-
-.fxPrice{
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  font-size: 22px;
-  line-height: 1;
+.fxValue{
   font-weight: 950;
-  letter-spacing: -0.5px;
+  font-size: 16px;
+  line-height: 1;
   color: rgba(255,255,255,0.98);
-  white-space: nowrap;
 }
 
 .fxUnit{
-  font-size: 12px;
+  margin-left: 2px;
+  font-size: 11px;
   font-weight: 800;
-  color: rgba(255,255,255,0.64);
-  transform: translateY(-2px);
+  color: rgba(255,255,255,0.72);
+}
+
+.fxLabel{
+  font-size: 12px;
+  color: rgba(255,255,255,0.58);
+  padding-left: 2px;
 }
 
 .fxRight{
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 8px;
-  min-width: 122px;
-}
-
-.fxChangeBadge{
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 34px;
-  padding: 0 12px;
-  border-radius: 999px;
-  font-size: 13px;
   font-weight: 900;
-  letter-spacing: -0.2px;
-  border: 1px solid transparent;
-  white-space: nowrap;
+  font-size: 13px;
+  min-width: 120px;
+  text-align:right;
+  line-height: 1.45;
+  flex-shrink: 0;
 }
 
-.fxChangeBadge.up{
-  color: rgba(78,241,191,0.98);
-  background: rgba(78,241,191,0.10);
-  border-color: rgba(78,241,191,0.20);
-}
+@media (max-width: 768px) {
+  .fxCard{
+    min-height: auto;
+  }
 
-.fxChangeBadge.down{
-  color: rgba(255,130,178,0.98);
-  background: rgba(255,130,178,0.10);
-  border-color: rgba(255,130,178,0.20);
-}
-
-.fxChangeBadge.neutral{
-  color: rgba(255,255,255,0.74);
-  background: rgba(255,255,255,0.05);
-  border-color: rgba(255,255,255,0.08);
-}
-
-.fxArrow{
-  font-size: 11px;
-  transform: translateY(-1px);
-}
-
-.fxDiff{
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: -0.1px;
-  white-space: nowrap;
-}
-
-.fxDiff.up{
-  color: rgba(78,241,191,0.88);
-}
-
-.fxDiff.down{
-  color: rgba(255,130,178,0.88);
-}
-
-.fxDiff.neutral{
-  color: rgba(255,255,255,0.54);
-}
-
-@media (max-width: 768px){
   .fxRow{
-    grid-template-columns: 1fr;
-    align-items: stretch;
-    gap: 12px;
-    padding: 14px;
-    border-radius: 18px;
+    min-height: 78px;
+    padding: 12px;
   }
 
-  .fxFlag{
-    width: 42px;
-    height: 42px;
-  }
-
-  .fxFlag img{
-    width: 22px;
-    height: 22px;
-  }
-
-  .fxPrice{
-    font-size: 20px;
+  .fxValue{
+    font-size: 16px;
+    padding: 4px 8px 5px;
   }
 
   .fxRight{
-    min-width: 0;
-    align-items: flex-start;
+    min-width: 96px;
+    font-size: 12px;
   }
+}
 
-  .fxDiff{
-    white-space: normal;
-  }
+.fxRight{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  line-height:1.2;
+}
+
+.fxPct{
+  font-weight:900;
+  font-size:14px;
+}
+
+.fxDiff{
+  font-size:11px;
+  opacity:0.7;
+  margin-top:2px;
+}
+
+.fxPct{
+  font-weight:900;
+  font-size:14px;
+  letter-spacing:-0.3px;
 }
