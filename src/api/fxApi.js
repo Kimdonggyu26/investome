@@ -1,6 +1,6 @@
 const API = "https://api.frankfurter.app";
 
-function formatLocalDate(date) {
+function formatDate(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
@@ -10,11 +10,15 @@ function formatLocalDate(date) {
 function subtractDay(dateStr, days) {
   const d = new Date(`${dateStr}T12:00:00`);
   d.setDate(d.getDate() - days);
-  return formatLocalDate(d);
+  return formatDate(d);
 }
 
-async function fetchRatesByKrw(date) {
-  // 1 KRW 당 각 통화값을 받아온 뒤 역산해서 "1통화 = 몇 원" 형태로 변환
+function toKoreanTodayLabel() {
+  return formatDate(new Date());
+}
+
+async function fetchRates(date) {
+  // 1 KRW 기준으로 각 통화값 조회 후 역산
   const url = `${API}/${date}?from=KRW&to=USD,JPY,CNY,EUR,AUD`;
   const res = await fetch(url);
 
@@ -33,40 +37,45 @@ async function fetchRatesByKrw(date) {
   };
 
   return {
-    USDKRW: invert(rates.USD),
-    JPYKRW: invert(rates.JPY),
-    CNYKRW: invert(rates.CNY),
-    EURKRW: invert(rates.EUR),
-    AUDKRW: invert(rates.AUD),
+    actualDate: json.date,
+    rates: {
+      USDKRW: invert(rates.USD),
+      JPYKRW: invert(rates.JPY),
+      CNYKRW: invert(rates.CNY),
+      EURKRW: invert(rates.EUR),
+      AUDKRW: invert(rates.AUD),
+    },
   };
 }
 
 async function findLatestAvailableRates(startDate, maxBacktrack = 10) {
   for (let i = 0; i <= maxBacktrack; i += 1) {
     const target = subtractDay(startDate, i);
+
     try {
-      const rates = await fetchRatesByKrw(target);
-      return { date: target, rates };
+      const result = await fetchRates(target);
+      return result;
     } catch {
-      // 다음 이전 날짜 재시도
+      // 다음 날짜 재시도
     }
   }
+
   throw new Error("No available fx data found");
 }
 
 export async function fetchFx() {
-  const today = formatLocalDate(new Date());
+  const today = formatDate(new Date());
 
   const latestResult = await findLatestAvailableRates(today, 10);
   const previousResult = await findLatestAvailableRates(
-    subtractDay(latestResult.date, 1),
+    subtractDay(latestResult.actualDate, 1),
     10
   );
 
   return {
-    updatedDate: latestResult.date,
-    baseDate: latestResult.date,
-    previousDate: previousResult.date,
+    updatedDate: toKoreanTodayLabel(),
+    baseDate: latestResult.actualDate,
+    previousDate: previousResult.actualDate,
     ...latestResult.rates,
     changes: {
       USDKRW: previousResult.rates.USDKRW,
