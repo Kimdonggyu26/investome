@@ -353,3 +353,23 @@
     align-items: flex-start;
   }
 }
+
+.newsCategoryRow{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.newsCategoryGroup{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.newsCategoryRowRight{
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}

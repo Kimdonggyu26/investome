@@ -168,26 +168,30 @@ export default function NewsList({
               인기순
             </button>
           </div>
-
-          {!pageMode && moreLink && (
-            <Link to={moreLink} className="newsMoreBtn">
-              실시간 뉴스 더보기
-            </Link>
-          )}
         </div>
       </div>
 
       <div className="newsCategoryRow">
-        {CATEGORIES.map((c) => (
-          <button
-            key={c.key}
-            type="button"
-            className={`newsCategoryChip ${category === c.key ? "active" : ""}`}
-            onClick={() => setCategory(c.key)}
-          >
-            {c.label}
-          </button>
-        ))}
+        <div className="newsCategoryGroup">
+          {CATEGORIES.map((c) => (
+            <button
+              key={c.key}
+              type="button"
+              className={`newsCategoryChip ${category === c.key ? "active" : ""}`}
+              onClick={() => setCategory(c.key)}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+
+        {!pageMode && moreLink && (
+          <div className="newsCategoryRowRight">
+            <Link to={moreLink} className="newsMoreBtn">
+              실시간 뉴스 더보기
+            </Link>
+          </div>
+        )}
       </div>
 
       {err && <div className="muted">뉴스를 불러오지 못했어요.</div>}

@@ -22,7 +22,7 @@ function readHoldings() {
     if (!raw) return defaultPortfolio;
 
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : defaultPortfolio;
+    return Array.isArray(parsed) ? parsed : defaultPortfolio;
   } catch {
     return defaultPortfolio;
   }
@@ -103,7 +103,6 @@ const initialForm = {
   name: "",
   amount: "",
   avgPrice: "",
-  coinId: "",
 };
 
 export default function MyPortfolio() {
@@ -114,10 +113,18 @@ export default function MyPortfolio() {
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [searchText, setSearchText] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [form, setForm] = useState(initialForm);
+  const [isUiRefreshing, setIsUiRefreshing] = useState(false);
+  const [ringReady, setRingReady] = useState(false);
 
   useEffect(() => {
     setHoldings(readHoldings());
+  }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => setRingReady(true), 60);
+    return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {
@@ -226,12 +233,21 @@ export default function MyPortfolio() {
 
     return segments.length
       ? `conic-gradient(${segments.join(", ")})`
-      : "conic-gradient(#243244 0deg 360deg)";
+      : "conic-gradient(#1a2231 0deg 360deg)";
   }, [enrichedItems, totalAssetsForRatio]);
+
+  function triggerUiRefresh() {
+    setIsUiRefreshing(true);
+    window.clearTimeout(window.__investomeUiRefreshTimer);
+    window.__investomeUiRefreshTimer = window.setTimeout(() => {
+      setIsUiRefreshing(false);
+    }, 650);
+  }
 
   function openModal() {
     setForm(initialForm);
     setSearchText("");
+    setShowSuggestions(false);
     setSubmitError("");
     setOpen(true);
   }
@@ -240,6 +256,8 @@ export default function MyPortfolio() {
     setOpen(false);
     setSaving(false);
     setSubmitError("");
+    setSearchText("");
+    setShowSuggestions(false);
   }
 
   function handlePickSuggestion(asset) {
@@ -248,9 +266,9 @@ export default function MyPortfolio() {
       market: asset.market,
       symbol: asset.symbol,
       name: asset.name,
-      coinId: "",
     }));
-    setSearchText(asset.name);
+    setSearchText(`${asset.name} · ${asset.symbol}`);
+    setShowSuggestions(false);
   }
 
   async function handleSubmit(e) {
@@ -279,7 +297,6 @@ export default function MyPortfolio() {
         market: form.market,
         symbol: form.symbol,
         name: form.name,
-        coinId: form.coinId,
       });
 
       if (!verified?.symbol) {
@@ -294,11 +311,12 @@ export default function MyPortfolio() {
         displayNameEN: verified.displayNameEN || form.name,
         amount,
         avgPrice,
-        coinId: verified.coinId || form.coinId || "",
+        coinId: verified.coinId || "",
         iconUrl: verified.iconUrl || "",
       };
 
       setHoldings((prev) => [nextItem, ...prev]);
+      triggerUiRefresh();
       closeModal();
     } catch (err) {
       setSubmitError(err.message || "종목 추가 중 오류가 발생했어.");
@@ -309,13 +327,16 @@ export default function MyPortfolio() {
 
   function removeHolding(id) {
     setHoldings((prev) => prev.filter((item) => item.id !== id));
+    triggerUiRefresh();
   }
+
+  const emptyState = enrichedItems.length === 0;
 
   return (
     <>
       <section className="portfolioDashboard">
         <div className="portfolioTopGrid">
-          <div className="portfolioHeroCard card">
+          <div className={`portfolioHeroCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
             <div className="portfolioHeroAmbient" />
             <div className="portfolioHeroHead">
               <div>
@@ -363,7 +384,7 @@ export default function MyPortfolio() {
             </div>
           </div>
 
-          <div className="portfolioAllocationCard card">
+          <div className={`portfolioAllocationCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
             <div className="portfolioCardHead">
               <div>
                 <div className="portfolioEyebrow">ALLOCATION</div>
@@ -372,7 +393,12 @@ export default function MyPortfolio() {
             </div>
 
             <div className="portfolioAllocationBody">
-              <div className="portfolioRing" style={{ background: ringGradient }}>
+              <div
+                className={`portfolioRing ${ringReady ? "isReady" : ""} ${
+                  isUiRefreshing ? "isRefreshing" : ""
+                }`}
+                style={{ background: ringGradient }}
+              >
                 <div className="portfolioRingInner">
                   <span>총 자산</span>
                   <strong>{formatKRW(totalValue)}</strong>
@@ -380,26 +406,33 @@ export default function MyPortfolio() {
               </div>
 
               <div className="portfolioLegend">
-                {enrichedItems.map((item, idx) => {
-                  const ratio = ((item.value / totalAssetsForRatio) * 100 || 0).toFixed(1);
+                {emptyState ? (
+                  <div className="portfolioEmptyMiniCard">
+                    <strong>아직 비중 데이터가 없어요</strong>
+                    <span>종목을 추가하면 자산 비중이 원형 차트로 표시돼요.</span>
+                  </div>
+                ) : (
+                  enrichedItems.map((item, idx) => {
+                    const ratio = ((item.value / totalAssetsForRatio) * 100 || 0).toFixed(1);
 
-                  return (
-                    <div className="portfolioLegendItem" key={item.id}>
-                      <div className={`portfolioLegendDot ${toneClass(idx)}`} />
-                      <div className="portfolioLegendText">
-                        <strong>{item.symbol}</strong>
-                        <span>{ratio}%</span>
+                    return (
+                      <div className="portfolioLegendItem" key={item.id}>
+                        <div className={`portfolioLegendDot ${toneClass(idx)}`} />
+                        <div className="portfolioLegendText">
+                          <strong>{item.symbol}</strong>
+                          <span>{ratio}%</span>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
         </div>
 
         <div className="portfolioBottomGrid">
-          <div className="portfolioFlowCard card">
+          <div className={`portfolioFlowCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
             <div className="portfolioCardHead">
               <div>
                 <div className="portfolioEyebrow">ASSET FLOW</div>
@@ -408,135 +441,166 @@ export default function MyPortfolio() {
               <div className="portfolioGhostTag">Preview</div>
             </div>
 
-            <div className="portfolioFlowBox">
-              <svg
-                className="portfolioFlowSvg"
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-              >
-                <defs>
-                  <linearGradient id="portfolio-flow-line" x1="0" x2="1" y1="0" y2="0">
-                    <stop offset="0%" stopColor="#36d5ff" />
-                    <stop offset="100%" stopColor="#7c4dff" />
-                  </linearGradient>
-                  <linearGradient id="portfolio-flow-fill" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="rgba(54,213,255,0.28)" />
-                    <stop offset="100%" stopColor="rgba(54,213,255,0)" />
-                  </linearGradient>
-                </defs>
-
-                <polyline
-                  points={`0,100 ${flowPath} 100,100`}
-                  fill="url(#portfolio-flow-fill)"
-                  className="portfolioFlowArea"
-                />
-                <polyline
-                  points={flowPath}
-                  fill="none"
-                  stroke="url(#portfolio-flow-line)"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="portfolioFlowLine"
-                />
-              </svg>
-            </div>
-
-            <div className="portfolioFlowMeta">
-              <div>
-                <span className="label">보유 종목수</span>
-                <strong>{enrichedItems.length}개</strong>
+            {emptyState ? (
+              <div className="portfolioEmptySoft">
+                <div className="portfolioEmptySoftIcon">↗</div>
+                <div>
+                  <strong>흐름 데이터 준비 전</strong>
+                  <p>보유 종목을 추가하면 전체 자산 흐름이 자연스럽게 표시돼요.</p>
+                </div>
               </div>
-              <div>
-                <span className="label">총 수익률</span>
-                <strong>{totalRate.toFixed(2)}%</strong>
-              </div>
-            </div>
+            ) : (
+              <>
+                <div className="portfolioFlowBox">
+                  <svg
+                    className="portfolioFlowSvg"
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="none"
+                  >
+                    <defs>
+                      <linearGradient id="portfolio-flow-line" x1="0" x2="1" y1="0" y2="0">
+                        <stop offset="0%" stopColor="#36d5ff" />
+                        <stop offset="100%" stopColor="#7c4dff" />
+                      </linearGradient>
+                      <linearGradient id="portfolio-flow-fill" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor="rgba(54,213,255,0.28)" />
+                        <stop offset="100%" stopColor="rgba(54,213,255,0)" />
+                      </linearGradient>
+                    </defs>
+
+                    <polyline
+                      points={`0,100 ${flowPath} 100,100`}
+                      fill="url(#portfolio-flow-fill)"
+                      className="portfolioFlowArea"
+                    />
+                    <polyline
+                      points={flowPath}
+                      fill="none"
+                      stroke="url(#portfolio-flow-line)"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="portfolioFlowLine"
+                    />
+                  </svg>
+                </div>
+
+                <div className="portfolioFlowMeta">
+                  <div>
+                    <span className="label">보유 종목수</span>
+                    <strong>{enrichedItems.length}개</strong>
+                  </div>
+                  <div>
+                    <span className="label">총 수익률</span>
+                    <strong>{totalRate.toFixed(2)}%</strong>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          <div className="portfolioHoldingsCard card">
+          <div className={`portfolioHoldingsCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
             <div className="portfolioCardHead">
               <div>
                 <div className="portfolioEyebrow">HOLDINGS</div>
                 <h3 className="portfolioTitleSm">보유 종목</h3>
               </div>
-              <button className="btn" type="button" onClick={openModal}>
+
+              <button className="portfolioAddBtn" type="button" onClick={openModal}>
+                <span className="portfolioAddBtnIcon">＋</span>
                 종목 추가
               </button>
             </div>
 
-            <div className="portfolioHoldingList">
-              {enrichedItems.map((item, idx) => {
-                const itemPnlColor =
-                  item.pnl >= 0 ? "rgba(54,213,255,.95)" : "rgba(255,120,170,.95)";
-                const ratio = ((item.value / totalAssetsForRatio) * 100 || 0).toFixed(1);
+            {emptyState ? (
+              <div className="portfolioEmptyState">
+                <div className="portfolioEmptyOrb" />
+                <div className="portfolioEmptyIcon">✦</div>
+                <h4>아직 담긴 종목이 없어요</h4>
+                <p>
+                  관심 있는 코인이나 주식을 추가해서
+                  <br />
+                  나만의 포트폴리오를 세련되게 관리해보세요.
+                </p>
+                <button className="portfolioAddBtn isLarge" type="button" onClick={openModal}>
+                  <span className="portfolioAddBtnIcon">＋</span>
+                  첫 종목 추가하기
+                </button>
+              </div>
+            ) : (
+              <div className={`portfolioHoldingList ${isUiRefreshing ? "isRefreshing" : ""}`}>
+                {enrichedItems.map((item, idx) => {
+                  const itemPnlColor =
+                    item.pnl >= 0 ? "rgba(54,213,255,.95)" : "rgba(255,120,170,.95)";
+                  const ratio = ((item.value / totalAssetsForRatio) * 100 || 0).toFixed(1);
 
-                return (
-                  <div key={item.id} className="portfolioHoldingItem">
-                    <div className="portfolioHoldingTop">
-                      <div className="portfolioHoldingIdentity">
-                        <AssetLogo iconUrl={item.iconUrl} name={item.name} />
+                  return (
+                    <div key={item.id} className="portfolioHoldingItem">
+                      <div className="portfolioHoldingTop">
+                        <div className="portfolioHoldingIdentity">
+                          <AssetLogo iconUrl={item.iconUrl} name={item.name} />
 
-                        <div>
-                          <div className="portfolioHoldingName">{item.name}</div>
-                          <div className="portfolioHoldingSub">
-                            {item.symbol}
-                            {item.displayNameEN && item.displayNameEN !== item.name
-                              ? ` · ${item.displayNameEN}`
-                              : ""}
+                          <div>
+                            <div className="portfolioHoldingName">{item.name}</div>
+                            <div className="portfolioHoldingSub">
+                              {item.symbol}
+                              {item.displayNameEN && item.displayNameEN !== item.name
+                                ? ` · ${item.displayNameEN}`
+                                : ""}
+                            </div>
                           </div>
+                        </div>
+
+                        <div className="portfolioHoldingValue">
+                          {formatKRW(item.value)}
                         </div>
                       </div>
 
-                      <div className="portfolioHoldingValue">
-                        {formatKRW(item.value)}
-                      </div>
-                    </div>
-
-                    <div className="portfolioHoldingMetaRow">
-                      <span>
-                        {marketLabel(item.market)} · 평균단가 {formatKRW(item.avgPrice)} · 현재가{" "}
-                        {item.currentPrice == null ? "불러오는중" : formatKRW(item.currentPrice)}
-                      </span>
-
-                      <span style={{ color: itemPnlColor, fontWeight: 800 }}>
-                        {formatSignedKRW(item.pnl)} ({item.rate.toFixed(2)}%)
-                      </span>
-                    </div>
-
-                    <div className="portfolioHoldingBottomRow">
-                      <div className="portfolioHoldingTagWrap">
-                        <span className={`portfolioMarketTag ${toneClass(idx)}`}>
-                          {marketLabel(item.market)}
+                      <div className="portfolioHoldingMetaRow">
+                        <span>
+                          {marketLabel(item.market)} · 평균단가 {formatKRW(item.avgPrice)} · 현재가{" "}
+                          {item.currentPrice == null ? "불러오는중" : formatKRW(item.currentPrice)}
                         </span>
-                        <span className="portfolioSoftTag">비중 {ratio}%</span>
-                        {typeof item.changePct === "number" && (
-                          <span className="portfolioSoftTag">
-                            오늘 {item.changePct > 0 ? "+" : ""}
-                            {item.changePct.toFixed(2)}%
-                          </span>
-                        )}
+
+                        <span style={{ color: itemPnlColor, fontWeight: 800 }}>
+                          {formatSignedKRW(item.pnl)} ({item.rate.toFixed(2)}%)
+                        </span>
                       </div>
 
-                      <button
-                        type="button"
-                        className="portfolioDeleteBtn"
-                        onClick={() => removeHolding(item.id)}
-                      >
-                        삭제
-                      </button>
-                    </div>
+                      <div className="portfolioHoldingBottomRow">
+                        <div className="portfolioHoldingTagWrap">
+                          <span className={`portfolioMarketTag ${toneClass(idx)}`}>
+                            {marketLabel(item.market)}
+                          </span>
+                          <span className="portfolioSoftTag">비중 {ratio}%</span>
+                          {typeof item.changePct === "number" && (
+                            <span className="portfolioSoftTag">
+                              오늘 {item.changePct > 0 ? "+" : ""}
+                              {item.changePct.toFixed(2)}%
+                            </span>
+                          )}
+                        </div>
 
-                    <div className="portfolioHoldingBar">
-                      <div
-                        className={`portfolioHoldingFill ${toneClass(idx)}`}
-                        style={{ width: `${Math.max(8, Number(ratio))}%` }}
-                      />
+                        <button
+                          type="button"
+                          className="portfolioDeleteBtn"
+                          onClick={() => removeHolding(item.id)}
+                        >
+                          삭제
+                        </button>
+                      </div>
+
+                      <div className="portfolioHoldingBar">
+                        <div
+                          className={`portfolioHoldingFill ${toneClass(idx)}`}
+                          style={{ width: `${Math.max(8, Number(ratio))}%` }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -556,8 +620,8 @@ export default function MyPortfolio() {
             </div>
 
             <div className="portfolioModalNotice">
-              코인은 심볼만 입력하면 중복될 수 있어서, 가능하면 <strong>이름도 같이</strong> 넣어줘.
-              국내 소형주는 <strong>코스닥(KOSDAQ)</strong>도 지원돼.
+              종목명 또는 심볼로 빠르게 검색해서 추가할 수 있어.
+              <strong> 선택하면 아래 추천 박스는 자동으로 닫혀.</strong>
             </div>
 
             <div className="portfolioSearchBox">
@@ -565,10 +629,16 @@ export default function MyPortfolio() {
                 type="text"
                 value={searchText}
                 placeholder="비트코인, 삼성전자, 테슬라처럼 검색"
-                onChange={(e) => setSearchText(e.target.value)}
+                onChange={(e) => {
+                  setSearchText(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => {
+                  if (searchText.trim()) setShowSuggestions(true);
+                }}
               />
 
-              {suggestionList.length > 0 && (
+              {showSuggestions && suggestionList.length > 0 && (
                 <div className="portfolioSuggestList">
                   {suggestionList.map((item) => (
                     <button
@@ -591,6 +661,7 @@ export default function MyPortfolio() {
               <label>
                 <span>시장</span>
                 <select
+                  className="portfolioSelect"
                   value={form.market}
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, market: e.target.value }))
@@ -628,18 +699,6 @@ export default function MyPortfolio() {
               </label>
 
               <label>
-                <span>CoinGecko ID (선택)</span>
-                <input
-                  type="text"
-                  value={form.coinId}
-                  placeholder="bitcoin / ethereum / dogwifcoin"
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, coinId: e.target.value }))
-                  }
-                />
-              </label>
-
-              <label>
                 <span>보유수량</span>
                 <input
                   type="number"
@@ -665,6 +724,10 @@ export default function MyPortfolio() {
                 />
               </label>
 
+              <div className="portfolioFormHint">
+                검색으로 선택한 종목은 자동으로 시장/심볼/종목명이 채워져.
+              </div>
+
               {submitError ? (
                 <div className="portfolioFormError">{submitError}</div>
               ) : null}
@@ -673,7 +736,8 @@ export default function MyPortfolio() {
                 <button type="button" className="portfolioGhostBtn" onClick={closeModal}>
                   취소
                 </button>
-                <button type="submit" className="btn" disabled={saving}>
+                <button type="submit" className="portfolioAddBtn" disabled={saving}>
+                  <span className="portfolioAddBtnIcon">＋</span>
                   {saving ? "추가 중..." : "종목 추가"}
                 </button>
               </div>
