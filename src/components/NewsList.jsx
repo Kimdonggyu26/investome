@@ -146,6 +146,7 @@ export default function NewsList({
       <div className="newsHeader">
         <div>
           <h2 className="newsHeading">{title}</h2>
+          <div className="newsSub">Real-Time Market Headlines</div>
           <div className="newsDesc">
             카테고리별 최신 뉴스와 많이 보는 이슈를 빠르게 확인해보세요.
           </div>

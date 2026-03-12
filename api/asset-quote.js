@@ -240,12 +240,12 @@ async function fetchCryptoItem({ symbol, name, coinId }) {
 }
 
 export default async function handler(req, res) {
-  try {
-    const market = String(req.query?.market || "").trim().toUpperCase();
-    const symbol = String(req.query?.symbol || "").trim();
-    const name = String(req.query?.name || "").trim();
-    const coinId = String(req.query?.coinId || "").trim();
+  const market = String(req.query?.market || "").trim().toUpperCase();
+  const symbol = String(req.query?.symbol || "").trim();
+  const name = String(req.query?.name || "").trim();
+  const coinId = String(req.query?.coinId || "").trim();
 
+  try {
     if (!market || !symbol) {
       res.status(400).json({ error: "market and symbol are required" });
       return;
@@ -263,13 +263,17 @@ export default async function handler(req, res) {
 
     let item = null;
 
-    if (market === "CRYPTO") {
-      item = await fetchCryptoItem({ symbol, name, coinId });
-    } else if (market === "KOSPI" || market === "KOSDAQ" || market === "NASDAQ") {
-      item = await fetchStockItem({ market, symbol, name });
-    } else {
-      res.status(400).json({ error: `unsupported market: ${market}` });
-      return;
+    try {
+      if (market === "CRYPTO") {
+        item = await fetchCryptoItem({ symbol, name, coinId });
+      } else if (market === "KOSPI" || market === "KOSDAQ" || market === "NASDAQ") {
+        item = await fetchStockItem({ market, symbol, name });
+      } else {
+        res.status(400).json({ error: `unsupported market: ${market}` });
+        return;
+      }
+    } catch {
+      item = fallbackItemFromInput({ market, symbol, name, coinId });
     }
 
     quoteCache.set(key, { at: now, data: item });
@@ -277,6 +281,23 @@ export default async function handler(req, res) {
     res.setHeader("Cache-Control", "s-maxage=15, stale-while-revalidate=30");
     res.status(200).json({ item });
   } catch (e) {
-    res.status(500).json({ error: String(e?.message || e) });
+    const fallback = fallbackItemFromInput({ market, symbol, name, coinId });
+    res.status(200).json({ item: fallback, warning: String(e?.message || e) });
   }
+}
+
+function fallbackItemFromInput({ market, symbol, name, coinId }) {
+  const rawSymbol = String(symbol || "").trim().toUpperCase();
+
+  return {
+    market,
+    symbol: rawSymbol,
+    name: name || rawSymbol,
+    displayNameEN: name || rawSymbol,
+    iconUrl: market === "CRYPTO" ? "" : buildLogo(pickKnownStockDomain(rawSymbol)),
+    coinId: coinId || "",
+    capKRW: null,
+    priceKRW: null,
+    changePct: null,
+  };
 }

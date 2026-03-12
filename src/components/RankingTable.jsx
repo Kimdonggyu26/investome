@@ -224,7 +224,10 @@ export default function RankingTable() {
   return (
     <div className="rankingCard" id="ranking">
       <div className="rankingHeader">
-        <h3>TOP30 랭킹</h3>
+        <div>
+          <h3>TOP30 랭킹</h3>
+          <div className="rankingSub">Top 30 Market Movers</div>
+        </div>
 
         <div className="marketTabs">
           {MARKETS.map((m) => (
@@ -346,7 +349,7 @@ export default function RankingTable() {
       </div>
 
       <div className="rankingHint">
-        미니차트는 등락 방향을 빠르게 보여주는 보조 지표예요.
+        가격은 20초마다 갱신됩니다.
       </div>
     </div>
   );

@@ -291,3 +291,39 @@
     width: 160px;
   }
 }
+
+.boardSearch select{
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  min-width: 132px;
+  height: 44px;
+  padding: 0 42px 0 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025));
+  color: rgba(255,255,255,0.92);
+  font-weight: 800;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+  transition: .18s ease;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.72) 50%),
+    linear-gradient(135deg, rgba(255,255,255,0.72) 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) calc(50% - 2px),
+    calc(100% - 14px) calc(50% - 2px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.boardSearch select:hover{
+  border-color: rgba(14,165,255,0.3);
+  box-shadow: 0 0 18px rgba(14,165,255,0.08);
+}
+
+.boardSearch select:focus{
+  border-color: rgba(14,165,255,0.45);
+  box-shadow: 0 0 0 4px rgba(14,165,255,0.10);
+}

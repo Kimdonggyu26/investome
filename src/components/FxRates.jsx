@@ -98,8 +98,8 @@ export default function FxRates() {
     <div className="fxCard" id="fx">
       <div className="fxHeader">
         <div>
-          <div className="fxTitle">환율 모아보기</div>
-          <div className="fxSub">Currency Exchange Rates at a Glance</div>
+          <div className="fxTitle">오늘의 환율</div>
+          <div className="fxSub">Today's Exchange Rate</div>
         </div>
 
         <div className="fxUpdated">{fx?.updatedDate || "-"}</div>

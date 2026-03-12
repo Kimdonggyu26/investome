@@ -1,68 +1,68 @@
-function toYmd(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+const API = "https://api.frankfurter.app";
+
+function toKoreanTodayLabel() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
 }
 
-function buildFxSnapshot(rateMap = {}) {
-  const KRW = rateMap.KRW;
-  const JPY = rateMap.JPY;
-  const CNY = rateMap.CNY;
-  const EUR = rateMap.EUR;
-  const AUD = rateMap.AUD;
+async function fetchRates(date) {
+  const url = `${API}/${date}?from=USD&to=KRW,JPY,CNY,EUR,AUD`;
+
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    throw new Error("fx api error");
+  }
+
+  const json = await res.json();
 
   return {
-    USDKRW: typeof KRW === "number" ? KRW : null,
-    JPYKRW:
-      typeof KRW === "number" && typeof JPY === "number" && JPY !== 0
-        ? KRW / JPY
-        : null,
-    CNYKRW:
-      typeof KRW === "number" && typeof CNY === "number" && CNY !== 0
-        ? KRW / CNY
-        : null,
-    EURKRW:
-      typeof KRW === "number" && typeof EUR === "number" && EUR !== 0
-        ? KRW / EUR
-        : null,
-    AUDKRW:
-      typeof KRW === "number" && typeof AUD === "number" && AUD !== 0
-        ? KRW / AUD
-        : null,
+    USDKRW: json.rates.KRW,
+    JPYKRW: json.rates.JPY,
+    CNYKRW: json.rates.CNY,
+    EURKRW: json.rates.EUR,
+    AUDKRW: json.rates.AUD,
   };
 }
 
-export async function fetchFx() {
-  const end = new Date();
-  const start = new Date();
-  start.setDate(end.getDate() - 7);
+function subtractDay(dateStr, days) {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() - days);
+  return d.toISOString().slice(0,10);
+}
 
-  const url =
-    `https://api.frankfurter.app/${toYmd(start)}..${toYmd(end)}` +
-    `?from=USD&to=KRW,JPY,CNY,EUR,AUD`;
+export async function fetchFxRates() {
 
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`FX failed: ${res.status}`);
+  const today = new Date().toISOString().slice(0,10);
 
-  const json = await res.json();
-  const rates = json?.rates || {};
-  const dates = Object.keys(rates).sort();
+  let latestDate = today;
+  let latest;
 
-  if (dates.length === 0) {
-    throw new Error("No FX data");
+  try {
+    latest = await fetchRates(today);
+  } catch {
+
+    latestDate = subtractDay(today,1);
+    latest = await fetchRates(latestDate);
   }
 
-  const latestDate = dates[dates.length - 1];
-  const prevDate = dates[dates.length - 2] || latestDate;
+  const prevDate = subtractDay(latestDate,1);
 
-  const latest = buildFxSnapshot(rates[latestDate]);
-  const previous = buildFxSnapshot(rates[prevDate]);
+  let previous;
+
+  try {
+    previous = await fetchRates(prevDate);
+  } catch {
+    previous = latest;
+  }
 
   return {
-    updatedDate: latestDate,
+    updatedDate: toKoreanTodayLabel(),
+    baseDate: latestDate,
     previousDate: prevDate,
+
     ...latest,
+
     changes: {
       USDKRW: previous.USDKRW,
       JPYKRW: previous.JPYKRW,

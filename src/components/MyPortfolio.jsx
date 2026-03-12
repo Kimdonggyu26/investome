@@ -344,7 +344,8 @@ export default function MyPortfolio() {
                 <h3 className="portfolioTitle">전체 포트폴리오</h3>
               </div>
 
-              <div className="portfolioLiveBadge">
+              <div className={`portfolioLiveBadge ${loadingQuotes ? "syncing" : "live"}`}>
+                <span className="portfolioLiveDot" />
                 {loadingQuotes ? "SYNCING" : "LIVE"}
               </div>
             </div>
@@ -419,7 +420,10 @@ export default function MyPortfolio() {
                       <div className="portfolioLegendItem" key={item.id}>
                         <div className={`portfolioLegendDot ${toneClass(idx)}`} />
                         <div className="portfolioLegendText">
-                          <strong>{item.symbol}</strong>
+                          <div className="portfolioLegendLabel">
+                            <strong>{item.name}</strong>
+                            <small>{item.symbol}</small>
+                          </div>
                           <span>{ratio}%</span>
                         </div>
                       </div>
@@ -528,7 +532,7 @@ export default function MyPortfolio() {
                 </button>
               </div>
             ) : (
-              <div className={`portfolioHoldingList ${isUiRefreshing ? "isRefreshing" : ""}`}>
+              <div className={`portfolioHoldingList luxuryScroll ${isUiRefreshing ? "isRefreshing" : ""}`}>
                 {enrichedItems.map((item, idx) => {
                   const itemPnlColor =
                     item.pnl >= 0 ? "rgba(54,213,255,.95)" : "rgba(255,120,170,.95)";

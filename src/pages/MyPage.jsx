@@ -230,9 +230,8 @@ function MyPageGuestView() {
           <div className="mypageGuestPreviewTop">
             <div>
               <span className="mypageGuestPreviewEyebrow">PREVIEW</span>
-              <h3>로그인하면 이런 화면을 볼 수 있어요</h3>
+              <h3>마이페이지에서는 이런 게 가능해요 !</h3>
             </div>
-            <span className="mypageGuestPreviewChip">Samsung · Bitcoin · Tesla</span>
           </div>
 
           <div className="mypagePreviewShell">
