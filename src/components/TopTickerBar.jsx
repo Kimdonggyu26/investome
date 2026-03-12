@@ -62,15 +62,16 @@ export default function TopTickerBar({
     <div className="tickerBar">
       <div className="container tickerInner">
         <div className="tickerLeft">
-          <span className="tickerDot" />
-          <span className="tickerTitle">Investome</span>
-          <span className="tickerSub muted">
-            {loading
-              ? "시세 불러오는 중"
-              : error
-                ? "일부 시세 연결 지연"
-                : "실시간 마켓 브리핑"}
-          </span>
+          <div className={`tickerLiveBadge ${loading ? "syncing" : "live"}`}>
+            <span className="tickerLiveDot" />
+            <span className="tickerLiveText">
+              {loading
+                ? "시세 불러오는 중"
+                : error
+                  ? "일부 시세 연결 지연"
+                  : "실시간 마켓 브리핑"}
+            </span>
+          </div>
         </div>
 
         <div className="tickerItems">

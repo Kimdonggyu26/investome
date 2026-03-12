@@ -19,29 +19,90 @@
   display:flex;
   align-items:center;
   gap: 10px;
-  min-width: 180px;
+  min-width: 220px;
 }
 
-.tickerDot{
-  width:8px; height:8px;
-  border-radius:999px;
-  background: var(--accent);
-  box-shadow: var(--glow);
+.tickerLiveBadge{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 16px 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(79,226,255,0.18);
+  background:
+    linear-gradient(135deg, rgba(79,226,255,0.14), rgba(91,124,255,0.10)),
+    rgba(255,255,255,0.03);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 10px 28px rgba(0,0,0,0.18);
+  overflow: hidden;
+  white-space: nowrap;
 }
-.tickerTitle{ font-weight: 700; letter-spacing:.2px; }
-.tickerSub{ font-size: 12px; }
+
+.tickerLiveDot{
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #4fe2ff;
+  box-shadow: 0 0 0 0 rgba(79,226,255,0.55);
+  flex: 0 0 auto;
+}
+
+.tickerLiveText{
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .2px;
+  color: rgba(255,255,255,0.96);
+}
+
+.tickerLiveBadge.live .tickerLiveDot{
+  animation: tickerLivePulse 1.6s infinite;
+}
+
+.tickerLiveBadge.live::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255,255,255,0.03) 32%,
+    rgba(79,226,255,0.18) 50%,
+    rgba(255,255,255,0.03) 68%,
+    transparent 100%
+  );
+  transform: translateX(-120%);
+  animation: tickerLiveSweep 2.4s linear infinite;
+}
+
+@keyframes tickerLivePulse{
+  0%{ box-shadow: 0 0 0 0 rgba(79,226,255,0.55); opacity: 1; }
+  70%{ box-shadow: 0 0 0 10px rgba(79,226,255,0); opacity: .92; }
+  100%{ box-shadow: 0 0 0 0 rgba(79,226,255,0); opacity: 1; }
+}
+
+@keyframes tickerLiveSweep{
+  0%{ transform: translateX(-120%); }
+  100%{ transform: translateX(120%); }
+}
 
 .tickerItems{
   position: relative;
-  overflow: hidden;           /* 중요: 흘러가는 트랙이 바깥으로 못 나가게 */
+  overflow: hidden;
   flex: 1;
   min-width: 0;
   mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 }
-.tickerItems::-webkit-scrollbar{ display:none; }
+
+.tickerItems::-webkit-scrollbar{
+  display:none;
+}
 
 .tickerItem{
+  position: relative;
   display:flex;
   align-items:baseline;
   gap: 8px;
@@ -52,9 +113,10 @@
   transition: 160ms ease;
   white-space: nowrap;
 }
+
 .tickerItem:hover{
   border-color: rgba(54,213,255,.30);
-  box-shadow: var(--glow);
+  box-shadow: 0 0 18px rgba(54,213,255,.12);
 }
 
 .tickerSymbol{
@@ -71,7 +133,6 @@
   animation: tickerScroll 22s linear infinite;
 }
 
-/* 마우스 올리면 멈춤 */
 .tickerItems:hover .tickerTrack{
   animation-play-state: paused;
 }
@@ -86,27 +147,27 @@
   font-weight: 700;
   opacity: .95;
 }
-.tickerChange.up{ color: rgba(54,213,255,.95); }
-.tickerChange.down{ color: rgba(255,120,170,.95); }
+
+.tickerChange.up{
+  color: rgba(54,213,255,.95);
+}
+
+.tickerChange.down{
+  color: rgba(255,120,170,.95);
+}
+
 @keyframes tickerScroll{
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
 
-/* ===== flash effect (value update glow) ===== */
-.tickerItem{
-  position: relative; /* flash 배경/테두리 자연스럽게 */
-}
-
-/* 상승 반짝 */
 .tickerItem.flash-up{
   border-color: rgba(54,213,255,.55);
-  box-shadow: 0 0 0 1px rgba(54,213,255,.15), var(--glow);
+  box-shadow: 0 0 0 1px rgba(54,213,255,.15), 0 0 18px rgba(54,213,255,.18);
   background: linear-gradient(90deg, rgba(54,213,255,.16), rgba(255,255,255,.02));
   animation: flashPop 600ms ease-out;
 }
 
-/* 하락 반짝 */
 .tickerItem.flash-down{
   border-color: rgba(255,120,170,.45);
   box-shadow: 0 0 0 1px rgba(255,120,170,.12), 0 0 18px rgba(255,120,170,.18);
@@ -118,4 +179,23 @@
   0%   { transform: translateY(0); }
   40%  { transform: translateY(-1px); }
   100% { transform: translateY(0); }
+}
+
+@media (max-width: 768px){
+  .tickerInner{
+    gap: 10px;
+  }
+
+  .tickerLeft{
+    min-width: 160px;
+  }
+
+  .tickerLiveBadge{
+    padding: 0 12px;
+    min-height: 36px;
+  }
+
+  .tickerLiveText{
+    font-size: 12px;
+  }
 }
