@@ -1,13 +1,55 @@
 let commodityTopCache = { at: 0, data: null };
 
 const COMMODITY_UNIVERSE = [
-  { rank: 1, name: "금 Gold", displayNameEN: "Gold Futures", symbol: "GC=F", iconType: "gold" },
-  { rank: 2, name: "은 Silver", displayNameEN: "Silver Futures", symbol: "SI=F", iconType: "silver" },
-  { rank: 3, name: "WTI 유가", displayNameEN: "WTI Crude Oil Futures", symbol: "CL=F", iconType: "oil" },
-  { rank: 4, name: "브렌트유 Brent", displayNameEN: "Brent Crude Oil Futures", symbol: "BZ=F", iconType: "brent" },
-  { rank: 5, name: "천연가스 Natural Gas", displayNameEN: "Natural Gas Futures", symbol: "NG=F", iconType: "gas" },
-  { rank: 6, name: "백금 Platinum", displayNameEN: "Platinum Futures", symbol: "PL=F", iconType: "platinum" },
-  { rank: 7, name: "팔라듐 Palladium", displayNameEN: "Palladium Futures", symbol: "PA=F", iconType: "palladium" },
+  {
+    rank: 1,
+    name: "금",
+    displayNameEN: "Gold · Gold Futures",
+    symbol: "GC=F",
+    iconType: "gold",
+  },
+  {
+    rank: 2,
+    name: "은",
+    displayNameEN: "Silver · Silver Futures",
+    symbol: "SI=F",
+    iconType: "silver",
+  },
+  {
+    rank: 3,
+    name: "WTI",
+    displayNameEN: "미국 기준 원유 · WTI Crude Oil Futures",
+    symbol: "CL=F",
+    iconType: "oil",
+  },
+  {
+    rank: 4,
+    name: "Brent",
+    displayNameEN: "유럽 기준 원유 · Brent Crude Oil Futures",
+    symbol: "BZ=F",
+    iconType: "brent",
+  },
+  {
+    rank: 5,
+    name: "천연가스",
+    displayNameEN: "Natural Gas · Natural Gas Futures",
+    symbol: "NG=F",
+    iconType: "gas",
+  },
+  {
+    rank: 6,
+    name: "백금",
+    displayNameEN: "Platinum · Platinum Futures",
+    symbol: "PL=F",
+    iconType: "platinum",
+  },
+  {
+    rank: 7,
+    name: "팔라듐",
+    displayNameEN: "Palladium · Palladium Futures",
+    symbol: "PA=F",
+    iconType: "palladium",
+  },
 ];
 
 function toNumber(value) {
@@ -172,7 +214,7 @@ export default async function handler(_req, res) {
           name: item.name,
           displayNameEN: item.displayNameEN,
           symbol: item.symbol,
-          iconUrl: buildCommodityIcon(item.iconType, item.name),
+          iconUrl: `/icons/commodities/${item.iconType}.png`,
           coinId: "",
           capKRW: null,
           priceKRW:
