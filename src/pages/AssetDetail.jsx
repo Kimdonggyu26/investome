@@ -5,6 +5,7 @@ import TopTickerBar from "../components/TopTickerBar";
 import WatchlistPanel from "../components/WatchlistPanel";
 import { useTicker } from "../hooks/useTicker";
 import {
+  fetchCommoditiesTopKRW,
   fetchCryptoTop30KRW,
   fetchKospiTop30KRW,
   fetchNasdaqTop30KRW,
@@ -80,6 +81,20 @@ function getTradingViewSymbol(market, symbol) {
     return `BINANCE:${symbol}USDT`;
   }
 
+  if (market === "COMMODITIES") {
+    const map = {
+      "GC=F": "COMEX:GC1!",
+      "SI=F": "COMEX:SI1!",
+      "CL=F": "NYMEX:CL1!",
+      "BZ=F": "ICEEUR:BRN1!",
+      "NG=F": "NYMEX:NG1!",
+      "PL=F": "NYMEX:PL1!",
+      "PA=F": "NYMEX:PA1!",
+    };
+
+    return map[String(symbol || "").toUpperCase()] || "TVC:GOLD";
+  }
+
   if (market === "KOSPI") {
     return `KRX:${symbol}`;
   }
@@ -93,6 +108,20 @@ function getNewsQuery({ market, symbol, name, displayNameEN }) {
     if (symbol === "ETH") return "이더리움 OR Ethereum OR ETH";
     if (symbol === "XRP") return "리플 OR XRP";
     return `${name || symbol} OR ${displayNameEN || symbol} OR ${symbol}`;
+  }
+
+  if (market === "COMMODITIES") {
+    const map = {
+      "GC=F": "금 OR Gold",
+      "SI=F": "은 OR Silver",
+      "CL=F": "WTI OR 국제유가 OR Crude Oil",
+      "BZ=F": "Brent OR 브렌트유",
+      "NG=F": "천연가스 OR Natural Gas",
+      "PL=F": "백금 OR Platinum",
+      "PA=F": "팔라듐 OR Palladium",
+    };
+
+    return map[String(symbol || "").toUpperCase()] || `${name || symbol} OR ${displayNameEN || symbol}`;
   }
 
   const base = [name, displayNameEN, symbol].filter(Boolean).join(" OR ");
@@ -170,6 +199,8 @@ export default function AssetDetail() {
         } else if (market === "NASDAQ") {
           const real = await fetchNasdaqTop30KRW().catch(() => null);
           rows = real ?? getKoreanDummyTop30("NASDAQ");
+        } else if (market === "COMMODITIES") {
+          rows = await fetchCommoditiesTopKRW().catch(() => []);
         }
 
         const found =
@@ -244,14 +275,16 @@ export default function AssetDetail() {
     [market, symbol, asset.name, asset.displayNameEN]
   );
 
-  const marketLabel =
-    market === "CRYPTO"
-      ? "CRYPTO"
-      : market === "KOSPI"
-        ? "KOSPI"
+const marketLabel =
+  market === "CRYPTO"
+    ? "CRYPTO"
+    : market === "KOSPI"
+      ? "KOSPI"
+      : market === "COMMODITIES"
+        ? "COMMODITIES"
         : "NASDAQ";
 
-  const showCap = market !== "KOSPI";
+const showCap = market === "CRYPTO" || market === "NASDAQ";
 
   const changeAmount = calcChangeAmount(asset.priceKRW, asset.changePct);
   const { high, low } = calcRange(asset.priceKRW, asset.changePct);

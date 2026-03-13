@@ -1,5 +1,15 @@
 const quoteCache = new Map();
 
+const COMMODITY_INFO_MAP = {
+  "GC=F": { name: "Gold", displayNameEN: "Gold Futures" },
+  "SI=F": { name: "Silver", displayNameEN: "Silver Futures" },
+  "CL=F": { name: "WTI Oil", displayNameEN: "WTI Crude Oil Futures" },
+  "BZ=F": { name: "Brent Oil", displayNameEN: "Brent Crude Oil Futures" },
+  "NG=F": { name: "Natural Gas", displayNameEN: "Natural Gas Futures" },
+  "PL=F": { name: "Platinum", displayNameEN: "Platinum Futures" },
+  "PA=F": { name: "Palladium", displayNameEN: "Palladium Futures" },
+};
+
 function cacheKey(params) {
   return JSON.stringify(params);
 }
@@ -200,6 +210,57 @@ function pickCoinCandidate(searchJson, symbol, name, coinId) {
   );
 }
 
+async function fetchCommodityItem({ symbol, name }) {
+  const normalized = String(symbol || "").trim().toUpperCase();
+  const usdKrw = await fetchUsdKrw();
+
+  let quote = null;
+  try {
+    quote = await fetchYahooQuote(normalized);
+  } catch {
+    quote = null;
+  }
+
+  let info = null;
+
+  if (quote) {
+    info = {
+      shortName: quote.longName || quote.shortName || name || normalized,
+      price: toNumber(quote.regularMarketPrice),
+      changePct: toNumber(quote.regularMarketChangePercent),
+      marketCap: null,
+    };
+  }
+
+  if (info?.price == null || info?.changePct == null) {
+    const fallback = await fetchYahooChartMeta(normalized);
+    info = {
+      shortName: info?.shortName || fallback.shortName || name || normalized,
+      price: info?.price ?? fallback.price,
+      changePct: info?.changePct ?? fallback.changePct,
+      marketCap: null,
+    };
+  }
+
+  if (info?.price == null) {
+    throw new Error(`Price not found for ${normalized}`);
+  }
+
+  const meta = COMMODITY_INFO_MAP[normalized] || {};
+
+  return {
+    market: "COMMODITIES",
+    symbol: normalized,
+    name: meta.name || name || normalized,
+    displayNameEN: meta.displayNameEN || info?.shortName || name || normalized,
+    iconUrl: "",
+    coinId: "",
+    capKRW: null,
+    priceKRW: Number((info.price * usdKrw).toFixed(2)),
+    changePct: info?.changePct ?? null,
+  };
+}
+
 async function fetchCryptoItem({ symbol, name, coinId }) {
   let resolvedId = String(coinId || "").trim().toLowerCase();
 
@@ -269,6 +330,8 @@ export default async function handler(req, res) {
 
     if (market === "CRYPTO") {
       item = await fetchCryptoItem({ symbol, name, coinId });
+    } else if (market === "COMMODITIES") {
+      item = await fetchCommodityItem({ symbol, name });
     } else if (market === "KOSPI" || market === "KOSDAQ" || market === "NASDAQ") {
       item = await fetchStockItem({ market, symbol, name });
     } else {

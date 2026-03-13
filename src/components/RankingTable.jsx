@@ -2,13 +2,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./RankingTable.css";
 import {
+  fetchCommoditiesTopKRW,
   fetchCryptoTop30KRW,
   fetchKospiTop30KRW,
   fetchNasdaqTop30KRW,
   getKoreanDummyTop30,
 } from "../api/rankingApi";
 
-const MARKETS = ["KOSPI", "NASDAQ", "CRYPTO"];
+const MARKETS = ["KOSPI", "NASDAQ", "CRYPTO", "COMMODITIES"];
 
 function formatKRW(n) {
   if (typeof n !== "number" || !isFinite(n)) return "-";
@@ -155,9 +156,11 @@ export default function RankingTable() {
         } else if (market === "KOSPI") {
           const realOrNull = await fetchKospiTop30KRW().catch(() => null);
           nextRows = realOrNull ?? getKoreanDummyTop30("KOSPI");
-        } else {
+        } else if (market === "NASDAQ") {
           const realOrNull = await fetchNasdaqTop30KRW().catch(() => null);
           nextRows = realOrNull ?? getKoreanDummyTop30("NASDAQ");
+        } else if (market === "COMMODITIES") {
+          nextRows = await fetchCommoditiesTopKRW();
         }
 
         const elapsed = Date.now() - startAt;
@@ -230,8 +233,10 @@ export default function RankingTable() {
             <span>LIVE</span>
           </div>
 
-          <h3>TOP30 랭킹</h3>
-          <div className="rankingSub">Top 30 Market Movers</div>
+        <h3>{market === "COMMODITIES" ? "원자재 시세" : "TOP30 랭킹"}</h3>
+        <div className="rankingSub">
+          {market === "COMMODITIES" ? "Major Commodities Live Prices" : "Top 30 Market Movers"}
+        </div>
         </div>
 
         <div className="marketTabs">
@@ -257,7 +262,7 @@ export default function RankingTable() {
       {isLoading && rows.length === 0 ? (
         <TableSkeleton />
       ) : (
-        <div className="rankingScroll luxuryScroll">
+        <div className={`rankingScroll luxuryScroll ${market === "COMMODITIES" ? "noScroll" : ""}`}>
           <div className={`rankingDataLayer ${isSwitching ? "isSwitching" : ""}`}>
             <table className="rankingTable">
               <thead>

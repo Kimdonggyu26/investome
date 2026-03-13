@@ -123,6 +123,16 @@ export async function fetchCryptoTop30KRW() {
   return json.map(toCryptoRow);
 }
 
+export async function fetchCommoditiesTopKRW() {
+  const res = await fetch("/api/commodity-top");
+  if (!res.ok) throw new Error(`Commodities top failed: ${res.status}`);
+
+  const json = await res.json();
+  const items = Array.isArray(json?.items) ? json.items : [];
+
+  return items.map(normalizeRow);
+}
+
 async function fetchStockTop30(market) {
   const res = await fetch(`/api/stock-top30?market=${market}`);
   if (!res.ok) throw new Error(`${market} top30 failed: ${res.status}`);
