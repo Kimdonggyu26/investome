@@ -1,4 +1,9 @@
-import koreaStocks from "../src/data/koreaStocks.json" assert { type: "json" };
+import fs from "fs";
+import path from "path";
+
+const koreaStocks = JSON.parse(
+  fs.readFileSync(path.join(process.cwd(), "src", "data", "koreaStocks.json"), "utf8")
+);
 
 function toArray(v) {
   return Array.isArray(v) ? v : [];
@@ -18,17 +23,14 @@ function normalizeText(v) {
   return String(v || "").trim().toLowerCase();
 }
 
-function fetchWithHeaders(url) {
-  return fetch(url, {
+async function fetchText(url) {
+  const res = await fetch(url, {
     headers: {
       "User-Agent": "Mozilla/5.0 (Investome Vercel)",
       Accept: "application/json,text/plain,*/*",
     },
   });
-}
 
-async function fetchText(url) {
-  const res = await fetchWithHeaders(url);
   const text = await res.text();
 
   if (!res.ok) {
@@ -55,19 +57,19 @@ function scoreKoreaStock(item, q) {
 
   if (!keyword) return -1;
 
-  if (name === keyword) return 100;
-  if (symbol === keyword) return 99;
-  if (name.startsWith(keyword)) return 95;
-  if (symbol.startsWith(keyword)) return 90;
-  if (name.includes(keyword)) return 80;
-  if (en.startsWith(keyword)) return 70;
-  if (en.includes(keyword)) return 60;
+  if (name === keyword) return 1000;
+  if (symbol === keyword) return 990;
+  if (name.startsWith(keyword)) return 900;
+  if (symbol.startsWith(keyword)) return 850;
+  if (name.includes(keyword)) return 700;
+  if (en.startsWith(keyword)) return 500;
+  if (en.includes(keyword)) return 400;
 
   return -1;
 }
 
 function searchKoreaStocks(q, requestedMarket = "ALL") {
-  const items = koreaStocks
+  return koreaStocks
     .filter((item) => {
       if (requestedMarket === "ALL") {
         return item.market === "KOSPI" || item.market === "KOSDAQ";
@@ -82,15 +84,18 @@ function searchKoreaStocks(q, requestedMarket = "ALL") {
     .filter((item) => item._score >= 0)
     .sort((a, b) => {
       if (b._score !== a._score) return b._score - a._score;
+
+      const aName = a.name.length;
+      const bName = b.name.length;
+      if (aName !== bName) return aName - bName;
+
       return a.name.localeCompare(b.name, "ko");
     })
-    .slice(0, 20)
+    .slice(0, 50)
     .map(({ _score, ...rest }) => rest);
-
-  return items;
 }
 
-function buildStockItem(row) {
+function buildUsStockItem(row) {
   const rawSymbol = String(row?.symbol || "").trim().toUpperCase();
   const exchange = String(row?.exchange || row?.exchDisp || "").toUpperCase();
   const quoteType = String(row?.quoteType || "").toUpperCase();
@@ -130,9 +135,9 @@ async function searchUsStocks(q) {
   );
 
   return uniqBy(
-    toArray(json?.quotes).map(buildStockItem).filter(Boolean),
+    toArray(json?.quotes).map(buildUsStockItem).filter(Boolean),
     (item) => `${item.market}-${item.symbol}`
-  ).slice(0, 12);
+  ).slice(0, 15);
 }
 
 async function searchCoins(q) {
@@ -150,7 +155,7 @@ async function searchCoins(q) {
       thumb: coin?.thumb || "",
     })),
     (item) => `${item.market}-${item.coinId || item.symbol}`
-  ).slice(0, 12);
+  ).slice(0, 15);
 }
 
 export default async function handler(req, res) {
@@ -179,7 +184,7 @@ export default async function handler(req, res) {
       items.push(...coinItems);
     }
 
-    items = uniqBy(items, (item) => `${item.market}-${item.coinId || item.symbol}`).slice(0, 20);
+    items = uniqBy(items, (item) => `${item.market}-${item.coinId || item.symbol}`).slice(0, 50);
 
     res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=120");
     res.status(200).json({ items });
