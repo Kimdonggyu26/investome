@@ -1,3 +1,5 @@
+import { withStaticAssetMeta } from "../data/assetMeta";
+
 function toNumber(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
@@ -79,19 +81,17 @@ function pickStockDomain(symbol) {
 }
 
 function normalizeRow(row, index) {
-  const symbol = (row.symbol || "-").toUpperCase();
-
-  return {
+  return withStaticAssetMeta({
+    market: row.market,
     rank: row.rank ?? index + 1,
-    name: row.name ?? "-",
+    name: row.name ?? "",
     displayNameEN: row.displayNameEN ?? "",
-    symbol,
-    iconUrl: row.iconUrl ?? buildLogo(pickStockDomain(symbol)),
-    coinId: row.coinId ?? "",
+    symbol: (row.symbol || "-").toUpperCase(),
+    iconUrl: row.iconUrl ?? "",
     capKRW: toNumber(row.capKRW),
     priceKRW: toNumber(row.priceKRW),
     changePct: toNumber(row.changePct),
-  };
+  });
 }
 
 function toCryptoRow(coin, index) {
@@ -132,7 +132,15 @@ async function fetchStockTop30(market) {
     throw new Error(`${market} top30 empty`);
   }
 
-  return items.map(normalizeRow);
+    return items.map((item, index) =>
+    normalizeRow(
+      {
+        ...item,
+        market,
+      },
+      index
+    )
+  );
 }
 
 export async function fetchKospiTop30KRW() {
@@ -161,17 +169,17 @@ function makeDummyRows(market, names) {
     const wave = Math.sin((idx + 1) * 1.27);
     const noise = Math.cos((idx + 2) * 0.83);
 
-    return {
+    return withStaticAssetMeta({
+      market,
       rank,
       name: item.name,
       displayNameEN: item.displayNameEN || item.name,
       symbol: item.symbol,
-      iconUrl: buildLogo(pickStockDomain(item.symbol)),
-      coinId: "",
+      iconUrl: "",
       capKRW: Math.max(50000000000000, Math.round(baseCap + wave * 15000000000000)),
       priceKRW: Math.max(1000, Math.round(basePrice + noise * 5000)),
       changePct: Number((wave * 2.15).toFixed(2)),
-    };
+    });
   });
 }
 

@@ -1,6 +1,6 @@
-import { Link, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useWatchlist } from "../hooks/useWatchlist";
-import "./WatchlistPanel.css";
+import { resolveAssetMeta } from "../utils/resolveAssetMeta";
 
 function AssetLogo({ iconUrl, name }) {
   const initial = (name || "?").trim().slice(0, 1);
