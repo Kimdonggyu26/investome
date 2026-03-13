@@ -38,9 +38,9 @@ function persistHoldings(items) {
 
 function marketLabel(market) {
   if (market === "CRYPTO") return "코인";
-  if (market === "KOSPI") return "국내주식";
+  if (market === "KOSPI") return "코스피";
   if (market === "KOSDAQ") return "코스닥";
-  if (market === "NASDAQ") return "미국주식";
+  if (market === "NASDAQ") return "나스닥";
   return market;
 }
 
@@ -102,7 +102,7 @@ function AssetLogo({ iconUrl, name }) {
 }
 
 const initialForm = {
-  market: "CRYPTO",
+  market: "",
   symbol: "",
   name: "",
   coinId: "",
@@ -187,7 +187,7 @@ export default function MyPortfolio() {
       try {
         const items = await searchAssetCatalog({
           q,
-          market: form.market || "ALL",
+          market: "ALL",
         });
 
         if (!alive) return;
@@ -198,13 +198,13 @@ export default function MyPortfolio() {
       } finally {
         if (alive) setSearchingAssets(false);
       }
-    }, 250);
+    }, 200);
 
     return () => {
       alive = false;
       clearTimeout(timer);
     };
-  }, [form.market, open, searchText]);
+  }, [open, searchText]);
 
   const localSuggestionList = useMemo(() => {
     const q = searchText.trim().toLowerCase();
@@ -329,7 +329,7 @@ export default function MyPortfolio() {
       setSubmitError("");
 
       if (!form.market || !form.symbol || !form.name || !form.amount || !form.avgPrice) {
-        throw new Error("시장, 심볼, 종목명, 수량, 평균단가를 모두 입력해줘.");
+        throw new Error("종목을 검색해서 선택한 뒤 수량과 평균단가를 입력해줘.");
       }
 
       const amount = Number(form.amount);
@@ -352,7 +352,7 @@ export default function MyPortfolio() {
 
       if (!verified?.symbol || verified?.priceKRW == null) {
         throw new Error(
-          "현재 시세를 확인할 수 없는 종목이야. 검색 결과에서 다시 선택하거나 심볼을 확인해줘."
+          "현재 시세를 확인할 수 없는 종목이야. 검색 결과에서 다시 선택해줘."
         );
       }
 
@@ -575,7 +575,7 @@ export default function MyPortfolio() {
                 <p>
                   관심 있는 코인이나 주식을 추가해서
                   <br />
-                  나만의 포트폴리오를 세련되게 관리해보세요.
+                  나만의 포트폴리오를 관리해보세요.
                 </p>
                 <button className="portfolioAddBtn isLarge" type="button" onClick={openModal}>
                   <span className="portfolioAddBtnIcon">＋</span>
@@ -679,8 +679,8 @@ export default function MyPortfolio() {
             </div>
 
             <div className="portfolioModalNotice">
-              종목명 또는 심볼로 빠르게 검색해서 추가할 수 있어.
-              <strong> 선택하면 아래 추천 박스는 자동으로 닫혀.</strong>
+              종목명 또는 심볼로 검색하면
+              <strong> 코인, 나스닥, 코스피, 코스닥이 한 번에 검색돼.</strong>
             </div>
 
             <div className="portfolioSearchBox">
@@ -702,14 +702,14 @@ export default function MyPortfolio() {
                   {searchingAssets && (
                     <div className="portfolioSuggestItem isMuted">
                       <span>검색 중...</span>
-                      <small>실시간 종목 검색</small>
+                      <small>전체 시장 검색</small>
                     </div>
                   )}
 
                   {!searchingAssets && suggestionList.length === 0 && searchText.trim() && (
                     <div className="portfolioSuggestItem isMuted">
                       <span>검색 결과가 없어요</span>
-                      <small>심볼 또는 종목명을 다시 확인해줘</small>
+                      <small>종목명 또는 심볼을 다시 확인해줘</small>
                     </div>
                   )}
 
@@ -723,7 +723,7 @@ export default function MyPortfolio() {
                       >
                         <span>{item.name}</span>
                         <small>
-                          {item.market} · {item.symbol}
+                          {marketLabel(item.market)} · {item.symbol}
                         </small>
                       </button>
                     ))}
@@ -734,22 +734,12 @@ export default function MyPortfolio() {
             <form className="portfolioFormGrid" onSubmit={handleSubmit}>
               <label>
                 <span>시장</span>
-                <select
-                  className="portfolioSelect"
-                  value={form.market}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      market: e.target.value,
-                      coinId: "",
-                    }))
-                  }
-                >
-                  <option value="CRYPTO">CRYPTO</option>
-                  <option value="KOSPI">KOSPI</option>
-                  <option value="KOSDAQ">KOSDAQ</option>
-                  <option value="NASDAQ">NASDAQ</option>
-                </select>
+                <input
+                  type="text"
+                  value={form.market ? marketLabel(form.market) : ""}
+                  placeholder="검색 결과 선택 시 자동 입력"
+                  readOnly
+                />
               </label>
 
               <label>
@@ -757,14 +747,8 @@ export default function MyPortfolio() {
                 <input
                   type="text"
                   value={form.symbol}
-                  placeholder="BTC / 005930 / 091990 / TSLA"
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      symbol: e.target.value.toUpperCase(),
-                      coinId: "",
-                    }))
-                  }
+                  placeholder="검색 결과 선택 시 자동 입력"
+                  readOnly
                 />
               </label>
 
@@ -773,14 +757,8 @@ export default function MyPortfolio() {
                 <input
                   type="text"
                   value={form.name}
-                  placeholder="비트코인 / 삼성전자 / 셀트리온헬스케어 / 테슬라"
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      name: e.target.value,
-                      coinId: "",
-                    }))
-                  }
+                  placeholder="검색 결과 선택 시 자동 입력"
+                  readOnly
                 />
               </label>
 
@@ -811,7 +789,7 @@ export default function MyPortfolio() {
               </label>
 
               <div className="portfolioFormHint">
-                검색으로 선택한 종목은 자동으로 시장/심볼/종목명이 채워져.
+                먼저 위 검색창에서 종목을 선택한 다음 수량과 평균단가를 입력해줘.
               </div>
 
               {submitError ? <div className="portfolioFormError">{submitError}</div> : null}
