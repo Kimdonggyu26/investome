@@ -11,22 +11,26 @@ function buildQuery(params) {
   return sp.toString();
 }
 
-export async function fetchAssetQuote({ market, symbol, name, coinId }) {
-  const query = buildQuery({
-    market,
-    symbol,
-    name,
-    coinId,
-  });
-
-  const res = await fetch(`/api/asset-quote?${query}`);
-
+async function readJsonOrThrow(res, label) {
   if (!res.ok) {
-    throw new Error(`asset quote failed: ${res.status}`);
+    throw new Error(`${label} failed: ${res.status}`);
   }
 
-  const json = await res.json();
+  return res.json();
+}
+
+export async function fetchAssetQuote({ market, symbol, name, coinId }) {
+  const query = buildQuery({ market, symbol, name, coinId });
+  const res = await fetch(`/api/asset-quote?${query}`);
+  const json = await readJsonOrThrow(res, "asset quote");
   return json?.item || null;
+}
+
+export async function searchAssetCatalog({ q, market }) {
+  const query = buildQuery({ q, market });
+  const res = await fetch(`/api/asset-search?${query}`);
+  const json = await readJsonOrThrow(res, "asset search");
+  return Array.isArray(json?.items) ? json.items : [];
 }
 
 export async function fetchPortfolioQuotes(items) {

@@ -6,9 +6,7 @@ function cacheKey(params) {
 
 function buildLogo(domain) {
   if (!domain) return "";
-  return `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(
-    domain
-  )}`;
+  return `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(domain)}`;
 }
 
 function toNumber(v) {
@@ -106,7 +104,7 @@ function pickKnownStockDomain(symbol) {
     "035420": "navercorp.com",
     "035720": "kakaocorp.com",
     "373220": "lgensol.com",
-    "091990": "celltrionskincure.com",
+    "091990": "celltrionhealthcare.com",
     AAPL: "apple.com",
     MSFT: "microsoft.com",
     NVDA: "nvidia.com",
@@ -153,6 +151,10 @@ async function fetchStockItem({ market, symbol, name }) {
     };
   }
 
+  if (info?.price == null) {
+    throw new Error(`Price not found for ${normalized}`);
+  }
+
   const rawSymbol = String(symbol || "").trim().toUpperCase();
   const displayNameEN = info?.shortName || name || rawSymbol;
   const domain = pickKnownStockDomain(rawSymbol);
@@ -171,11 +173,9 @@ async function fetchStockItem({ market, symbol, name }) {
           : Math.round(info.marketCap)
         : null,
     priceKRW:
-      info?.price != null
-        ? market === "NASDAQ"
-          ? Number((info.price * usdKrw).toFixed(2))
-          : Number(info.price.toFixed(2))
-        : null,
+      market === "NASDAQ"
+        ? Number((info.price * usdKrw).toFixed(2))
+        : Number(info.price.toFixed(2)),
     changePct: info?.changePct ?? null,
   };
 }
@@ -188,7 +188,11 @@ function pickCoinCandidate(searchJson, symbol, name, coinId) {
 
   return (
     coins.find((coin) => String(coin.id || "").toLowerCase() === id) ||
-    coins.find((coin) => String(coin.symbol || "").toLowerCase() === sym && String(coin.name || "").toLowerCase() === nm) ||
+    coins.find(
+      (coin) =>
+        String(coin.symbol || "").toLowerCase() === sym &&
+        String(coin.name || "").toLowerCase() === nm
+    ) ||
     coins.find((coin) => String(coin.symbol || "").toLowerCase() === sym) ||
     coins.find((coin) => String(coin.name || "").toLowerCase() === nm) ||
     coins[0] ||
@@ -263,17 +267,13 @@ export default async function handler(req, res) {
 
     let item = null;
 
-    try {
-      if (market === "CRYPTO") {
-        item = await fetchCryptoItem({ symbol, name, coinId });
-      } else if (market === "KOSPI" || market === "KOSDAQ" || market === "NASDAQ") {
-        item = await fetchStockItem({ market, symbol, name });
-      } else {
-        res.status(400).json({ error: `unsupported market: ${market}` });
-        return;
-      }
-    } catch {
-      item = fallbackItemFromInput({ market, symbol, name, coinId });
+    if (market === "CRYPTO") {
+      item = await fetchCryptoItem({ symbol, name, coinId });
+    } else if (market === "KOSPI" || market === "KOSDAQ" || market === "NASDAQ") {
+      item = await fetchStockItem({ market, symbol, name });
+    } else {
+      res.status(400).json({ error: `unsupported market: ${market}` });
+      return;
     }
 
     quoteCache.set(key, { at: now, data: item });
@@ -281,23 +281,9 @@ export default async function handler(req, res) {
     res.setHeader("Cache-Control", "s-maxage=15, stale-while-revalidate=30");
     res.status(200).json({ item });
   } catch (e) {
-    const fallback = fallbackItemFromInput({ market, symbol, name, coinId });
-    res.status(200).json({ item: fallback, warning: String(e?.message || e) });
+    res.status(502).json({
+      error: "quote_fetch_failed",
+      message: String(e?.message || e),
+    });
   }
-}
-
-function fallbackItemFromInput({ market, symbol, name, coinId }) {
-  const rawSymbol = String(symbol || "").trim().toUpperCase();
-
-  return {
-    market,
-    symbol: rawSymbol,
-    name: name || rawSymbol,
-    displayNameEN: name || rawSymbol,
-    iconUrl: market === "CRYPTO" ? "" : buildLogo(pickKnownStockDomain(rawSymbol)),
-    coinId: coinId || "",
-    capKRW: null,
-    priceKRW: null,
-    changePct: null,
-  };
 }

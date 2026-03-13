@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { portfolio as defaultPortfolio } from "../data/portfolio";
 import { SEARCH_ASSETS } from "../data/searchAssets";
-import { fetchAssetQuote, fetchPortfolioQuotes } from "../api/portfolioApi";
-
+import {
+  fetchAssetQuote,
+  fetchPortfolioQuotes,
+  searchAssetCatalog,
+} from "../api/portfolioApi";
 
 const STORAGE_KEY = "investome-portfolio-v3";
 
@@ -102,6 +105,7 @@ const initialForm = {
   market: "CRYPTO",
   symbol: "",
   name: "",
+  coinId: "",
   amount: "",
   avgPrice: "",
 };
@@ -118,6 +122,8 @@ export default function MyPortfolio() {
   const [form, setForm] = useState(initialForm);
   const [isUiRefreshing, setIsUiRefreshing] = useState(false);
   const [ringReady, setRingReady] = useState(false);
+  const [remoteSuggestions, setRemoteSuggestions] = useState([]);
+  const [searchingAssets, setSearchingAssets] = useState(false);
 
   useEffect(() => {
     setHoldings(readHoldings());
@@ -165,7 +171,42 @@ export default function MyPortfolio() {
     };
   }, [holdings]);
 
-  const suggestionList = useMemo(() => {
+  useEffect(() => {
+    const q = searchText.trim();
+
+    if (!open || !q) {
+      setRemoteSuggestions([]);
+      setSearchingAssets(false);
+      return;
+    }
+
+    let alive = true;
+    setSearchingAssets(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const items = await searchAssetCatalog({
+          q,
+          market: form.market || "ALL",
+        });
+
+        if (!alive) return;
+        setRemoteSuggestions(items);
+      } catch {
+        if (!alive) return;
+        setRemoteSuggestions([]);
+      } finally {
+        if (alive) setSearchingAssets(false);
+      }
+    }, 250);
+
+    return () => {
+      alive = false;
+      clearTimeout(timer);
+    };
+  }, [form.market, open, searchText]);
+
+  const localSuggestionList = useMemo(() => {
     const q = searchText.trim().toLowerCase();
     if (!q) return [];
 
@@ -173,6 +214,11 @@ export default function MyPortfolio() {
       item.aliases?.some((alias) => alias.includes(q))
     ).slice(0, 8);
   }, [searchText]);
+
+  const suggestionList = useMemo(() => {
+    const remote = Array.isArray(remoteSuggestions) ? remoteSuggestions : [];
+    return remote.length > 0 ? remote : localSuggestionList;
+  }, [localSuggestionList, remoteSuggestions]);
 
   const enrichedItems = useMemo(() => {
     return holdings.map((item) => {
@@ -226,7 +272,7 @@ export default function MyPortfolio() {
         ["#ffd36b", "#ff9f43"],
       ];
 
-      const pair = pairs[idx % pairs.length];
+      const pair = pairs[idx % 5];
       segments.push(`${pair[0]} ${current}deg ${Math.max(current, next - 2)}deg`);
       segments.push(`${pair[1]} ${Math.min(current + 2, next)}deg ${next}deg`);
       current = next;
@@ -250,6 +296,7 @@ export default function MyPortfolio() {
     setSearchText("");
     setShowSuggestions(false);
     setSubmitError("");
+    setRemoteSuggestions([]);
     setOpen(true);
   }
 
@@ -259,6 +306,7 @@ export default function MyPortfolio() {
     setSubmitError("");
     setSearchText("");
     setShowSuggestions(false);
+    setRemoteSuggestions([]);
   }
 
   function handlePickSuggestion(asset) {
@@ -267,6 +315,7 @@ export default function MyPortfolio() {
       market: asset.market,
       symbol: asset.symbol,
       name: asset.name,
+      coinId: asset.coinId || "",
     }));
     setSearchText(`${asset.name} · ${asset.symbol}`);
     setShowSuggestions(false);
@@ -298,10 +347,13 @@ export default function MyPortfolio() {
         market: form.market,
         symbol: form.symbol,
         name: form.name,
+        coinId: form.coinId,
       });
 
-      if (!verified?.symbol) {
-        throw new Error("종목 정보를 찾지 못했어. 심볼이나 이름을 다시 확인해줘.");
+      if (!verified?.symbol || verified?.priceKRW == null) {
+        throw new Error(
+          "현재 시세를 확인할 수 없는 종목이야. 검색 결과에서 다시 선택하거나 심볼을 확인해줘."
+        );
       }
 
       const nextItem = {
@@ -357,9 +409,7 @@ export default function MyPortfolio() {
               className="portfolioPnl"
               style={{
                 color:
-                  totalPnl >= 0
-                    ? "rgba(54,213,255,.96)"
-                    : "rgba(255,120,170,.96)",
+                  totalPnl >= 0 ? "rgba(54,213,255,.96)" : "rgba(255,120,170,.96)",
               }}
             >
               {formatSignedKRW(totalPnl)}
@@ -533,7 +583,11 @@ export default function MyPortfolio() {
                 </button>
               </div>
             ) : (
-              <div className={`portfolioHoldingList luxuryScroll ${isUiRefreshing ? "isRefreshing" : ""}`}>
+              <div
+                className={`portfolioHoldingList luxuryScroll ${
+                  isUiRefreshing ? "isRefreshing" : ""
+                }`}
+              >
                 {enrichedItems.map((item, idx) => {
                   const itemPnlColor =
                     item.pnl >= 0 ? "rgba(54,213,255,.95)" : "rgba(255,120,170,.95)";
@@ -556,15 +610,15 @@ export default function MyPortfolio() {
                           </div>
                         </div>
 
-                        <div className="portfolioHoldingValue">
-                          {formatKRW(item.value)}
-                        </div>
+                        <div className="portfolioHoldingValue">{formatKRW(item.value)}</div>
                       </div>
 
                       <div className="portfolioHoldingMetaRow">
                         <span>
                           {marketLabel(item.market)} · 평균단가 {formatKRW(item.avgPrice)} · 현재가{" "}
-                          {item.currentPrice == null ? "불러오는중" : formatKRW(item.currentPrice)}
+                          {item.currentPrice == null
+                            ? "시세 확인 실패"
+                            : formatKRW(item.currentPrice)}
                         </span>
 
                         <span style={{ color: itemPnlColor, fontWeight: 800 }}>
@@ -643,21 +697,36 @@ export default function MyPortfolio() {
                 }}
               />
 
-              {showSuggestions && suggestionList.length > 0 && (
+              {showSuggestions && (
                 <div className="portfolioSuggestList">
-                  {suggestionList.map((item) => (
-                    <button
-                      key={`${item.market}-${item.symbol}`}
-                      type="button"
-                      className="portfolioSuggestItem"
-                      onClick={() => handlePickSuggestion(item)}
-                    >
-                      <span>{item.name}</span>
-                      <small>
-                        {item.market} · {item.symbol}
-                      </small>
-                    </button>
-                  ))}
+                  {searchingAssets && (
+                    <div className="portfolioSuggestItem isMuted">
+                      <span>검색 중...</span>
+                      <small>실시간 종목 검색</small>
+                    </div>
+                  )}
+
+                  {!searchingAssets && suggestionList.length === 0 && searchText.trim() && (
+                    <div className="portfolioSuggestItem isMuted">
+                      <span>검색 결과가 없어요</span>
+                      <small>심볼 또는 종목명을 다시 확인해줘</small>
+                    </div>
+                  )}
+
+                  {!searchingAssets &&
+                    suggestionList.map((item) => (
+                      <button
+                        key={`${item.market}-${item.coinId || item.symbol}`}
+                        type="button"
+                        className="portfolioSuggestItem"
+                        onClick={() => handlePickSuggestion(item)}
+                      >
+                        <span>{item.name}</span>
+                        <small>
+                          {item.market} · {item.symbol}
+                        </small>
+                      </button>
+                    ))}
                 </div>
               )}
             </div>
@@ -669,7 +738,11 @@ export default function MyPortfolio() {
                   className="portfolioSelect"
                   value={form.market}
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, market: e.target.value }))
+                    setForm((prev) => ({
+                      ...prev,
+                      market: e.target.value,
+                      coinId: "",
+                    }))
                   }
                 >
                   <option value="CRYPTO">CRYPTO</option>
@@ -686,7 +759,11 @@ export default function MyPortfolio() {
                   value={form.symbol}
                   placeholder="BTC / 005930 / 091990 / TSLA"
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, symbol: e.target.value.toUpperCase() }))
+                    setForm((prev) => ({
+                      ...prev,
+                      symbol: e.target.value.toUpperCase(),
+                      coinId: "",
+                    }))
                   }
                 />
               </label>
@@ -698,7 +775,11 @@ export default function MyPortfolio() {
                   value={form.name}
                   placeholder="비트코인 / 삼성전자 / 셀트리온헬스케어 / 테슬라"
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, name: e.target.value }))
+                    setForm((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                      coinId: "",
+                    }))
                   }
                 />
               </label>
@@ -733,9 +814,7 @@ export default function MyPortfolio() {
                 검색으로 선택한 종목은 자동으로 시장/심볼/종목명이 채워져.
               </div>
 
-              {submitError ? (
-                <div className="portfolioFormError">{submitError}</div>
-              ) : null}
+              {submitError ? <div className="portfolioFormError">{submitError}</div> : null}
 
               <div className="portfolioFormActions">
                 <button type="button" className="portfolioGhostBtn" onClick={closeModal}>
