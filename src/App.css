@@ -47,14 +47,20 @@
 }
 
 .portfolioSuggestList {
-  margin-top: 10px;
-  max-height: 280px; /* 대략 5개 정도 보이고 넘으면 스크롤 */
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+
+  max-height: 280px;
   overflow-y: auto;
   overflow-x: hidden;
 
+  margin-top: 0;
   padding: 6px;
   border-radius: 16px;
-  background: rgba(13, 18, 28, 0.96);
+  background: rgba(13, 18, 28, 0.98);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow:
     0 18px 40px rgba(0, 0, 0, 0.34),
@@ -147,4 +153,13 @@
 .portfolioSuggestItem.isMuted:hover {
   background: transparent;
   transform: none;
+}
+
+.portfolioSearchBox {
+  position: relative;
+  overflow: visible;
+}
+
+.portfolioModal {
+  overflow: visible;
 }
