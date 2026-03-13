@@ -24,7 +24,7 @@ export const ASSET_META = {
     "105560": makeMeta("KB금융", "KB Financial Group", "kbfg.com"),
     "035420": makeMeta("NAVER", "NAVER", "navercorp.com"),
     "055550": makeMeta("신한지주", "Shinhan Financial Group", "shinhan.com"),
-    "005490": makeMeta("POSCO홀딩스", "POSCO Holdings", "posco-inc.com"),
+    "005490": makeMeta("POSCO홀딩스", "POSCO Holdings", "posco.com"),
     "006400": makeMeta("삼성SDI", "Samsung SDI", "samsungsdi.com"),
     "035720": makeMeta("카카오", "Kakao", "kakaocorp.com"),
     "051910": makeMeta("LG화학", "LG Chem", "lgchem.com"),
@@ -42,7 +42,7 @@ export const ASSET_META = {
     "003490": makeMeta("대한항공", "Korean Air", "koreanair.com"),
     "066570": makeMeta("LG전자", "LG Electronics", "lge.com"),
     "003670": makeMeta("포스코퓨처엠", "POSCO Future M", "poscofuturem.com"),
-    "009150": makeMeta("삼성전기", "Samsung Electro-Mechanics", "sem.samsung.com"),
+    "009150": makeMeta("삼성전기", "Samsung Electro-Mechanics", "samsung.com"),
     "012450": makeMeta("한화에어로스페이스", "Hanwha Aerospace", "hanwhaaerospace.com"),
   },
 

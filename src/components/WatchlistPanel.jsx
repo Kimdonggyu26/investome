@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useWatchlist } from "../hooks/useWatchlist";
-import "./WatchlistPanel.css";
+import { resolveAssetMeta } from "../utils/resolveAssetMeta";
 
 function AssetLogo({ iconUrl, name }) {
   const initial = (name || "?").trim().slice(0, 1);
@@ -9,7 +9,11 @@ function AssetLogo({ iconUrl, name }) {
     return <img src={iconUrl} alt={name} className="watchlistPanelLogo" />;
   }
 
-  return <div className="watchlistPanelLogo watchlistPanelLogoFallback">{initial}</div>;
+  return (
+    <div className="watchlistPanelLogo watchlistPanelLogoFallback">
+      {initial}
+    </div>
+  );
 }
 
 export default function WatchlistPanel() {
@@ -38,6 +42,7 @@ export default function WatchlistPanel() {
               watchItem: item,
               baseItem: item,
             });
+
             const href = `/asset/${resolved.market}/${resolved.symbol}`;
             const active = location.pathname === href;
 
@@ -48,7 +53,10 @@ export default function WatchlistPanel() {
                 className={`watchlistPanelItem ${active ? "active" : ""}`}
               >
                 <div className="watchlistPanelIdentity">
-                  <AssetLogo iconUrl={resolved.iconUrl} name={resolved.name} />
+                  <AssetLogo
+                    iconUrl={resolved.iconUrl}
+                    name={resolved.name}
+                  />
 
                   <div className="watchlistPanelText">
                     <div className="watchlistPanelName">{resolved.name}</div>
