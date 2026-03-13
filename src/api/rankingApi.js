@@ -80,15 +80,49 @@ function pickStockDomain(symbol) {
   return map[String(symbol || "").toUpperCase()] || "";
 }
 
+function buildCommodityIcon(symbol) {
+  const map = {
+    "GC=F": { c1: "#facc15", c2: "#f59e0b", text: "G" },
+    "SI=F": { c1: "#e5e7eb", c2: "#94a3b8", text: "S" },
+    "CL=F": { c1: "#38bdf8", c2: "#1d4ed8", text: "W" },
+    "BZ=F": { c1: "#0ea5e9", c2: "#2563eb", text: "B" },
+    "NG=F": { c1: "#22c55e", c2: "#0f766e", text: "N" },
+    "PL=F": { c1: "#cbd5e1", c2: "#64748b", text: "P" },
+    "PA=F": { c1: "#d8b4fe", c2: "#7c3aed", text: "P" },
+  };
+
+  const item = map[String(symbol || "").toUpperCase()];
+  if (!item) return "";
+
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="${item.c1}" />
+          <stop offset="100%" stop-color="${item.c2}" />
+        </linearGradient>
+      </defs>
+      <circle cx="40" cy="40" r="36" fill="url(#g)" />
+      <text x="40" y="46" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="white">
+        ${item.text}
+      </text>
+    </svg>
+  `;
+
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
 function normalizeRow(row, index) {
   const symbol = (row.symbol || "-").toUpperCase();
+  const commodityIcon = buildCommodityIcon(symbol);
+  const stockIcon = buildLogo(pickStockDomain(symbol));
 
   return {
     rank: row.rank ?? index + 1,
     name: row.name ?? "-",
     displayNameEN: row.displayNameEN ?? "",
     symbol,
-    iconUrl: row.iconUrl ?? buildLogo(pickStockDomain(symbol)),
+    iconUrl: row.iconUrl || commodityIcon || stockIcon,
     coinId: row.coinId ?? "",
     capKRW: toNumber(row.capKRW),
     priceKRW: toNumber(row.priceKRW),

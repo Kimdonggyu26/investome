@@ -1,14 +1,49 @@
 const quoteCache = new Map();
 
 const COMMODITY_INFO_MAP = {
-  "GC=F": { name: "Gold", displayNameEN: "Gold Futures" },
-  "SI=F": { name: "Silver", displayNameEN: "Silver Futures" },
-  "CL=F": { name: "WTI Oil", displayNameEN: "WTI Crude Oil Futures" },
-  "BZ=F": { name: "Brent Oil", displayNameEN: "Brent Crude Oil Futures" },
-  "NG=F": { name: "Natural Gas", displayNameEN: "Natural Gas Futures" },
-  "PL=F": { name: "Platinum", displayNameEN: "Platinum Futures" },
-  "PA=F": { name: "Palladium", displayNameEN: "Palladium Futures" },
+  "GC=F": { name: "Gold", displayNameEN: "Gold Futures", iconType: "gold" },
+  "SI=F": { name: "Silver", displayNameEN: "Silver Futures", iconType: "silver" },
+  "CL=F": { name: "WTI Oil", displayNameEN: "WTI Crude Oil Futures", iconType: "oil" },
+  "BZ=F": { name: "Brent Oil", displayNameEN: "Brent Crude Oil Futures", iconType: "brent" },
+  "NG=F": { name: "Natural Gas", displayNameEN: "Natural Gas Futures", iconType: "gas" },
+  "PL=F": { name: "Platinum", displayNameEN: "Platinum Futures", iconType: "platinum" },
+  "PA=F": { name: "Palladium", displayNameEN: "Palladium Futures", iconType: "palladium" },
 };
+
+function svgDataUri(svg) {
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function buildCommodityIcon(type, label) {
+  const map = {
+    gold: { c1: "#facc15", c2: "#f59e0b", text: "G" },
+    silver: { c1: "#e5e7eb", c2: "#94a3b8", text: "S" },
+    oil: { c1: "#38bdf8", c2: "#1d4ed8", text: "W" },
+    brent: { c1: "#0ea5e9", c2: "#2563eb", text: "B" },
+    gas: { c1: "#22c55e", c2: "#0f766e", text: "N" },
+    platinum: { c1: "#cbd5e1", c2: "#64748b", text: "P" },
+    palladium: { c1: "#d8b4fe", c2: "#7c3aed", text: "P" },
+  };
+
+  const item = map[type] || map.gold;
+  const safeText = String(label || item.text || "?").trim().slice(0, 1).toUpperCase() || item.text;
+
+  return svgDataUri(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="${item.c1}" />
+          <stop offset="100%" stop-color="${item.c2}" />
+        </linearGradient>
+      </defs>
+      <circle cx="40" cy="40" r="36" fill="url(#g)" />
+      <circle cx="40" cy="40" r="35.5" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5" />
+      <text x="40" y="46" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="white">
+        ${safeText}
+      </text>
+    </svg>
+  `);
+}
 
 function cacheKey(params) {
   return JSON.stringify(params);
@@ -253,7 +288,7 @@ async function fetchCommodityItem({ symbol, name }) {
     symbol: normalized,
     name: meta.name || name || normalized,
     displayNameEN: meta.displayNameEN || info?.shortName || name || normalized,
-    iconUrl: "",
+    iconUrl: buildCommodityIcon(meta.iconType, meta.name || name || normalized),
     coinId: "",
     capKRW: null,
     priceKRW: Number((info.price * usdKrw).toFixed(2)),
