@@ -1,6 +1,6 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useWatchlist } from "../hooks/useWatchlist";
-import { resolveAssetMeta } from "../utils/resolveAssetMeta";
+import "./WatchlistPanel.css";
 
 function AssetLogo({ iconUrl, name }) {
   const initial = (name || "?").trim().slice(0, 1);
@@ -32,22 +32,28 @@ export default function WatchlistPanel() {
           </div>
         ) : (
           watchlist.map((item) => {
-            const href = `/asset/${item.market}/${item.symbol}`;
+            const resolved = resolveAssetMeta({
+              market: item.market,
+              symbol: item.symbol,
+              watchItem: item,
+              baseItem: item,
+            });
+            const href = `/asset/${resolved.market}/${resolved.symbol}`;
             const active = location.pathname === href;
 
             return (
               <Link
-                key={`${item.market}-${item.symbol}`}
+                key={`${resolved.market}-${resolved.symbol}`}
                 to={href}
                 className={`watchlistPanelItem ${active ? "active" : ""}`}
               >
                 <div className="watchlistPanelIdentity">
-                  <AssetLogo iconUrl={item.iconUrl} name={item.name} />
+                  <AssetLogo iconUrl={resolved.iconUrl} name={resolved.name} />
 
                   <div className="watchlistPanelText">
-                    <div className="watchlistPanelName">{item.name}</div>
+                    <div className="watchlistPanelName">{resolved.name}</div>
                     <div className="watchlistPanelMeta">
-                      {item.symbol} · {item.market}
+                      {resolved.symbol} · {resolved.market}
                     </div>
                   </div>
                 </div>
