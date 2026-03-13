@@ -1,4 +1,3 @@
-import { withStaticAssetMeta } from "../data/assetMeta";
 import { useEffect, useMemo, useState } from "react";
 
 const STORAGE_KEY = "investome-watchlist-v1";
@@ -52,14 +51,12 @@ export function useWatchlist() {
       ? items.filter((item) => `${item.market}:${item.symbol}` !== key)
       : [
           {
-            ...withStaticAssetMeta({
-              market: asset.market,
-              symbol: asset.symbol,
-              name: asset.name,
-              displayNameEN: asset.displayNameEN || asset.name,
-              iconUrl: asset.iconUrl || "",
-              coinId: asset.coinId || "",
-            }),
+            market: asset.market,
+            symbol: asset.symbol,
+            name: asset.name || asset.symbol,
+            displayNameEN: asset.displayNameEN || asset.name || asset.symbol,
+            iconUrl: asset.iconUrl || "",
+            coinId: asset.coinId || "",
             addedAt: new Date().toISOString(),
           },
           ...items,

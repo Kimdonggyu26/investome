@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { portfolio as defaultPortfolio } from "../data/portfolio";
 import { SEARCH_ASSETS } from "../data/searchAssets";
 import { fetchAssetQuote, fetchPortfolioQuotes } from "../api/portfolioApi";
-import { resolveAssetMeta } from "../utils/resolveAssetMeta";
+
 
 const STORAGE_KEY = "investome-portfolio-v3";
 
@@ -177,18 +177,9 @@ export default function MyPortfolio() {
   const enrichedItems = useMemo(() => {
     return holdings.map((item) => {
       const quote = quotes[item.id] || null;
-
-      const resolved = resolveAssetMeta({
-        market: item.market,
-        symbol: item.symbol,
-        liveQuote: quote,
-        watchItem: item,
-        baseItem: item,
-      });
-
-      const currentPrice = resolved.priceKRW ?? null;
-      const capKRW = resolved.capKRW ?? null;
-      const changePct = resolved.changePct ?? null;
+      const currentPrice = quote?.priceKRW ?? null;
+      const capKRW = quote?.capKRW ?? null;
+      const changePct = quote?.changePct ?? null;
       const value = currentPrice != null ? currentPrice * item.amount : 0;
       const cost = item.amount * item.avgPrice;
       const pnl = value - cost;
@@ -196,7 +187,10 @@ export default function MyPortfolio() {
 
       return {
         ...item,
-        ...resolved,
+        name: quote?.name || item.name,
+        displayNameEN: quote?.displayNameEN || item.displayNameEN || item.name,
+        iconUrl: quote?.iconUrl || item.iconUrl || "",
+        coinId: quote?.coinId || item.coinId || "",
         currentPrice,
         capKRW,
         changePct,

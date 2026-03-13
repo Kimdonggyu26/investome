@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useWatchlist } from "../hooks/useWatchlist";
-import { resolveAssetMeta } from "../utils/resolveAssetMeta";
+import "./WatchlistPanel.css";
 
 function AssetLogo({ iconUrl, name }) {
   const initial = (name || "?").trim().slice(0, 1);
@@ -9,11 +9,7 @@ function AssetLogo({ iconUrl, name }) {
     return <img src={iconUrl} alt={name} className="watchlistPanelLogo" />;
   }
 
-  return (
-    <div className="watchlistPanelLogo watchlistPanelLogoFallback">
-      {initial}
-    </div>
-  );
+  return <div className="watchlistPanelLogo watchlistPanelLogoFallback">{initial}</div>;
 }
 
 export default function WatchlistPanel() {
@@ -36,32 +32,22 @@ export default function WatchlistPanel() {
           </div>
         ) : (
           watchlist.map((item) => {
-            const resolved = resolveAssetMeta({
-              market: item.market,
-              symbol: item.symbol,
-              watchItem: item,
-              baseItem: item,
-            });
-
-            const href = `/asset/${resolved.market}/${resolved.symbol}`;
+            const href = `/asset/${item.market}/${item.symbol}`;
             const active = location.pathname === href;
 
             return (
               <Link
-                key={`${resolved.market}-${resolved.symbol}`}
+                key={`${item.market}-${item.symbol}`}
                 to={href}
                 className={`watchlistPanelItem ${active ? "active" : ""}`}
               >
                 <div className="watchlistPanelIdentity">
-                  <AssetLogo
-                    iconUrl={resolved.iconUrl}
-                    name={resolved.name}
-                  />
+                  <AssetLogo iconUrl={item.iconUrl} name={item.name} />
 
                   <div className="watchlistPanelText">
-                    <div className="watchlistPanelName">{resolved.name}</div>
+                    <div className="watchlistPanelName">{item.name}</div>
                     <div className="watchlistPanelMeta">
-                      {resolved.symbol} · {resolved.market}
+                      {item.symbol} · {item.market}
                     </div>
                   </div>
                 </div>

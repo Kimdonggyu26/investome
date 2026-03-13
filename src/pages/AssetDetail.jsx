@@ -16,7 +16,7 @@ import AssetCommunity from "../components/AssetCommunity";
 import "../styles/AssetDetail.css";
 import { useWatchlist } from "../hooks/useWatchlist";
 import { fetchAssetQuote } from "../api/portfolioApi";
-import { resolveAssetMeta } from "../utils/resolveAssetMeta";
+
 
 function formatKRW(n) {
   if (typeof n !== "number" || !isFinite(n)) return "-";
@@ -146,7 +146,7 @@ export default function AssetDetail() {
       try {
         setAssetLoading(true);
 
-        const watchItem =
+        const watchedItem =
           watchlist.find(
             (item) =>
               String(item.market).toUpperCase() === String(market).toUpperCase() &&
@@ -156,8 +156,8 @@ export default function AssetDetail() {
         const liveQuote = await fetchAssetQuote({
           market,
           symbol,
-          name: watchItem?.name || symbol,
-          coinId: watchItem?.coinId || "",
+          name: watchedItem?.name || symbol,
+          coinId: watchedItem?.coinId || "",
         }).catch(() => null);
 
         let rows = [];
@@ -172,33 +172,48 @@ export default function AssetDetail() {
           rows = real ?? getKoreanDummyTop30("NASDAQ");
         }
 
-        if (!alive) return;
-
-        const rankingItem =
+        const found =
           rows.find(
             (row) =>
               String(row.symbol).toUpperCase() === String(symbol).toUpperCase()
           ) || null;
 
-        setAsset(
-          resolveAssetMeta({
-            market,
-            symbol,
-            rankingItem,
-            watchItem,
-            liveQuote,
-            baseItem: getFallbackAsset(market, symbol),
-          })
-        );
+        if (!alive) return;
+
+        const resolvedName =
+          found?.name ||
+          watchedItem?.name ||
+          liveQuote?.displayNameEN ||
+          liveQuote?.name ||
+          symbol;
+
+        const resolvedDisplayName =
+          found?.displayNameEN ||
+          watchedItem?.displayNameEN ||
+          liveQuote?.displayNameEN ||
+          liveQuote?.name ||
+          resolvedName;
+
+        const resolvedIcon =
+          found?.iconUrl ||
+          watchedItem?.iconUrl ||
+          liveQuote?.iconUrl ||
+          "";
+
+        setAsset({
+          market,
+          symbol: liveQuote?.symbol || symbol,
+          name: resolvedName,
+          displayNameEN: resolvedDisplayName,
+          iconUrl: resolvedIcon,
+          coinId: liveQuote?.coinId || found?.coinId || watchedItem?.coinId || "",
+          capKRW: liveQuote?.capKRW ?? found?.capKRW ?? null,
+          priceKRW: liveQuote?.priceKRW ?? found?.priceKRW ?? null,
+          changePct: liveQuote?.changePct ?? found?.changePct ?? null,
+        });
       } catch {
         if (!alive) return;
-        setAsset(
-          resolveAssetMeta({
-            market,
-            symbol,
-            baseItem: getFallbackAsset(market, symbol),
-          })
-        );
+        setAsset(getFallbackAsset(market, symbol));
       } finally {
         if (alive) setAssetLoading(false);
       }
