@@ -34,7 +34,7 @@ async function fetchText(url) {
   const text = await res.text();
 
   if (!res.ok) {
-    throw new Error(`Upstream failed: ${res.status} ${text.slice(0, 140)}`);
+    throw new Error(`Upstream failed: ${res.status} ${text.slice(0, 200)}`);
   }
 
   return text;
@@ -45,7 +45,7 @@ async function fetchJson(url) {
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error(`Non-JSON response: ${text.slice(0, 140)}`);
+    throw new Error(`Non-JSON response: ${text.slice(0, 200)}`);
   }
 }
 
@@ -85,9 +85,9 @@ function searchKoreaStocks(q, requestedMarket = "ALL") {
     .sort((a, b) => {
       if (b._score !== a._score) return b._score - a._score;
 
-      const aName = a.name.length;
-      const bName = b.name.length;
-      if (aName !== bName) return aName - bName;
+      if (a.name.length !== b.name.length) {
+        return a.name.length - b.name.length;
+      }
 
       return a.name.localeCompare(b.name, "ko");
     })
@@ -170,21 +170,37 @@ export default async function handler(req, res) {
   try {
     let items = [];
 
+    // 1) 국내주식은 항상 먼저, 무조건 내부 데이터로 검색
     if (market === "ALL" || market === "KOSPI" || market === "KOSDAQ") {
       items.push(...searchKoreaStocks(q, market));
     }
 
-    if (market === "ALL" || market === "NASDAQ") {
-      const usItems = await searchUsStocks(q);
-      items.push(...usItems);
+    // 2) 외부 API는 실패해도 전체 실패시키지 않음
+    //    그리고 한 글자 검색에서는 굳이 안 때림
+    if (q.length >= 2) {
+      if (market === "ALL" || market === "NASDAQ") {
+        try {
+          const usItems = await searchUsStocks(q);
+          items.push(...usItems);
+        } catch (e) {
+          console.error("NASDAQ search skipped:", e.message);
+        }
+      }
+
+      if (market === "ALL" || market === "CRYPTO") {
+        try {
+          const coinItems = await searchCoins(q);
+          items.push(...coinItems);
+        } catch (e) {
+          console.error("CRYPTO search skipped:", e.message);
+        }
+      }
     }
 
-    if (market === "ALL" || market === "CRYPTO") {
-      const coinItems = await searchCoins(q);
-      items.push(...coinItems);
-    }
-
-    items = uniqBy(items, (item) => `${item.market}-${item.coinId || item.symbol}`).slice(0, 50);
+    items = uniqBy(
+      items,
+      (item) => `${item.market}-${item.coinId || item.symbol}`
+    ).slice(0, 50);
 
     res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=120");
     res.status(200).json({ items });
