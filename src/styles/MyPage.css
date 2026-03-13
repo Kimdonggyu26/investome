@@ -2114,3 +2114,37 @@
     transform:translateX(-50%) scale(.585);
   }
 }
+
+/* 검색 결과 드롭다운 */
+.portfolioSuggestList{
+  max-height: 260px; /* 5개 정도 보이는 높이 */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* 스크롤 디자인 */
+.portfolioSuggestList::-webkit-scrollbar{
+  width: 8px;
+}
+
+.portfolioSuggestList::-webkit-scrollbar-track{
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+}
+
+.portfolioSuggestList::-webkit-scrollbar-thumb{
+  background: linear-gradient(
+    180deg,
+    rgba(54,213,255,0.9),
+    rgba(124,77,255,0.9)
+  );
+  border-radius: 10px;
+}
+
+.portfolioSuggestList::-webkit-scrollbar-thumb:hover{
+  background: linear-gradient(
+    180deg,
+    rgba(54,213,255,1),
+    rgba(124,77,255,1)
+  );
+}
