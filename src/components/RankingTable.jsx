@@ -303,13 +303,31 @@ export default function RankingTable() {
                       <td>
                         <div className="nameCell">
                           <Avatar iconUrl={row.iconUrl} name={row.name} />
-                          <div className="nameText">
-                            <div className="nameMain">{row.name}</div>
-                            <div className="nameSub">
-                              {row.symbol}
-                              {row.displayNameEN ? ` · ${row.displayNameEN}` : ""}
-                            </div>
+                        <div className="nameText">
+                          <div className="nameMain">
+                            {market === "COMMODITIES"
+                              ? row.name.split(" ")[0]
+                              : row.name}
                           </div>
+
+                          <div className="nameSub">
+                            {market === "COMMODITIES"
+                              ? (() => {
+                                  const parts = row.name.split(" ");
+                                  const ko = parts[0] || row.name;
+                                  const en = parts.slice(1).join(" ");
+                                  return en
+                                    ? `${en}${row.displayNameEN ? ` · ${row.displayNameEN}` : ""}`
+                                    : row.displayNameEN || "";
+                                })()
+                              : (
+                                  <>
+                                    {row.symbol}
+                                    {row.displayNameEN ? ` · ${row.displayNameEN}` : ""}
+                                  </>
+                                )}
+                          </div>
+                        </div>
                         </div>
                       </td>
 
