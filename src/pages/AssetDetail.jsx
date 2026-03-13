@@ -16,7 +16,6 @@ import AssetCommunity from "../components/AssetCommunity";
 import "../styles/AssetDetail.css";
 import { useWatchlist } from "../hooks/useWatchlist";
 import { fetchAssetQuote } from "../api/portfolioApi";
-import { fetchAssetQuote } from "../api/portfolioApi";
 import { resolveAssetMeta } from "../utils/resolveAssetMeta";
 
 function formatKRW(n) {
@@ -204,7 +203,7 @@ export default function AssetDetail() {
         if (alive) setAssetLoading(false);
       }
     }
-    
+
     loadAsset();
     const t = setInterval(loadAsset, 20_000);
 
