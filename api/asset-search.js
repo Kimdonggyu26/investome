@@ -1,3 +1,5 @@
+import koreaStocks from "../src/data/koreaStocks.json" assert { type: "json" };
+
 function toArray(v) {
   return Array.isArray(v) ? v : [];
 }
@@ -12,18 +14,27 @@ function uniqBy(items, keyFn) {
   });
 }
 
-async function fetchText(url) {
-  const res = await fetch(url, {
+function normalizeText(v) {
+  return String(v || "").trim().toLowerCase();
+}
+
+function fetchWithHeaders(url) {
+  return fetch(url, {
     headers: {
       "User-Agent": "Mozilla/5.0 (Investome Vercel)",
       Accept: "application/json,text/plain,*/*",
     },
   });
+}
 
+async function fetchText(url) {
+  const res = await fetchWithHeaders(url);
   const text = await res.text();
+
   if (!res.ok) {
     throw new Error(`Upstream failed: ${res.status} ${text.slice(0, 140)}`);
   }
+
   return text;
 }
 
@@ -36,6 +47,49 @@ async function fetchJson(url) {
   }
 }
 
+function scoreKoreaStock(item, q) {
+  const keyword = normalizeText(q);
+  const name = normalizeText(item.name);
+  const en = normalizeText(item.displayNameEN);
+  const symbol = normalizeText(item.symbol);
+
+  if (!keyword) return -1;
+
+  if (name === keyword) return 100;
+  if (symbol === keyword) return 99;
+  if (name.startsWith(keyword)) return 95;
+  if (symbol.startsWith(keyword)) return 90;
+  if (name.includes(keyword)) return 80;
+  if (en.startsWith(keyword)) return 70;
+  if (en.includes(keyword)) return 60;
+
+  return -1;
+}
+
+function searchKoreaStocks(q, requestedMarket = "ALL") {
+  const items = koreaStocks
+    .filter((item) => {
+      if (requestedMarket === "ALL") {
+        return item.market === "KOSPI" || item.market === "KOSDAQ";
+      }
+      return item.market === requestedMarket;
+    })
+    .map((item) => ({
+      ...item,
+      coinId: "",
+      _score: scoreKoreaStock(item, q),
+    }))
+    .filter((item) => item._score >= 0)
+    .sort((a, b) => {
+      if (b._score !== a._score) return b._score - a._score;
+      return a.name.localeCompare(b.name, "ko");
+    })
+    .slice(0, 20)
+    .map(({ _score, ...rest }) => rest);
+
+  return items;
+}
+
 function buildStockItem(row) {
   const rawSymbol = String(row?.symbol || "").trim().toUpperCase();
   const exchange = String(row?.exchange || row?.exchDisp || "").toUpperCase();
@@ -43,26 +97,6 @@ function buildStockItem(row) {
   const name = row?.shortname || row?.longname || row?.name || rawSymbol;
 
   if (!rawSymbol || quoteType !== "EQUITY") return null;
-
-  if (rawSymbol.endsWith(".KS") || exchange.includes("KSE") || exchange.includes("KOSPI")) {
-    return {
-      market: "KOSPI",
-      symbol: rawSymbol.replace(/\.KS$/i, ""),
-      name,
-      displayNameEN: name,
-      coinId: "",
-    };
-  }
-
-  if (rawSymbol.endsWith(".KQ") || exchange.includes("KOSDAQ")) {
-    return {
-      market: "KOSDAQ",
-      symbol: rawSymbol.replace(/\.KQ$/i, ""),
-      name,
-      displayNameEN: name,
-      coinId: "",
-    };
-  }
 
   if (
     exchange.includes("NASDAQ") ||
@@ -83,7 +117,7 @@ function buildStockItem(row) {
   return null;
 }
 
-async function searchStocks(q, requestedMarket) {
+async function searchUsStocks(q) {
   const json = await fetchJson(
     "https://query1.finance.yahoo.com/v1/finance/search?" +
       new URLSearchParams({
@@ -95,13 +129,10 @@ async function searchStocks(q, requestedMarket) {
       }).toString()
   );
 
-  let items = toArray(json?.quotes).map(buildStockItem).filter(Boolean);
-
-  if (requestedMarket && requestedMarket !== "ALL") {
-    items = items.filter((item) => item.market === requestedMarket);
-  }
-
-  return uniqBy(items, (item) => `${item.market}-${item.symbol}`).slice(0, 12);
+  return uniqBy(
+    toArray(json?.quotes).map(buildStockItem).filter(Boolean),
+    (item) => `${item.market}-${item.symbol}`
+  ).slice(0, 12);
 }
 
 async function searchCoins(q) {
@@ -132,22 +163,23 @@ export default async function handler(req, res) {
   }
 
   try {
-    const tasks = [];
+    let items = [];
+
+    if (market === "ALL" || market === "KOSPI" || market === "KOSDAQ") {
+      items.push(...searchKoreaStocks(q, market));
+    }
+
+    if (market === "ALL" || market === "NASDAQ") {
+      const usItems = await searchUsStocks(q);
+      items.push(...usItems);
+    }
 
     if (market === "ALL" || market === "CRYPTO") {
-      tasks.push(searchCoins(q));
+      const coinItems = await searchCoins(q);
+      items.push(...coinItems);
     }
 
-    if (market === "ALL" || market === "KOSPI" || market === "KOSDAQ" || market === "NASDAQ") {
-      tasks.push(searchStocks(q, market === "ALL" ? "ALL" : market));
-    }
-
-    const items = uniqBy(
-      (await Promise.allSettled(tasks))
-        .filter((row) => row.status === "fulfilled")
-        .flatMap((row) => row.value),
-      (item) => `${item.market}-${item.coinId || item.symbol}`
-    ).slice(0, 12);
+    items = uniqBy(items, (item) => `${item.market}-${item.coinId || item.symbol}`).slice(0, 20);
 
     res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=120");
     res.status(200).json({ items });
