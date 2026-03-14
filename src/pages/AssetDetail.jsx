@@ -73,6 +73,8 @@ function getChangeClass(n) {
   return "flat";
 }
 
+
+/* ⭐ TradingView 심볼 변환 */
 function getTradingViewSymbol(market, symbol) {
   const normalized = String(symbol || "").trim().toUpperCase();
 
@@ -110,29 +112,8 @@ function getTradingViewSymbol(market, symbol) {
   return normalized;
 }
 
-function getNewsQuery({ market, symbol, name, displayNameEN }) {
 
-  if (market === "COMMODITIES") {
-    const map = {
-      "GC=F": "COMEX:GC1!",
-      "SI=F": "COMEX:SI1!",
-      "CL=F": "NYMEX:CL1!",
-      "BZ=F": "ICEEUR:BRN1!",
-      "NG=F": "NYMEX:NG1!",
-      "PL=F": "NYMEX:PL1!",
-      "PA=F": "NYMEX:PA1!",
-    };
-
-    return map[String(symbol || "").toUpperCase()] || "TVC:GOLD";
-  }
-
-  if (market === "KOSPI") {
-    return `KRX:${symbol}`;
-  }
-
-  return `NASDAQ:${symbol}`;
-
-
+/* ⭐ 뉴스 검색어 */
 function getNewsQuery({ market, symbol, name, displayNameEN }) {
   if (market === "CRYPTO") {
     if (symbol === "BTC") return "비트코인 OR Bitcoin OR BTC";
@@ -152,12 +133,13 @@ function getNewsQuery({ market, symbol, name, displayNameEN }) {
       "PA=F": "팔라듐 OR Palladium",
     };
 
-    return map[String(symbol || "").toUpperCase()] || `${name || symbol} OR ${displayNameEN || symbol}`;
+    return map[String(symbol || "").toUpperCase()] || `${name || symbol}`;
   }
 
   const base = [name, displayNameEN, symbol].filter(Boolean).join(" OR ");
   return base || symbol;
 }
+
 
 function getFallbackAsset(market, symbol) {
   return {
@@ -172,6 +154,7 @@ function getFallbackAsset(market, symbol) {
     changePct: null,
   };
 }
+
 
 function AssetLogo({ iconUrl, name }) {
   const [imgError, setImgError] = useState(false);
