@@ -93,7 +93,7 @@ function getTradingViewSymbol(market, symbol) {
       "SI=F": "TVC:SILVER",
       "CL=F": "TVC:USOIL",
       "BZ=F": "TVC:UKOIL",
-      "NG=F": "TVC:NATGAS",
+      "NG=F": "NYMEX:NG1!",
       "PL=F": "TVC:PLATINUM",
       "PA=F": "TVC:PALLADIUM",
     };
@@ -102,7 +102,7 @@ function getTradingViewSymbol(market, symbol) {
   }
 
   if (market === "KOSPI" || market === "KOSDAQ") {
-    return `KRX:${normalized}`;
+    return `KRX:${normalized.padStart(6, "0")}`;
   }
 
   if (market === "NASDAQ") {
@@ -111,7 +111,6 @@ function getTradingViewSymbol(market, symbol) {
 
   return normalized;
 }
-
 
 /* ⭐ 뉴스 검색어 */
 function getNewsQuery({ market, symbol, name, displayNameEN }) {
@@ -409,6 +408,7 @@ const showCap = market === "CRYPTO" || market === "NASDAQ";
 
             <section className="assetMainGrid">
               <TradingViewChart
+                key={tradingViewSymbol}
                 symbol={tradingViewSymbol}
                 title={`${asset.name} · ${symbol}`}
               />
