@@ -1,57 +1,33 @@
-import { useEffect, useRef } from "react";
+import { useMemo } from "react";
 
 export default function TradingViewChart({ symbol, title }) {
-  const containerRef = useRef(null);
-
-  useEffect(() => {
-    if (!containerRef.current || !symbol) return;
-
-    containerRef.current.innerHTML = "";
-
-    const widgetContainer = document.createElement("div");
-    widgetContainer.className = "tradingview-widget-container";
-    widgetContainer.style.width = "100%";
-    widgetContainer.style.height = "560px";
-
-    const widgetEl = document.createElement("div");
-    widgetEl.className = "tradingview-widget-container__widget";
-    widgetEl.style.width = "100%";
-    widgetEl.style.height = "100%";
-
-    const script = document.createElement("script");
-    script.type = "text/javascript";
-    script.async = true;
-    script.src =
-      "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
-
-    script.innerHTML = JSON.stringify({
-      width: "100%",
-      height: 560,
+  const src = useMemo(() => {
+    const params = new URLSearchParams({
+      frameElementId: "tradingview_widget",
       symbol,
       interval: "D",
-      timezone: "Asia/Seoul",
+      hidesidetoolbar: "0",
+      symboledit: "0",
+      saveimage: "0",
+      toolbarbg: "#0f172a",
+      studies: "[]",
       theme: "dark",
       style: "1",
+      timezone: "Asia/Seoul",
+      withdateranges: "1",
+      hide_top_toolbar: "0",
+      hide_legend: "0",
+      allow_symbol_change: "0",
+      save_image: "0",
+      details: "0",
+      hotlist: "0",
+      calendar: "0",
       locale: "kr",
-      enable_publishing: false,
-      allow_symbol_change: false,
-      hide_side_toolbar: false,
-      hide_top_toolbar: false,
-      withdateranges: true,
-      calendar: false,
-      studies: [],
-      support_host: "https://www.tradingview.com",
+      autosize: "1",
+      tvwidgetsymbol: symbol,
     });
 
-    widgetContainer.appendChild(widgetEl);
-    widgetContainer.appendChild(script);
-    containerRef.current.appendChild(widgetContainer);
-
-    return () => {
-      if (containerRef.current) {
-        containerRef.current.innerHTML = "";
-      }
-    };
+    return `https://s.tradingview.com/widgetembed/?${params.toString()}`;
   }, [symbol]);
 
   return (
@@ -64,7 +40,15 @@ export default function TradingViewChart({ symbol, title }) {
       </div>
 
       <div className="tvWrap">
-        <div ref={containerRef} className="tvInner" />
+        <iframe
+          key={symbol}
+          title={title || symbol}
+          src={src}
+          className="tvInner"
+          style={{ width: "100%", height: "560px", border: 0 }}
+          allowTransparency
+          loading="lazy"
+        />
       </div>
     </div>
   );
