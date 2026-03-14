@@ -84,7 +84,33 @@ function getTradingViewSymbol(market, symbol) {
     if (normalized === "DOGE") return "BINANCE:DOGEUSDT";
     return `BINANCE:${normalized}USDT`;
   }
+
+  if (market === "COMMODITIES") {
+    const map = {
+      "GC=F": "TVC:GOLD",
+      "SI=F": "TVC:SILVER",
+      "CL=F": "TVC:USOIL",
+      "BZ=F": "TVC:UKOIL",
+      "NG=F": "TVC:NATGAS",
+      "PL=F": "TVC:PLATINUM",
+      "PA=F": "TVC:PALLADIUM",
+    };
+
+    return map[normalized] || "TVC:GOLD";
+  }
+
+  if (market === "KOSPI" || market === "KOSDAQ") {
+    return `KRX:${normalized}`;
+  }
+
+  if (market === "NASDAQ") {
+    return `NASDAQ:${normalized}`;
+  }
+
+  return normalized;
 }
+
+function getNewsQuery({ market, symbol, name, displayNameEN }) {
 
   if (market === "COMMODITIES") {
     const map = {
@@ -105,7 +131,7 @@ function getTradingViewSymbol(market, symbol) {
   }
 
   return `NASDAQ:${symbol}`;
-}
+
 
 function getNewsQuery({ market, symbol, name, displayNameEN }) {
   if (market === "CRYPTO") {
