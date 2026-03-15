@@ -18,7 +18,6 @@ import "../styles/AssetDetail.css";
 import { useWatchlist } from "../hooks/useWatchlist";
 import { fetchAssetQuote } from "../api/portfolioApi";
 
-
 function formatKRW(n) {
   if (typeof n !== "number" || !isFinite(n)) return "-";
   return `₩${Math.round(n).toLocaleString("ko-KR")}`;
@@ -73,7 +72,6 @@ function getChangeClass(n) {
   return "flat";
 }
 
-
 /* ⭐ TradingView 심볼 변환 */
 function getTradingViewSymbol(market, symbol) {
   const normalized = String(symbol || "").trim().toUpperCase();
@@ -112,6 +110,44 @@ function getTradingViewSymbol(market, symbol) {
   return normalized;
 }
 
+/* ⭐ 외부 TradingView 페이지 URL */
+function getTradingViewPageUrl(market, symbol) {
+  const normalized = String(symbol || "").trim().toUpperCase();
+
+  if (market === "KOSPI" || market === "KOSDAQ") {
+    return `https://www.tradingview.com/symbols/KRX-${normalized.padStart(6, "0")}/`;
+  }
+
+  if (market === "NASDAQ") {
+    return `https://www.tradingview.com/symbols/NASDAQ-${normalized}/`;
+  }
+
+  if (market === "CRYPTO") {
+    if (normalized === "BTC") return "https://www.tradingview.com/symbols/BTCUSDT/";
+    if (normalized === "ETH") return "https://www.tradingview.com/symbols/ETHUSDT/";
+    if (normalized === "XRP") return "https://www.tradingview.com/symbols/XRPUSDT/";
+    if (normalized === "SOL") return "https://www.tradingview.com/symbols/SOLUSDT/";
+    if (normalized === "DOGE") return "https://www.tradingview.com/symbols/DOGEUSDT/";
+    return `https://www.tradingview.com/symbols/${normalized}USDT/`;
+  }
+
+  if (market === "COMMODITIES") {
+    const map = {
+      "GC=F": "https://www.tradingview.com/symbols/TVC-GOLD/",
+      "SI=F": "https://www.tradingview.com/symbols/TVC-SILVER/",
+      "CL=F": "https://www.tradingview.com/symbols/TVC-USOIL/",
+      "BZ=F": "https://www.tradingview.com/symbols/TVC-UKOIL/",
+      "NG=F": "https://www.tradingview.com/symbols/NYMEX-NG1!/",
+      "PL=F": "https://www.tradingview.com/symbols/TVC-PLATINUM/",
+      "PA=F": "https://www.tradingview.com/symbols/TVC-PALLADIUM/",
+    };
+
+    return map[normalized] || "https://www.tradingview.com/symbols/TVC-GOLD/";
+  }
+
+  return "";
+}
+
 /* ⭐ 뉴스 검색어 */
 function getNewsQuery({ market, symbol, name, displayNameEN }) {
   if (market === "CRYPTO") {
@@ -139,7 +175,6 @@ function getNewsQuery({ market, symbol, name, displayNameEN }) {
   return base || symbol;
 }
 
-
 function getFallbackAsset(market, symbol) {
   return {
     market,
@@ -153,7 +188,6 @@ function getFallbackAsset(market, symbol) {
     changePct: null,
   };
 }
-
 
 function AssetLogo({ iconUrl, name }) {
   const [imgError, setImgError] = useState(false);
@@ -277,6 +311,11 @@ export default function AssetDetail() {
     [market, symbol]
   );
 
+  const tradingViewPageUrl = useMemo(
+    () => getTradingViewPageUrl(market, symbol),
+    [market, symbol]
+  );
+
   const newsQuery = useMemo(
     () =>
       getNewsQuery({
@@ -288,16 +327,17 @@ export default function AssetDetail() {
     [market, symbol, asset.name, asset.displayNameEN]
   );
 
-const marketLabel =
-  market === "CRYPTO"
-    ? "CRYPTO"
-    : market === "KOSPI"
-      ? "KOSPI"
-      : market === "COMMODITIES"
-        ? "COMMODITIES"
-        : "NASDAQ";
+  const marketLabel =
+    market === "CRYPTO"
+      ? "CRYPTO"
+      : market === "KOSPI"
+        ? "KOSPI"
+        : market === "COMMODITIES"
+          ? "COMMODITIES"
+          : "NASDAQ";
 
-const showCap = market === "CRYPTO" || market === "NASDAQ";
+  const showCap = market === "CRYPTO" || market === "NASDAQ";
+  const isKoreanMarket = market === "KOSPI" || market === "KOSDAQ";
 
   const changeAmount = calcChangeAmount(asset.priceKRW, asset.changePct);
   const { high, low } = calcRange(asset.priceKRW, asset.changePct);
@@ -407,11 +447,41 @@ const showCap = market === "CRYPTO" || market === "NASDAQ";
             </section>
 
             <section className="assetMainGrid">
-              <TradingViewChart
-                key={tradingViewSymbol}
-                symbol={tradingViewSymbol}
-                title={`${asset.name} · ${symbol}`}
-              />
+              {isKoreanMarket ? (
+                <section className="assetPanel kospiChartNotice">
+                  <div className="assetPanelHead">
+                    <div>
+                      <div className="assetPanelTitle">차트 서비스 준비중</div>
+                      <div className="assetPanelSub">
+                        코스피 종목은 외부 차트 페이지로 이동해 확인할 수 있습니다.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="kospiChartNoticeBody">
+                    <p className="kospiChartNoticeText">
+                      현재 코스피 종목 차트는 사이트 내에서 제공이 제한됩니다.
+                      <br />
+                      아래 버튼을 눌러 TradingView 차트 페이지로 이동해주세요.
+                    </p>
+
+                    <a
+                      href={tradingViewPageUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="chartMoveBtn"
+                    >
+                      TradingView 차트 보러가기 →
+                    </a>
+                  </div>
+                </section>
+              ) : (
+                <TradingViewChart
+                  key={tradingViewSymbol}
+                  symbol={tradingViewSymbol}
+                  title={`${asset.name} · ${symbol}`}
+                />
+              )}
 
               <div className="assetPanel">
                 <div className="assetPanelHead">
