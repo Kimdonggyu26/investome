@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./RankingTable.css";
 import {
@@ -10,9 +10,10 @@ import {
 } from "../api/rankingApi";
 
 const MARKETS = ["KOSPI", "NASDAQ", "CRYPTO", "COMMODITIES"];
+const REFRESH_MS = 20_000;
 
 function formatKRW(n) {
-  if (typeof n !== "number" || !isFinite(n)) return "-";
+  if (typeof n !== "number" || !Number.isFinite(n)) return "-";
   return "₩" + Math.round(n).toLocaleString("ko-KR");
 }
 
@@ -121,6 +122,11 @@ function TableSkeleton() {
   );
 }
 
+function getCountdownLabel(secondsLeft, isRefreshingNow) {
+  if (isRefreshingNow) return "데이터 갱신 중...";
+  return `데이터 갱신까지 ${secondsLeft}초`;
+}
+
 export default function RankingTable() {
   const navigate = useNavigate();
 
@@ -130,18 +136,67 @@ export default function RankingTable() {
   const [flashMap, setFlashMap] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSwitching, setIsSwitching] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(20);
+  const [isRefreshingNow, setIsRefreshingNow] = useState(false);
 
   const prevRowsRef = useRef([]);
   const flashTimerRef = useRef(null);
+  const refreshTimeoutRef = useRef(null);
+  const countdownIntervalRef = useRef(null);
+  const nextRefreshAtRef = useRef(null);
+  const mountedRef = useRef(false);
 
-  useEffect(() => {
-    let alive = true;
+  const clearScheduledRefresh = useCallback(() => {
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+      refreshTimeoutRef.current = null;
+    }
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+  }, []);
 
-    async function fetchRows({ initial = false } = {}) {
+  const startCountdown = useCallback(() => {
+    if (!nextRefreshAtRef.current) return;
+
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+    }
+
+    const updateCountdown = () => {
+      const remain = nextRefreshAtRef.current - Date.now();
+      const nextValue = Math.max(0, Math.ceil(remain / 1000));
+      setSecondsLeft(nextValue);
+    };
+
+    updateCountdown();
+    countdownIntervalRef.current = setInterval(updateCountdown, 250);
+  }, []);
+
+  const scheduleNextRefresh = useCallback(
+    (refreshFn) => {
+      clearScheduledRefresh();
+
+      nextRefreshAtRef.current = Date.now() + REFRESH_MS;
+      setSecondsLeft(Math.ceil(REFRESH_MS / 1000));
+      setIsRefreshingNow(false);
+      startCountdown();
+
+      refreshTimeoutRef.current = setTimeout(() => {
+        refreshFn({ initial: false });
+      }, REFRESH_MS);
+    },
+    [clearScheduledRefresh, startCountdown]
+  );
+
+  const fetchRows = useCallback(
+    async ({ initial = false } = {}) => {
       const startAt = Date.now();
 
       try {
         setErr(null);
+        setIsRefreshingNow(!initial);
 
         if (initial && prevRowsRef.current.length === 0) {
           setIsLoading(true);
@@ -170,13 +225,11 @@ export default function RankingTable() {
           await new Promise((resolve) => setTimeout(resolve, minimumOverlay - elapsed));
         }
 
-        if (!alive) return;
+        if (!mountedRef.current) return;
 
-        const prevMap = Object.fromEntries(
-          prevRowsRef.current.map((r) => [r.symbol, r])
-        );
-
+        const prevMap = Object.fromEntries(prevRowsRef.current.map((r) => [r.symbol, r]));
         const flashes = {};
+
         nextRows.forEach((r) => {
           const prev = prevMap[r.symbol];
           if (!prev) return;
@@ -200,29 +253,66 @@ export default function RankingTable() {
         if (Object.keys(flashes).length > 0) {
           setFlashMap(flashes);
           flashTimerRef.current = setTimeout(() => {
+            if (!mountedRef.current) return;
             setFlashMap({});
           }, 1100);
+        } else {
+          setFlashMap({});
         }
 
         setIsLoading(false);
         setIsSwitching(false);
+
+        scheduleNextRefresh(fetchRows);
       } catch (e) {
-        if (!alive) return;
+        if (!mountedRef.current) return;
         setErr(e);
         setIsLoading(false);
         setIsSwitching(false);
-      }
-    }
+        setIsRefreshingNow(false);
 
+        scheduleNextRefresh(fetchRows);
+      }
+    },
+    [market, scheduleNextRefresh]
+  );
+
+  useEffect(() => {
+    mountedRef.current = true;
+    prevRowsRef.current = [];
+    setRows([]);
+    setErr(null);
+    setFlashMap({});
+    setSecondsLeft(20);
+    setIsRefreshingNow(false);
+
+    clearScheduledRefresh();
     fetchRows({ initial: true });
-    const t = setInterval(() => fetchRows({ initial: false }), 20_000);
+
+    const handleVisibility = () => {
+      if (!document.hidden && nextRefreshAtRef.current) {
+        const remain = nextRefreshAtRef.current - Date.now();
+
+        if (remain <= 0) {
+          fetchRows({ initial: false });
+        } else {
+          setSecondsLeft(Math.max(0, Math.ceil(remain / 1000)));
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
-      alive = false;
-      clearInterval(t);
-      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+      mountedRef.current = false;
+      clearScheduledRefresh();
+      document.removeEventListener("visibilitychange", handleVisibility);
+
+      if (flashTimerRef.current) {
+        clearTimeout(flashTimerRef.current);
+      }
     };
-  }, [market]);
+  }, [market, clearScheduledRefresh, fetchRows]);
 
   return (
     <div className="rankingCard" id="ranking">
@@ -233,29 +323,36 @@ export default function RankingTable() {
             <span>LIVE</span>
           </div>
 
-        <h3>{market === "COMMODITIES" ? "원자재 시세" : "TOP30 랭킹"}</h3>
-        <div className="rankingSub">
-          {market === "COMMODITIES" ? "Major Commodities Live Prices" : "Top 30 Market Movers"}
-        </div>
+          <h3>{market === "COMMODITIES" ? "원자재 시세" : "TOP30 랭킹"}</h3>
+          <div className="rankingSub">
+            {market === "COMMODITIES" ? "Major Commodities Live Prices" : "Top 30 Market Movers"}
+          </div>
         </div>
 
-        <div className="marketTabs">
-          {MARKETS.map((m) => (
-            <button
-              key={m}
-              className={market === m ? "active" : ""}
-              onClick={() => setMarket(m)}
-              type="button"
-            >
-              {m}
-            </button>
-          ))}
+        <div className="rankingHeaderRight">
+          <div className={`rankingRefreshBadge ${isRefreshingNow ? "isRefreshing" : ""}`}>
+            <span className="rankingRefreshDot" />
+            <span>{getCountdownLabel(secondsLeft, isRefreshingNow)}</span>
+          </div>
+
+          <div className="marketTabs">
+            {MARKETS.map((m) => (
+              <button
+                key={m}
+                className={market === m ? "active" : ""}
+                onClick={() => setMarket(m)}
+                type="button"
+              >
+                {m}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {err && (
         <div className="rankingHint" style={{ marginBottom: 12 }}>
-          데이터를 불러오지 못했어요.
+          데이터를 불러오지 못했어요. 다음 주기에 다시 시도할게요.
         </div>
       )}
 
@@ -278,6 +375,7 @@ export default function RankingTable() {
               <tbody>
                 {rows.map((row) => {
                   const flash = flashMap[row.symbol];
+
                   const rowFlashClass =
                     flash === "up"
                       ? "rowFlashUp"
@@ -303,31 +401,25 @@ export default function RankingTable() {
                       <td>
                         <div className="nameCell">
                           <Avatar iconUrl={row.iconUrl} name={row.name} />
-                        <div className="nameText">
-                          <div className="nameMain">
-                            {market === "COMMODITIES"
-                              ? row.name.split(" ")[0]
-                              : row.name}
-                          </div>
 
-                          <div className="nameSub">
-                            {market === "COMMODITIES"
-                              ? (() => {
-                                  const parts = row.name.split(" ");
-                                  const ko = parts[0] || row.name;
-                                  const en = parts.slice(1).join(" ");
-                                  return en
-                                    ? `${en}${row.displayNameEN ? ` · ${row.displayNameEN}` : ""}`
-                                    : row.displayNameEN || "";
-                                })()
-                              : (
-                                  <>
-                                    {row.symbol}
-                                    {row.displayNameEN ? ` · ${row.displayNameEN}` : ""}
-                                  </>
-                                )}
+                          <div className="nameText">
+                            <div className="nameMain">
+                              {market === "COMMODITIES" ? row.name.split(" ")[0] : row.name}
+                            </div>
+
+                            <div className="nameSub">
+                              {market === "COMMODITIES"
+                                ? (() => {
+                                    const parts = row.name.split(" ");
+                                    const ko = parts[0] || row.name;
+                                    const en = parts.slice(1).join(" ");
+                                    return en
+                                      ? `${en}${row.displayNameEN ? ` · ${row.displayNameEN}` : ""}`
+                                      : row.displayNameEN || "";
+                                  })()
+                                : `${row.symbol}${row.displayNameEN ? ` · ${row.displayNameEN}` : ""}`}
+                            </div>
                           </div>
-                        </div>
                         </div>
                       </td>
 
@@ -356,7 +448,9 @@ export default function RankingTable() {
         </div>
       )}
 
-      <div className="rankingHint">20초마다 최신 시세 기준으로 자동 갱신돼요.</div>
+      <div className="rankingHint">
+        실제 데이터 갱신 주기와 카운트다운이 맞물리도록 동작해요.
+      </div>
     </div>
   );
 }
