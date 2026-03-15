@@ -330,11 +330,6 @@ export default function RankingTable() {
         </div>
 
         <div className="rankingHeaderRight">
-          <div className={`rankingRefreshBadge ${isRefreshingNow ? "isRefreshing" : ""}`}>
-            <span className="rankingRefreshDot" />
-            <span>{getCountdownLabel(secondsLeft, isRefreshingNow)}</span>
-          </div>
-
           <div className="marketTabs">
             {MARKETS.map((m) => (
               <button
@@ -347,6 +342,14 @@ export default function RankingTable() {
               </button>
             ))}
           </div>
+        </div>
+      </div>
+
+      <div className="rankingTopMeta">
+        <div className="rankingTopMetaSpacer" />
+        <div className={`rankingRefreshBadge ${isRefreshingNow ? "isRefreshing" : ""}`}>
+          <span className="rankingRefreshDot" />
+          <span>{getCountdownLabel(secondsLeft, isRefreshingNow)}</span>
         </div>
       </div>
 

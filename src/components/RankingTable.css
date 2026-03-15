@@ -15,7 +15,7 @@
   display:flex;
   justify-content:space-between;
   align-items:flex-start;
-  margin-bottom:16px;
+  margin-bottom:10px;
   gap: 14px;
 }
 
@@ -25,6 +25,18 @@
   align-items:flex-end;
   gap:10px;
   flex-shrink:0;
+}
+
+.rankingTopMeta{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  min-height: 36px;
+}
+
+.rankingTopMetaSpacer{
+  flex: 1;
 }
 
 .sectionTickerBadge{
@@ -444,8 +456,11 @@
   .marketTabs{
     justify-content: flex-start;
   }
-}
 
+  .rankingTopMeta{
+    justify-content: flex-end;
+  }
+}
 @media (max-width: 720px){
   .rankingRefreshBadge{
     width: fit-content;
