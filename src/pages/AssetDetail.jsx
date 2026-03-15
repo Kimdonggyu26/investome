@@ -453,14 +453,18 @@ export default function AssetDetail() {
                     <div>
                       <div className="assetPanelTitle">차트 서비스 준비중</div>
                       <div className="assetPanelSub">
-                        코스피 종목은 외부 차트 페이지로 이동해 확인할 수 있습니다.
+                        코스피 종목은 외부 차트 페이지에서 확인할 수 있습니다.
                       </div>
                     </div>
                   </div>
 
                   <div className="kospiChartNoticeBody">
+                    <div className="kospiChartBadge">KOSPI CHART</div>
+                    <div className="kospiChartIcon">📈</div>
+                    <h3 className="kospiChartHeadline">사이트 내 차트 지원 준비중</h3>
+
                     <p className="kospiChartNoticeText">
-                      현재 코스피 종목 차트는 사이트 내에서 제공이 제한됩니다.
+                      현재 코스피 종목 차트는 사이트 내 제공이 제한됩니다.
                       <br />
                       아래 버튼을 눌러 TradingView 차트 페이지로 이동해주세요.
                     </p>
@@ -473,6 +477,10 @@ export default function AssetDetail() {
                     >
                       TradingView 차트 보러가기 →
                     </a>
+
+                    <div className="kospiChartNoticeFoot">
+                      추후 사이트 내 차트 지원 예정
+                    </div>
                   </div>
                 </section>
               ) : (
