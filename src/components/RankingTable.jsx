@@ -317,7 +317,7 @@ export default function RankingTable() {
   return (
     <div className="rankingCard" id="ranking">
       <div className="rankingHeader">
-        <div>
+        <div className="rankingHeaderMain">
           <div className="tickerLiveBadge live sectionTickerBadge">
             <span className="tickerLiveDot" />
             <span>LIVE</span>
@@ -342,14 +342,11 @@ export default function RankingTable() {
               </button>
             ))}
           </div>
-        </div>
-      </div>
 
-      <div className="rankingTopMeta">
-        <div className="rankingTopMetaSpacer" />
-        <div className={`rankingRefreshBadge ${isRefreshingNow ? "isRefreshing" : ""}`}>
-          <span className="rankingRefreshDot" />
-          <span>{getCountdownLabel(secondsLeft, isRefreshingNow)}</span>
+          <div className={`rankingRefreshBadge ${isRefreshingNow ? "isRefreshing" : ""}`}>
+            <span className="rankingRefreshDot" />
+            <span>{getCountdownLabel(secondsLeft, isRefreshingNow)}</span>
+          </div>
         </div>
       </div>
 
