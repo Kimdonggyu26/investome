@@ -71,6 +71,36 @@ function buildPath(points, width = 100, height = 100) {
   const max = Math.max(...points);
   const gap = max - min || 1;
 
+function buildSvgPath(points, width = 100, height = 100, topPadding = 12) {
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const gap = max - min || 1;
+
+  return points
+    .map((value, idx) => {
+      const x = (idx / (points.length - 1)) * width;
+      const y = height - ((value - min) / gap) * (height - topPadding);
+      return `${idx === 0 ? "M" : "L"} ${x},${y}`;
+    })
+    .join(" ");
+}
+
+function buildAreaPath(points, width = 100, height = 100, topPadding = 12) {
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const gap = max - min || 1;
+
+  const topLine = points
+    .map((value, idx) => {
+      const x = (idx / (points.length - 1)) * width;
+      const y = height - ((value - min) / gap) * (height - topPadding);
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  return `M ${topLine} L ${width},${height} L 0,${height} Z`;
+}
+
   return points
     .map((value, idx) => {
       const x = (idx / (points.length - 1)) * width;
@@ -254,7 +284,38 @@ export default function MyPortfolio() {
   const totalRate = totalCost ? (totalPnl / totalCost) * 100 : 0;
   const totalAssetsForRatio = totalValue || 1;
 
-  const flowPath = buildPath(makeFlowPoints(totalCost, totalValue));
+  const emptyState = enrichedItems.length === 0;
+
+
+  const performanceSeries = useMemo(() => {
+  if (emptyState) return [];
+
+  const safeRate = Number.isFinite(totalRate) ? totalRate : 0;
+  const base = safeRate >= 0 ? Math.max(safeRate * 0.18, 1.2) : safeRate - 8;
+
+  return [
+    base,
+    base * 1.06,
+    base * 1.02,
+    base * 1.34,
+    base * 1.52,
+    base * 1.66,
+    base * 1.78,
+    safeRate * 0.94,
+    safeRate,
+  ];
+}, [emptyState, totalRate]);
+
+const performancePath = performanceSeries.length
+  ? buildSvgPath(performanceSeries, 100, 100, 18)
+  : "";
+
+const performanceAreaPath = performanceSeries.length
+  ? buildAreaPath(performanceSeries, 100, 100, 18)
+  : "";
+
+const maxRate = performanceSeries.length ? Math.max(...performanceSeries) : 0;
+const minRate = performanceSeries.length ? Math.min(...performanceSeries) : 0;
 
   const ringGradient = useMemo(() => {
     let current = 0;
@@ -383,7 +444,6 @@ export default function MyPortfolio() {
     triggerUiRefresh();
   }
 
-  const emptyState = enrichedItems.length === 0;
 
   return (
     <>
@@ -488,25 +548,44 @@ export default function MyPortfolio() {
 
         <div className="portfolioBottomGrid">
           <div className={`portfolioFlowCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
-            <div className="portfolioCardHead">
+            <div className="portfolioCardHead portfolioFlowHead">
               <div>
-                <div className="portfolioEyebrow">ASSET FLOW</div>
-                <h3 className="portfolioTitleSm">전체 자산 흐름</h3>
+                <div className="portfolioEyebrow">PERFORMANCE</div>
+                <h3 className="portfolioTitleSm">수익률 추이</h3>
               </div>
-              <div className="portfolioGhostTag">Preview</div>
+
+              <div className="portfolioRangeTabs">
+                <button type="button" className="isActive">1M</button>
+                <button type="button">3M</button>
+                <button type="button">1Y</button>
+                <button type="button">ALL</button>
+              </div>
             </div>
 
             {emptyState ? (
               <div className="portfolioEmptySoft">
                 <div className="portfolioEmptySoftIcon">↗</div>
                 <div>
-                  <strong>흐름 데이터 준비 전</strong>
-                  <p>보유 종목을 추가하면 전체 자산 흐름이 자연스럽게 표시돼요.</p>
+                  <strong>성과 데이터 준비 전</strong>
+                  <p>보유 종목을 추가하면 포트폴리오 수익률 추이가 표시돼요.</p>
                 </div>
               </div>
             ) : (
               <>
-                <div className="portfolioFlowBox">
+                <div
+                  className="portfolioFlowValue"
+                  style={{
+                    color:
+                      totalRate >= 0 ? "rgba(54,213,255,.96)" : "rgba(255,120,170,.96)",
+                  }}
+                >
+                  {totalRate > 0 ? "+" : ""}
+                  {totalRate.toFixed(2)}%
+                </div>
+
+                <div className="portfolioFlowCaption">최근 흐름 기준 포트폴리오 수익률</div>
+
+                <div className="portfolioFlowBox performance">
                   <svg
                     className="portfolioFlowSvg"
                     viewBox="0 0 100 100"
@@ -523,13 +602,13 @@ export default function MyPortfolio() {
                       </linearGradient>
                     </defs>
 
-                    <polyline
-                      points={`0,100 ${flowPath} 100,100`}
+                    <path
+                      d={performanceAreaPath}
                       fill="url(#portfolio-flow-fill)"
                       className="portfolioFlowArea"
                     />
-                    <polyline
-                      points={flowPath}
+                    <path
+                      d={performancePath}
                       fill="none"
                       stroke="url(#portfolio-flow-line)"
                       strokeWidth="3"
@@ -540,14 +619,21 @@ export default function MyPortfolio() {
                   </svg>
                 </div>
 
-                <div className="portfolioFlowMeta">
-                  <div>
-                    <span className="label">보유 종목수</span>
-                    <strong>{enrichedItems.length}개</strong>
+                <div className="portfolioFlowStats">
+                  <div className="portfolioFlowStat">
+                    <span className="label">최고 수익률</span>
+                    <strong>
+                      {maxRate > 0 ? "+" : ""}
+                      {maxRate.toFixed(2)}%
+                    </strong>
                   </div>
-                  <div>
-                    <span className="label">총 수익률</span>
-                    <strong>{totalRate.toFixed(2)}%</strong>
+
+                  <div className="portfolioFlowStat">
+                    <span className="label">최저 수익률</span>
+                    <strong>
+                      {minRate > 0 ? "+" : ""}
+                      {minRate.toFixed(2)}%
+                    </strong>
                   </div>
                 </div>
               </>

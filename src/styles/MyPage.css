@@ -2156,3 +2156,80 @@
     rgba(124,77,255,1)
   );
 }
+
+/* ===== Performance Card Upgrade ===== */
+
+.portfolioFlowHead{
+  align-items: center;
+}
+
+.portfolioRangeTabs{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.portfolioRangeTabs button{
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.70);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: default;
+  transition: all .18s ease;
+}
+
+.portfolioRangeTabs button.isActive{
+  color: #f8fbff;
+  border-color: rgba(86,180,255,0.34);
+  background: linear-gradient(135deg, rgba(14,165,255,0.18), rgba(124,77,255,0.14));
+  box-shadow: 0 0 18px rgba(14,165,255,0.10);
+}
+
+.portfolioFlowValue{
+  margin-top: 16px;
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.8px;
+}
+
+.portfolioFlowCaption{
+  margin-top: 8px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.52);
+}
+
+.portfolioFlowBox.performance{
+  margin-top: 16px;
+  height: 240px;
+}
+
+.portfolioFlowStats{
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.portfolioFlowStat{
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.portfolioFlowStat strong{
+  font-size: 17px;
+  color: rgba(255,255,255,0.95);
+}
+
+@media (max-width: 860px){
+  .portfolioFlowStats{
+    grid-template-columns: 1fr;
+  }
+}

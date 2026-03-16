@@ -71,8 +71,22 @@ function MyPagePreviewMock() {
 
       <div className="mypagePreviewMockBottom">
         <div className="mypagePreviewMockCard flow">
-          <div className="mypagePreviewMiniEyebrow">ASSET FLOW</div>
-          <h4>전체 자산 흐름</h4>
+          <div className="mypagePreviewFlowHead">
+            <div>
+              <div className="mypagePreviewMiniEyebrow">PERFORMANCE</div>
+              <h4>수익률 추이</h4>
+            </div>
+
+            <div className="mypagePreviewRangeTabs">
+              <button className="active">1M</button>
+              <button>3M</button>
+              <button>1Y</button>
+              <button>ALL</button>
+            </div>
+          </div>
+
+          <div className="mypagePreviewFlowValue">+15.07%</div>
+          <div className="mypagePreviewFlowSub">최근 한 달 기준 포트폴리오 수익률</div>
 
           <div className="mypagePreviewFlowBox">
             <svg
@@ -92,11 +106,11 @@ function MyPagePreviewMock() {
               </defs>
 
               <polygon
-                points="0,90 8,78 18,74 30,64 42,55 58,60 72,47 85,38 100,22 100,100 0,100"
+                points="0,90 8,86 18,84 30,78 42,62 58,52 72,46 85,28 100,22 100,100 0,100"
                 fill="url(#mypage-preview-fill)"
               />
               <polyline
-                points="0,90 8,78 18,74 30,64 42,55 58,60 72,47 85,38 100,22"
+                points="0,90 8,86 18,84 30,78 42,62 58,52 72,46 85,28 100,22"
                 fill="none"
                 stroke="url(#mypage-preview-line)"
                 strokeWidth="3"
@@ -106,14 +120,14 @@ function MyPagePreviewMock() {
             </svg>
           </div>
 
-          <div className="mypagePreviewFlowMeta">
+          <div className="mypagePreviewFlowMeta compact">
             <div>
-              <span>1M 수익률</span>
-              <strong>+12.8%</strong>
+              <span>최고 수익률</span>
+              <strong>+17.4%</strong>
             </div>
             <div>
-              <span>보유 종목수</span>
-              <strong>3개</strong>
+              <span>최저 수익률</span>
+              <strong>+2.8%</strong>
             </div>
           </div>
         </div>
