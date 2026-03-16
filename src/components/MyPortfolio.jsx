@@ -110,16 +110,6 @@ function buildAreaPath(points, width = 100, height = 100, topPadding = 12) {
   return `M ${topLine} L ${width},${height} L 0,${height} Z`;
 }
 
-
-  return points
-    .map((value, idx) => {
-      const x = (idx / (points.length - 1)) * width;
-      const y = height - ((value - min) / gap) * height;
-      return `${x},${y}`;
-    })
-    .join(" ");
-
-
 function AssetLogo({ iconUrl, name }) {
   const [imgError, setImgError] = useState(false);
 
@@ -293,39 +283,39 @@ export default function MyPortfolio() {
   const totalPnl = totalValue - totalCost;
   const totalRate = totalCost ? (totalPnl / totalCost) * 100 : 0;
   const totalAssetsForRatio = totalValue || 1;
-
   const emptyState = enrichedItems.length === 0;
 
+  const previewFlowPath = buildPath(makeFlowPoints(totalCost, totalValue));
 
   const performanceSeries = useMemo(() => {
-  if (emptyState) return [];
+    if (emptyState) return [];
 
-  const safeRate = Number.isFinite(totalRate) ? totalRate : 0;
-  const base = safeRate >= 0 ? Math.max(safeRate * 0.18, 1.2) : safeRate - 8;
+    const safeRate = Number.isFinite(totalRate) ? totalRate : 0;
+    const base = safeRate >= 0 ? Math.max(safeRate * 0.18, 1.2) : safeRate - 8;
 
-  return [
-    base,
-    base * 1.06,
-    base * 1.02,
-    base * 1.34,
-    base * 1.52,
-    base * 1.66,
-    base * 1.78,
-    safeRate * 0.94,
-    safeRate,
-  ];
-}, [emptyState, totalRate]);
+    return [
+      base,
+      base * 1.06,
+      base * 1.02,
+      base * 1.34,
+      base * 1.52,
+      base * 1.66,
+      base * 1.78,
+      safeRate * 0.94,
+      safeRate,
+    ];
+  }, [emptyState, totalRate]);
 
-const performancePath = performanceSeries.length
-  ? buildSvgPath(performanceSeries, 100, 100, 18)
-  : "";
+  const performancePath = performanceSeries.length
+    ? buildSvgPath(performanceSeries, 100, 100, 18)
+    : "";
 
-const performanceAreaPath = performanceSeries.length
-  ? buildAreaPath(performanceSeries, 100, 100, 18)
-  : "";
+  const performanceAreaPath = performanceSeries.length
+    ? buildAreaPath(performanceSeries, 100, 100, 18)
+    : "";
 
-const maxRate = performanceSeries.length ? Math.max(...performanceSeries) : 0;
-const minRate = performanceSeries.length ? Math.min(...performanceSeries) : 0;
+  const maxRate = performanceSeries.length ? Math.max(...performanceSeries) : 0;
+  const minRate = performanceSeries.length ? Math.min(...performanceSeries) : 0;
 
   const ringGradient = useMemo(() => {
     let current = 0;
@@ -454,7 +444,6 @@ const minRate = performanceSeries.length ? Math.min(...performanceSeries) : 0;
     triggerUiRefresh();
   }
 
-
   return (
     <>
       <section className="portfolioDashboard">
@@ -565,7 +554,9 @@ const minRate = performanceSeries.length ? Math.min(...performanceSeries) : 0;
               </div>
 
               <div className="portfolioRangeTabs">
-                <button type="button" className="isActive">1M</button>
+                <button type="button" className="isActive">
+                  1M
+                </button>
                 <button type="button">3M</button>
                 <button type="button">1Y</button>
                 <button type="button">ALL</button>
