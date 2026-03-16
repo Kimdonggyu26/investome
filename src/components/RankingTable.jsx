@@ -6,7 +6,6 @@ import {
   fetchCryptoTop30KRW,
   fetchKospiTop30KRW,
   fetchNasdaqTop30KRW,
-  getKoreanDummyTop30,
 } from "../api/rankingApi";
 
 const MARKETS = ["KOSPI", "NASDAQ", "CRYPTO", "COMMODITIES"];
@@ -209,15 +208,12 @@ export default function RankingTable() {
         if (market === "CRYPTO") {
           nextRows = await fetchCryptoTop30KRW();
         } else if (market === "KOSPI") {
-          const realOrNull = await fetchKospiTop30KRW().catch(() => null);
-          nextRows = realOrNull ?? getKoreanDummyTop30("KOSPI");
+          nextRows = await fetchKospiTop30KRW();
         } else if (market === "NASDAQ") {
-          const realOrNull = await fetchNasdaqTop30KRW().catch(() => null);
-          nextRows = realOrNull ?? getKoreanDummyTop30("NASDAQ");
+          nextRows = await fetchNasdaqTop30KRW();
         } else if (market === "COMMODITIES") {
           nextRows = await fetchCommoditiesTopKRW();
         }
-
         const elapsed = Date.now() - startAt;
         const minimumOverlay = 220;
 

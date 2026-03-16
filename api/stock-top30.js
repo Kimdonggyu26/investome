@@ -1,73 +1,13 @@
+import fs from "fs";
+import path from "path";
+import iconv from "iconv-lite";
+
 const cache = new Map();
 
-const buildLogo = (domain) =>
-  domain ? `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(domain)}` : "";
+const RANK_TTL_MS = 6 * 60 * 60 * 1000; // 6시간
+const PRICE_TTL_MS = 20 * 1000; // 20초
 
-const KOSPI_UNIVERSE = [
-  { name: "삼성전자", symbol: "005930", yahoo: "005930.KS", domain: "samsung.com", fallbackCapKRW: 450000000000000 },
-  { name: "SK하이닉스", symbol: "000660", yahoo: "000660.KS", domain: "skhynix.com", fallbackCapKRW: 180000000000000 },
-  { name: "LG에너지솔루션", symbol: "373220", yahoo: "373220.KS", domain: "lgensol.com", fallbackCapKRW: 90000000000000 },
-  { name: "삼성바이오로직스", symbol: "207940", yahoo: "207940.KS", domain: "samsungbiologics.com", fallbackCapKRW: 75000000000000 },
-  { name: "현대차", symbol: "005380", yahoo: "005380.KS", domain: "hyundai.com", fallbackCapKRW: 65000000000000 },
-  { name: "셀트리온", symbol: "068270", yahoo: "068270.KS", domain: "celltrion.com", fallbackCapKRW: 42000000000000 },
-  { name: "기아", symbol: "000270", yahoo: "000270.KS", domain: "kia.com", fallbackCapKRW: 41000000000000 },
-  { name: "KB금융", symbol: "105560", yahoo: "105560.KS", domain: "kfg.com", fallbackCapKRW: 39000000000000 },
-  { name: "NAVER", symbol: "035420", yahoo: "035420.KS", domain: "navercorp.com", fallbackCapKRW: 32000000000000 },
-  { name: "신한지주", symbol: "055550", yahoo: "055550.KS", domain: "shinhan.com", fallbackCapKRW: 30000000000000 },
-  { name: "POSCO홀딩스", symbol: "005490", yahoo: "005490.KS", domain: "posco-inc.com", fallbackCapKRW: 29000000000000 },
-  { name: "삼성SDI", symbol: "006400", yahoo: "006400.KS", domain: "samsungsdi.com", fallbackCapKRW: 28000000000000 },
-  { name: "카카오", symbol: "035720", yahoo: "035720.KS", domain: "kakaocorp.com", fallbackCapKRW: 25000000000000 },
-  { name: "LG화학", symbol: "051910", yahoo: "051910.KS", domain: "lgchem.com", fallbackCapKRW: 24000000000000 },
-  { name: "삼성물산", symbol: "028260", yahoo: "028260.KS", domain: "samsungcnt.com", fallbackCapKRW: 23000000000000 },
-  { name: "하나금융지주", symbol: "086790", yahoo: "086790.KS", domain: "hanafn.com", fallbackCapKRW: 22000000000000 },
-  { name: "한국전력", symbol: "015760", yahoo: "015760.KS", domain: "kepco.co.kr", fallbackCapKRW: 21000000000000 },
-  { name: "HD현대중공업", symbol: "329180", yahoo: "329180.KS", domain: "hd.com", fallbackCapKRW: 20000000000000 },
-  { name: "메리츠금융지주", symbol: "138040", yahoo: "138040.KS", domain: "meritzfinancial.com", fallbackCapKRW: 19000000000000 },
-  { name: "삼성생명", symbol: "032830", yahoo: "032830.KS", domain: "samsunglife.com", fallbackCapKRW: 18000000000000 },
-  { name: "크래프톤", symbol: "259960", yahoo: "259960.KS", domain: "krafton.com", fallbackCapKRW: 17000000000000 },
-  { name: "KT&G", symbol: "033780", yahoo: "033780.KS", domain: "ktng.com", fallbackCapKRW: 16000000000000 },
-  { name: "HMM", symbol: "011200", yahoo: "011200.KS", domain: "hmm21.com", fallbackCapKRW: 15000000000000 },
-  { name: "우리금융지주", symbol: "316140", yahoo: "316140.KS", domain: "woorifg.com", fallbackCapKRW: 14000000000000 },
-  { name: "두산에너빌리티", symbol: "034020", yahoo: "034020.KS", domain: "doosanenerbility.com", fallbackCapKRW: 13000000000000 },
-  { name: "대한항공", symbol: "003490", yahoo: "003490.KS", domain: "koreanair.com", fallbackCapKRW: 12000000000000 },
-  { name: "LG전자", symbol: "066570", yahoo: "066570.KS", domain: "lge.com", fallbackCapKRW: 11000000000000 },
-  { name: "포스코퓨처엠", symbol: "003670", yahoo: "003670.KS", domain: "poscofuturem.com", fallbackCapKRW: 10000000000000 },
-  { name: "삼성전기", symbol: "009150", yahoo: "009150.KS", domain: "samsungsem.com", fallbackCapKRW: 9000000000000 },
-  { name: "한화에어로스페이스", symbol: "012450", yahoo: "012450.KS", domain: "hanwhaaerospace.com", fallbackCapKRW: 8000000000000 },
-];
-
-const NASDAQ_UNIVERSE = [
-  { name: "애플", symbol: "AAPL", yahoo: "AAPL", domain: "apple.com", fallbackCapUSD: 3400000000000 },
-  { name: "마이크로소프트", symbol: "MSFT", yahoo: "MSFT", domain: "microsoft.com", fallbackCapUSD: 3100000000000 },
-  { name: "엔비디아", symbol: "NVDA", yahoo: "NVDA", domain: "nvidia.com", fallbackCapUSD: 2900000000000 },
-  { name: "아마존", symbol: "AMZN", yahoo: "AMZN", domain: "amazon.com", fallbackCapUSD: 2000000000000 },
-  { name: "알파벳 A", symbol: "GOOGL", yahoo: "GOOGL", domain: "google.com", fallbackCapUSD: 1800000000000 },
-  { name: "메타", symbol: "META", yahoo: "META", domain: "meta.com", fallbackCapUSD: 1500000000000 },
-  { name: "브로드컴", symbol: "AVGO", yahoo: "AVGO", domain: "broadcom.com", fallbackCapUSD: 700000000000 },
-  { name: "테슬라", symbol: "TSLA", yahoo: "TSLA", domain: "tesla.com", fallbackCapUSD: 600000000000 },
-  { name: "코스트코", symbol: "COST", yahoo: "COST", domain: "costco.com", fallbackCapUSD: 420000000000 },
-  { name: "넷플릭스", symbol: "NFLX", yahoo: "NFLX", domain: "netflix.com", fallbackCapUSD: 400000000000 },
-  { name: "어도비", symbol: "ADBE", yahoo: "ADBE", domain: "adobe.com", fallbackCapUSD: 240000000000 },
-  { name: "펩시코", symbol: "PEP", yahoo: "PEP", domain: "pepsico.com", fallbackCapUSD: 230000000000 },
-  { name: "퀄컴", symbol: "QCOM", yahoo: "QCOM", domain: "qualcomm.com", fallbackCapUSD: 210000000000 },
-  { name: "시스코", symbol: "CSCO", yahoo: "CSCO", domain: "cisco.com", fallbackCapUSD: 200000000000 },
-  { name: "AMD", symbol: "AMD", yahoo: "AMD", domain: "amd.com", fallbackCapUSD: 190000000000 },
-  { name: "인튜이트", symbol: "INTU", yahoo: "INTU", domain: "intuit.com", fallbackCapUSD: 180000000000 },
-  { name: "텍사스인스트루먼트", symbol: "TXN", yahoo: "TXN", domain: "ti.com", fallbackCapUSD: 170000000000 },
-  { name: "인튜이티브서지컬", symbol: "ISRG", yahoo: "ISRG", domain: "intuitive.com", fallbackCapUSD: 160000000000 },
-  { name: "아스트라제네카", symbol: "AZN", yahoo: "AZN", domain: "astrazeneca.com", fallbackCapUSD: 150000000000 },
-  { name: "팔란티어", symbol: "PLTR", yahoo: "PLTR", domain: "palantir.com", fallbackCapUSD: 140000000000 },
-  { name: "아날로그디바이스", symbol: "ADI", yahoo: "ADI", domain: "analog.com", fallbackCapUSD: 130000000000 },
-  { name: "마벨", symbol: "MRVL", yahoo: "MRVL", domain: "marvell.com", fallbackCapUSD: 120000000000 },
-  { name: "마이크론", symbol: "MU", yahoo: "MU", domain: "micron.com", fallbackCapUSD: 110000000000 },
-  { name: "파이서브", symbol: "FI", yahoo: "FI", domain: "fiserv.com", fallbackCapUSD: 100000000000 },
-  { name: "암젠", symbol: "AMGN", yahoo: "AMGN", domain: "amgen.com", fallbackCapUSD: 95000000000 },
-  { name: "길리어드", symbol: "GILD", yahoo: "GILD", domain: "gilead.com", fallbackCapUSD: 90000000000 },
-  { name: "인텔", symbol: "INTC", yahoo: "INTC", domain: "intel.com", fallbackCapUSD: 85000000000 },
-  { name: "에어비앤비", symbol: "ABNB", yahoo: "ABNB", domain: "airbnb.com", fallbackCapUSD: 80000000000 },
-  { name: "부킹홀딩스", symbol: "BKNG", yahoo: "BKNG", domain: "bookingholdings.com", fallbackCapUSD: 78000000000 },
-  { name: "스타벅스", symbol: "SBUX", yahoo: "SBUX", domain: "starbucks.com", fallbackCapUSD: 76000000000 },
-];
+const FMP_API_KEY = process.env.FMP_API_KEY || "";
 
 function toNumber(value) {
   const n = Number(value);
@@ -82,35 +22,128 @@ function chunk(arr, size) {
   return out;
 }
 
-async function fetchText(url) {
+function buildLogo(domain) {
+  return domain
+    ? `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(domain)}`
+    : "";
+}
+
+function pickStockDomain(symbol) {
+  const map = {
+    "005930": "samsung.com",
+    "000660": "skhynix.com",
+    "373220": "lgensol.com",
+    "207940": "samsungbiologics.com",
+    "005380": "hyundai.com",
+    "068270": "celltrion.com",
+    "000270": "kia.com",
+    "105560": "kbfg.com",
+    "035420": "navercorp.com",
+    "055550": "shinhan.com",
+    "005490": "posco-inc.com",
+    "006400": "samsungsdi.com",
+    "035720": "kakaocorp.com",
+    "051910": "lgchem.com",
+    "028260": "samsungcnt.com",
+    "086790": "hanafn.com",
+    "015760": "kepco.co.kr",
+    "329180": "hd-hhi.com",
+    "138040": "meritzfinancialgroup.com",
+    "032830": "samsunglife.com",
+    "259960": "krafton.com",
+    "033780": "ktng.com",
+    "011200": "hmm21.com",
+    "316140": "woorifg.com",
+    "034020": "doosanenerbility.com",
+    "003490": "koreanair.com",
+    "066570": "lge.com",
+    "003670": "poscofuturem.com",
+    "009150": "sem.samsung.com",
+    "012450": "hanwhaaerospace.com",
+
+    AAPL: "apple.com",
+    MSFT: "microsoft.com",
+    NVDA: "nvidia.com",
+    AMZN: "amazon.com",
+    GOOGL: "google.com",
+    GOOG: "google.com",
+    META: "meta.com",
+    AVGO: "broadcom.com",
+    TSLA: "tesla.com",
+    COST: "costco.com",
+    NFLX: "netflix.com",
+    ADBE: "adobe.com",
+    PEP: "pepsico.com",
+    QCOM: "qualcomm.com",
+    CSCO: "cisco.com",
+    AMD: "amd.com",
+    INTU: "intuit.com",
+    TXN: "ti.com",
+    ISRG: "intuitive.com",
+    AZN: "astrazeneca.com",
+    PLTR: "palantir.com",
+    ADI: "analog.com",
+    MRVL: "marvell.com",
+    MU: "micron.com",
+    FI: "fiserv.com",
+    AMGN: "amgen.com",
+    GILD: "gilead.com",
+    INTC: "intel.com",
+    ABNB: "airbnb.com",
+    BKNG: "bookingholdings.com",
+    SBUX: "starbucks.com",
+    TMUS: "t-mobile.com",
+    ASML: "asml.com",
+    LIN: "linde.com",
+    HON: "honeywell.com",
+    MELI: "mercadolibre.com",
+    PANW: "paloaltonetworks.com",
+    CRWD: "crowdstrike.com",
+    AMAT: "appliedmaterials.com",
+    ADP: "adp.com",
+    KLAC: "kla.com",
+    CDNS: "cadence.com",
+    SNPS: "synopsys.com",
+    REGN: "regeneron.com",
+    PYPL: "paypal.com",
+    MAR: "marriott.com",
+    CTAS: "cintas.com",
+    FTNT: "fortinet.com",
+  };
+
+  return map[String(symbol || "").toUpperCase()] || "";
+}
+
+async function fetchText(url, headers = {}) {
   const res = await fetch(url, {
     headers: {
       "User-Agent": "Mozilla/5.0 (Investome Vercel)",
       Accept: "application/json,text/plain,*/*",
+      ...headers,
     },
   });
 
   const text = await res.text();
 
   if (!res.ok) {
-    throw new Error(`Upstream failed: ${res.status} ${text.slice(0, 120)}`);
+    throw new Error(`Upstream failed: ${res.status} ${text.slice(0, 200)}`);
   }
 
   return text;
 }
 
-async function fetchJson(url) {
-  const text = await fetchText(url);
+async function fetchJson(url, headers = {}) {
+  const text = await fetchText(url, headers);
 
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error(`Non-JSON response: ${text.slice(0, 120)}`);
+    throw new Error(`Non-JSON response: ${text.slice(0, 200)}`);
   }
 }
 
 async function fetchYahooQuoteBatch(symbols) {
-  const groups = chunk(symbols, 8);
+  const groups = chunk(symbols, 25);
 
   const settled = await Promise.allSettled(
     groups.map(async (group) => {
@@ -128,6 +161,7 @@ async function fetchYahooQuoteBatch(symbols) {
       rows.push(...s.value);
     }
   }
+
   return rows;
 }
 
@@ -153,7 +187,15 @@ async function fetchYahooChartMeta(symbol) {
       price != null && prevClose != null && prevClose !== 0
         ? ((price - prevClose) / prevClose) * 100
         : null,
-    marketCap: null,
+  };
+}
+
+function quoteRowToInfo(row) {
+  return {
+    shortName: row?.longName || row?.shortName || null,
+    price: toNumber(row?.regularMarketPrice),
+    changePct: toNumber(row?.regularMarketChangePercent),
+    marketCap: toNumber(row?.marketCap),
   };
 }
 
@@ -166,22 +208,283 @@ async function fetchUsdKrw() {
   }
 }
 
-function quoteRowToInfo(row) {
-  return {
-    shortName: row?.longName || row?.shortName || null,
-    price: toNumber(row?.regularMarketPrice),
-    changePct: toNumber(row?.regularMarketChangePercent),
-    marketCap: toNumber(row?.marketCap),
-  };
+function getCacheBucket(market) {
+  if (!cache.has(market)) {
+    cache.set(market, {
+      rankAt: 0,
+      rankedItems: [],
+      priceAt: 0,
+      pricedItems: [],
+      masterLoaded: false,
+      masterItems: [],
+      fxAt: 0,
+      usdKrw: 1350,
+    });
+  }
+  return cache.get(market);
 }
 
-async function buildRows(universe, market) {
-  const usdKrw = market === "NASDAQ" ? await fetchUsdKrw() : 1;
+async function getUsdKrwCached(bucket) {
+  const now = Date.now();
+
+  if (bucket.usdKrw && now - bucket.fxAt < PRICE_TTL_MS) {
+    return bucket.usdKrw;
+  }
+
+  const next = await fetchUsdKrw();
+  bucket.usdKrw = next || 1350;
+  bucket.fxAt = now;
+  return bucket.usdKrw;
+}
+
+function splitCsvLine(line) {
+  const result = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    const next = line[i + 1];
+
+    if (ch === '"') {
+      if (inQuotes && next === '"') {
+        current += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (ch === "," && !inQuotes) {
+      result.push(current.trim());
+      current = "";
+      continue;
+    }
+
+    current += ch;
+  }
+
+  result.push(current.trim());
+  return result.map((v) => v.replace(/^"(.*)"$/, "$1").trim());
+}
+
+function normalizeHeader(value) {
+  return String(value || "")
+    .replace(/^\uFEFF/, "")
+    .replace(/\s+/g, "")
+    .replace(/[()_\-./]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+function parseCsv(text) {
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length < 2) return [];
+
+  const headers = splitCsvLine(lines[0]).map((h) => h.replace(/^\uFEFF/, "").trim());
+
+  return lines.slice(1).map((line) => {
+    const cols = splitCsvLine(line);
+    const row = {};
+
+    headers.forEach((header, idx) => {
+      row[header] = cols[idx] ?? "";
+    });
+
+    return row;
+  });
+}
+
+function getByNormalizedKeys(row, candidates) {
+  const normalizedMap = {};
+
+  Object.keys(row).forEach((key) => {
+    normalizedMap[normalizeHeader(key)] = row[key];
+  });
+
+  for (const key of candidates) {
+    const hit = normalizedMap[normalizeHeader(key)];
+    if (hit !== undefined && hit !== null && String(hit).trim() !== "") {
+      return String(hit).trim();
+    }
+  }
+
+  return "";
+}
+
+function normalizeSymbol(value) {
+  const onlyDigits = String(value || "").replace(/\D/g, "");
+  if (!onlyDigits) return "";
+  return onlyDigits.padStart(6, "0");
+}
+
+function normalizeListedShares(value) {
+  const n = Number(String(value || "").replace(/[^\d]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+}
+
+function readCp949Csv(filePath) {
+  const buffer = fs.readFileSync(filePath);
+  const text = iconv.decode(buffer, "cp949");
+  return text.replace(/^\uFEFF/, "");
+}
+
+function loadKospiMaster() {
+  const bucket = getCacheBucket("KOSPI");
+
+  if (bucket.masterLoaded && bucket.masterItems.length) {
+    return bucket.masterItems;
+  }
+
+  const filePath = path.join(process.cwd(), "tmp", "kospi.csv");
+  const rows = parseCsv(readCp949Csv(filePath));
+
+  const items = rows
+    .map((row) => {
+      const symbol = normalizeSymbol(
+        getByNormalizedKeys(row, ["단축코드", "종목코드", "표준단축코드"])
+      );
+
+      const name = getByNormalizedKeys(row, ["한글종목명", "종목명", "한글 종목명"]);
+      const displayNameEN = getByNormalizedKeys(row, ["영문종목명", "영문명", "영문 종목명"]);
+      const stockType = getByNormalizedKeys(row, ["주식종류"]);
+      const listedShares = normalizeListedShares(
+        getByNormalizedKeys(row, ["상장주식수"])
+      );
+
+      if (!symbol || !name || !listedShares) return null;
+
+      // 우선주/전환주 등 최대한 제외
+      if (stockType && !stockType.includes("보통주")) return null;
+
+      return {
+        symbol,
+        name,
+        displayNameEN: displayNameEN || name,
+        listedShares,
+        yahoo: `${symbol}.KS`,
+      };
+    })
+    .filter(Boolean);
+
+  bucket.masterLoaded = true;
+  bucket.masterItems = items;
+  return items;
+}
+
+async function buildKospiRankSnapshot() {
+  const universe = loadKospiMaster();
   const quoteRows = await fetchYahooQuoteBatch(universe.map((x) => x.yahoo));
   const quoteMap = new Map(quoteRows.map((q) => [q.symbol, q]));
 
+  const rows = universe
+    .map((item) => {
+      const quote = quoteMap.get(item.yahoo);
+      const price = toNumber(quote?.regularMarketPrice);
+
+      if (price == null) return null;
+
+      const capKRW = Math.round(price * item.listedShares);
+
+      return {
+        rank: 0,
+        name: item.name,
+        displayNameEN: item.displayNameEN,
+        symbol: item.symbol,
+        yahoo: item.yahoo,
+        iconUrl: buildLogo(pickStockDomain(item.symbol)),
+        capKRW,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => (b.capKRW ?? 0) - (a.capKRW ?? 0))
+    .slice(0, 30)
+    .map((row, index) => ({
+      ...row,
+      rank: index + 1,
+    }));
+
+  return rows;
+}
+
+async function buildNasdaqRankSnapshot() {
+  if (!FMP_API_KEY) {
+    throw new Error("FMP_API_KEY is missing");
+  }
+
+  // NASDAQ 전체 대상 스크리닝 후 marketCap 기준 정렬
+  // limit는 여유 있게 잡고, ETF/펀드는 제외
+  const url =
+    "https://financialmodelingprep.com/stable/company-screener" +
+    `?exchange=NASDAQ&isEtf=false&isFund=false&limit=300&apikey=${encodeURIComponent(FMP_API_KEY)}`;
+
+  const json = await fetchJson(url);
+  const rows = Array.isArray(json) ? json : [];
+
+  const normalized = rows
+    .map((row) => {
+      const symbol = String(row.symbol || "").toUpperCase().trim();
+      const capUSD = toNumber(row.marketCap);
+
+      if (!symbol || capUSD == null) return null;
+
+      return {
+        rank: 0,
+        name: row.companyName || row.name || symbol,
+        displayNameEN: row.companyName || row.name || symbol,
+        symbol,
+        yahoo: symbol,
+        iconUrl: row.image || buildLogo(pickStockDomain(symbol)),
+        capUSD,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => (b.capUSD ?? 0) - (a.capUSD ?? 0))
+    .slice(0, 30)
+    .map((row, index) => ({
+      ...row,
+      rank: index + 1,
+    }));
+
+  return normalized;
+}
+
+async function ensureRankSnapshot(market) {
+  const bucket = getCacheBucket(market);
+  const now = Date.now();
+
+  if (bucket.rankedItems?.length && now - bucket.rankAt < RANK_TTL_MS) {
+    return bucket.rankedItems;
+  }
+
+  const rankedItems =
+    market === "KOSPI"
+      ? await buildKospiRankSnapshot()
+      : await buildNasdaqRankSnapshot();
+
+  if (!rankedItems.length) {
+    throw new Error(`${market} rank snapshot build failed`);
+  }
+
+  bucket.rankAt = now;
+  bucket.rankedItems = rankedItems;
+  return rankedItems;
+}
+
+async function buildPriceSnapshot(rankedItems, market) {
+  const bucket = getCacheBucket(market);
+  const usdKrw = market === "NASDAQ" ? await getUsdKrwCached(bucket) : 1;
+
+  const quoteRows = await fetchYahooQuoteBatch(rankedItems.map((item) => item.yahoo));
+  const quoteMap = new Map(quoteRows.map((q) => [q.symbol, q]));
+
   const rows = await Promise.all(
-    universe.map(async (item, index) => {
+    rankedItems.map(async (item) => {
       const quote = quoteMap.get(item.yahoo);
       let info = quote ? quoteRowToInfo(quote) : null;
 
@@ -189,56 +492,65 @@ async function buildRows(universe, market) {
         try {
           const chartInfo = await fetchYahooChartMeta(item.yahoo);
           info = {
-            shortName: info?.shortName || chartInfo.shortName || item.name,
+            shortName: info?.shortName || chartInfo.shortName || item.displayNameEN || item.name,
             price: info?.price ?? chartInfo.price,
             changePct: info?.changePct ?? chartInfo.changePct,
-            marketCap: info?.marketCap ?? chartInfo.marketCap,
           };
         } catch {
           info = info || {
-            shortName: item.name,
+            shortName: item.displayNameEN || item.name,
             price: null,
             changePct: null,
-            marketCap: null,
           };
         }
       }
 
-      const rawPrice = info?.price;
-      const rawCap = info?.marketCap;
-
       return {
-        rank: index + 1,
+        rank: item.rank,
         name: item.name,
-        displayNameEN: info?.shortName || item.name,
+        displayNameEN: info?.shortName || item.displayNameEN || item.name,
         symbol: item.symbol,
-        iconUrl: buildLogo(item.domain),
+        iconUrl: item.iconUrl || buildLogo(pickStockDomain(item.symbol)),
         capKRW:
           market === "NASDAQ"
-            ? rawCap != null
-              ? Math.round(rawCap * usdKrw)
-              : Math.round(item.fallbackCapUSD * usdKrw)
-            : rawCap != null
-              ? Math.round(rawCap)
-              : item.fallbackCapKRW,
+            ? item.capUSD != null
+              ? Math.round(item.capUSD * usdKrw)
+              : null
+            : item.capKRW ?? null,
         priceKRW:
           market === "NASDAQ"
-            ? rawPrice != null
-              ? Number((rawPrice * usdKrw).toFixed(2))
+            ? info?.price != null
+              ? Number((info.price * usdKrw).toFixed(2))
               : null
-            : rawPrice != null
-              ? Number(rawPrice.toFixed(2))
+            : info?.price != null
+              ? Number(info.price.toFixed(2))
               : null,
         changePct: info?.changePct ?? null,
       };
     })
   );
 
-  return rows
-    .filter((row) => row.priceKRW != null || row.capKRW != null)
-    .sort((a, b) => (b.capKRW ?? 0) - (a.capKRW ?? 0))
-    .map((row, index) => ({ ...row, rank: index + 1 }))
-    .slice(0, 30);
+  return rows;
+}
+
+async function ensurePriceSnapshot(market) {
+  const bucket = getCacheBucket(market);
+  const now = Date.now();
+
+  if (bucket.pricedItems?.length && now - bucket.priceAt < PRICE_TTL_MS) {
+    return bucket.pricedItems;
+  }
+
+  const rankedItems = await ensureRankSnapshot(market);
+  const pricedItems = await buildPriceSnapshot(rankedItems, market);
+
+  if (!pricedItems.length) {
+    throw new Error(`${market} price snapshot build failed`);
+  }
+
+  bucket.priceAt = now;
+  bucket.pricedItems = pricedItems;
+  return pricedItems;
 }
 
 export default async function handler(req, res) {
@@ -250,48 +562,30 @@ export default async function handler(req, res) {
   }
 
   try {
-    const cached = cache.get(market);
-    const now = Date.now();
+    const bucket = getCacheBucket(market);
+    const items = await ensurePriceSnapshot(market);
 
-    if (cached && now - cached.at < 20_000) {
-      res.setHeader("Cache-Control", "s-maxage=20, stale-while-revalidate=40");
-      res.status(200).json({ items: cached.items, stale: false });
-      return;
-    }
-
-    const universe = market === "KOSPI" ? KOSPI_UNIVERSE : NASDAQ_UNIVERSE;
-    const items = await buildRows(universe, market);
-
-    if (items.length > 0) {
-      cache.set(market, { at: now, items });
-      res.setHeader("Cache-Control", "s-maxage=20, stale-while-revalidate=40");
-      res.status(200).json({ items, stale: false });
-      return;
-    }
-
-    if (cached?.items?.length) {
-      res.setHeader("Cache-Control", "s-maxage=20, stale-while-revalidate=40");
-      res.status(200).json({ items: cached.items, stale: true });
-      return;
-    }
-
+    res.setHeader("Cache-Control", "s-maxage=20, stale-while-revalidate=40");
     res.status(200).json({
-      items: [],
-      stale: true,
-      error: `${market} 데이터를 가져오지 못했습니다.`,
+      items,
+      stale: false,
+      rankUpdatedAt: bucket.rankAt || null,
+      priceUpdatedAt: bucket.priceAt || null,
+      rankRefreshHours: 6,
+      priceRefreshSeconds: 20,
     });
   } catch (error) {
-    const cached = cache.get(market);
+    const bucket = getCacheBucket(market);
+    const fallbackItems = bucket.pricedItems?.length ? bucket.pricedItems : [];
 
-    if (cached?.items?.length) {
-      res.setHeader("Cache-Control", "s-maxage=20, stale-while-revalidate=40");
-      res.status(200).json({ items: cached.items, stale: true });
-      return;
-    }
-
+    res.setHeader("Cache-Control", "s-maxage=20, stale-while-revalidate=40");
     res.status(200).json({
-      items: [],
+      items: fallbackItems,
       stale: true,
+      rankUpdatedAt: bucket.rankAt || null,
+      priceUpdatedAt: bucket.priceAt || null,
+      rankRefreshHours: 6,
+      priceRefreshSeconds: 20,
       error: String(error?.message || error),
     });
   }
