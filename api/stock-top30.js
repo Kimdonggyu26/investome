@@ -566,46 +566,50 @@ async function buildKospiRankSnapshot() {
 
 async function buildNasdaqRankSnapshot() {
   if (!FMP_API_KEY) {
-    throw new Error("FMP_API_KEY is missing");
+    throw new Error("FMP_API_KEY missing");
   }
 
   const url =
     "https://financialmodelingprep.com/stable/company-screener" +
-    `?exchange=NASDAQ&isEtf=false&isFund=false&limit=300&apikey=${encodeURIComponent(
-      FMP_API_KEY
-    )}`;
+    `?exchange=NASDAQ` +
+    `&isEtf=false` +
+    `&isFund=false` +
+    `&limit=1000` +
+    `&apikey=${encodeURIComponent(FMP_API_KEY)}`;
 
   const json = await fetchJson(url);
-  const rows = Array.isArray(json) ? json : [];
 
-  const normalized = rows
+  if (!Array.isArray(json) || !json.length) {
+    throw new Error("NASDAQ screener empty");
+  }
+
+  const ranked = json
     .map((row) => {
       const symbol = String(row.symbol || "").toUpperCase().trim();
-      const capUSD = toNumber(row.marketCap);
-      if (!symbol || capUSD == null) return null;
+      const cap = toNumber(row.marketCap);
+
+      if (!symbol || !cap) return null;
 
       return {
         rank: 0,
-        name: row.companyName || row.name || symbol,
-        displayNameEN: row.companyName || row.name || symbol,
         symbol,
-        iconUrl: row.image || buildLogo(pickStockDomain(symbol)),
-        capUSD,
+        name: row.companyName || symbol,
+        displayNameEN: row.companyName || symbol,
+        capUSD: cap,
+        iconUrl:
+          row.image ||
+          `https://www.google.com/s2/favicons?sz=128&domain=${symbol}.com`,
       };
     })
     .filter(Boolean)
-    .sort((a, b) => (b.capUSD ?? 0) - (a.capUSD ?? 0))
+    .sort((a, b) => b.capUSD - a.capUSD) // 실제 시총순 정렬
     .slice(0, 30)
     .map((row, index) => ({
       ...row,
       rank: index + 1,
     }));
 
-  if (!normalized.length) {
-    throw new Error("NASDAQ top30 normalization failed");
-  }
-
-  return normalized;
+  return ranked;
 }
 
 async function ensureRankSnapshot(market) {
