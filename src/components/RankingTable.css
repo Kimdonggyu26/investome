@@ -163,9 +163,10 @@
   filter: saturate(.9);
 }
 
-.rankingTable{
-  width:100%;
-  border-collapse:collapse;
+.rankingTable {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
 }
 
 .rankingTable thead th{
@@ -179,6 +180,12 @@
   padding:12px;
   border-bottom:1px solid rgba(255,255,255,0.08);
   z-index: 6;
+}
+
+.rankingTable td:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .rankingTable td{
