@@ -186,7 +186,12 @@ export async function fetchKospiTop30KRW() {
 }
 
 export async function fetchNasdaqTop30KRW() {
-  return fetchStockTop30("NASDAQ");
+  try {
+    return await fetchStockTop30("NASDAQ");
+  } catch (error) {
+    console.error("NASDAQ top30 fallback 적용:", error);
+    return getKoreanDummyTop30("NASDAQ");
+  }
 }
 
 function makeDummyRows(market, names) {
