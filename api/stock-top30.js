@@ -565,51 +565,47 @@ async function buildKospiRankSnapshot() {
 }
 
 async function buildNasdaqRankSnapshot() {
-  if (!FMP_API_KEY) {
-    throw new Error("FMP_API_KEY missing");
-  }
 
-  const url =
-    "https://financialmodelingprep.com/stable/company-screener" +
-    `?exchange=NASDAQ` +
-    `&isEtf=false` +
-    `&isFund=false` +
-    `&limit=1000` +
-    `&apikey=${encodeURIComponent(FMP_API_KEY)}`;
+const symbols = [
+"AAPL","MSFT","NVDA","GOOGL","AMZN","META","TSLA","AVGO",
+"COST","NFLX","ADBE","PEP","QCOM","AMD","CSCO","TXN",
+"INTU","AMGN","SBUX","ISRG","BKNG","ADP","GILD","REGN",
+"ADI","PYPL","MRVL","KLAC","SNPS","CDNS"
+];
 
-  const json = await fetchJson(url);
+const url =
+"https://query1.finance.yahoo.com/v7/finance/quote?symbols=" +
+symbols.join(",");
 
-  if (!Array.isArray(json) || !json.length) {
-    throw new Error("NASDAQ screener empty");
-  }
+const json = await fetchJson(url);
 
-  const ranked = json
-    .map((row) => {
-      const symbol = String(row.symbol || "").toUpperCase().trim();
-      const cap = toNumber(row.marketCap);
+const rows = json.quoteResponse.result;
 
-      if (!symbol || !cap) return null;
+return rows
+.map((row)=>({
 
-      return {
-        rank: 0,
-        symbol,
-        name: row.companyName || symbol,
-        displayNameEN: row.companyName || symbol,
-        capUSD: cap,
-        iconUrl:
-          row.image ||
-          `https://www.google.com/s2/favicons?sz=128&domain=${symbol}.com`,
-      };
-    })
-    .filter(Boolean)
-    .sort((a, b) => b.capUSD - a.capUSD) // 실제 시총순 정렬
-    .slice(0, 30)
-    .map((row, index) => ({
-      ...row,
-      rank: index + 1,
-    }));
+symbol:row.symbol,
 
-  return ranked;
+name:row.longName || row.shortName || row.symbol,
+
+displayNameEN:row.longName || row.symbol,
+
+capUSD:row.marketCap,
+
+iconUrl:`https://logo.clearbit.com/${row.symbol}.com`
+
+}))
+.filter(r=>r.capUSD)
+.sort((a,b)=>b.capUSD-a.capUSD)
+.slice(0,30)
+.map((r,i)=>({
+
+...r,
+
+rank:i+1
+
+}));
+
 }
 
 async function ensureRankSnapshot(market) {
