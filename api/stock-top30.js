@@ -229,6 +229,7 @@ function loadKospiMaster() {
 
   const nameOverrides = {
     "005930": { name: "삼성전자", displayNameEN: "Samsung Electronics" },
+    "005935": { name: "삼성전자우", displayNameEN: "Samsung Electronics Pref" },
     "000660": { name: "SK하이닉스", displayNameEN: "SK hynix" },
     "373220": { name: "LG에너지솔루션", displayNameEN: "LG Energy Solution" },
     "207940": { name: "삼성바이오로직스", displayNameEN: "Samsung Biologics" },
@@ -670,7 +671,9 @@ async function buildNasdaqRankSnapshot() {
     throw new Error("NASDAQ top30 normalization failed");
   }
 
-  const profileMap = await ensureNasdaqProfiles(normalized.map((item) => item.symbol));
+  const profileMap = await ensureNasdaqProfiles(
+    normalized.map((item) => item.symbol)
+  );
 
   return normalized.map((item) => {
     const profile = profileMap.get(item.symbol);
@@ -678,7 +681,10 @@ async function buildNasdaqRankSnapshot() {
       ...item,
       name: profile?.name || item.name,
       displayNameEN: profile?.displayNameEN || item.displayNameEN || item.name,
-      iconUrl: profile?.iconUrl || item.iconUrl || buildLogo(pickStockDomain(item.symbol)),
+      iconUrl:
+        profile?.iconUrl ||
+        item.iconUrl ||
+        buildLogo(pickStockDomain(item.symbol)),
     };
   });
 }
