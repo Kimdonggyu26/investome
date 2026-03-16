@@ -6,8 +6,19 @@ const cache = new Map();
 
 const RANK_TTL_MS = 6 * 60 * 60 * 1000; // 6시간
 const PRICE_TTL_MS = 20 * 1000; // 20초
+const FX_TTL_MS = 20 * 1000;
+const KIS_TOKEN_TTL_MS = 23 * 60 * 60 * 1000;
 
 const FMP_API_KEY = process.env.FMP_API_KEY || "";
+const KIS_APP_KEY = process.env.KIS_APP_KEY || "";
+const KIS_APP_SECRET = process.env.KIS_APP_SECRET || "";
+const KIS_BASE_URL =
+  process.env.KIS_BASE_URL || "https://openapi.koreainvestment.com:9443";
+
+const kisTokenCache = {
+  token: "",
+  at: 0,
+};
 
 function toNumber(value) {
   const n = Number(value);
@@ -22,9 +33,28 @@ function chunk(arr, size) {
   return out;
 }
 
+async function mapLimit(items, limit, worker) {
+  const results = new Array(items.length);
+  let index = 0;
+
+  async function run() {
+    while (index < items.length) {
+      const current = index;
+      index += 1;
+      results[current] = await worker(items[current], current);
+    }
+  }
+
+  const concurrency = Math.max(1, Math.min(limit, items.length));
+  await Promise.all(Array.from({ length: concurrency }, run));
+  return results;
+}
+
 function buildLogo(domain) {
   return domain
-    ? `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(domain)}`
+    ? `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(
+        domain
+      )}`
     : "";
 }
 
@@ -114,12 +144,13 @@ function pickStockDomain(symbol) {
   return map[String(symbol || "").toUpperCase()] || "";
 }
 
-async function fetchText(url, headers = {}) {
+async function fetchText(url, options = {}) {
   const res = await fetch(url, {
+    ...options,
     headers: {
       "User-Agent": "Mozilla/5.0 (Investome Vercel)",
       Accept: "application/json,text/plain,*/*",
-      ...headers,
+      ...(options.headers || {}),
     },
   });
 
@@ -132,8 +163,8 @@ async function fetchText(url, headers = {}) {
   return text;
 }
 
-async function fetchJson(url, headers = {}) {
-  const text = await fetchText(url, headers);
+async function fetchJson(url, options = {}) {
+  const text = await fetchText(url, options);
 
   try {
     return JSON.parse(text);
@@ -142,66 +173,11 @@ async function fetchJson(url, headers = {}) {
   }
 }
 
-async function fetchYahooQuoteBatch(symbols) {
-  const groups = chunk(symbols, 25);
-
-  const settled = await Promise.allSettled(
-    groups.map(async (group) => {
-      const url =
-        "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" +
-        encodeURIComponent(group.join(","));
-      const json = await fetchJson(url);
-      return json?.quoteResponse?.result || [];
-    })
-  );
-
-  const rows = [];
-  for (const s of settled) {
-    if (s.status === "fulfilled") {
-      rows.push(...s.value);
-    }
-  }
-
-  return rows;
-}
-
-async function fetchYahooChartMeta(symbol) {
-  const url =
-    `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}` +
-    `?interval=1d&range=5d&includePrePost=false`;
-
-  const json = await fetchJson(url);
-  const meta = json?.chart?.result?.[0]?.meta;
-
-  if (!meta) {
-    throw new Error(`No chart meta for ${symbol}`);
-  }
-
-  const price = toNumber(meta.regularMarketPrice);
-  const prevClose = toNumber(meta.previousClose ?? meta.chartPreviousClose);
-
-  return {
-    shortName: meta.shortName || meta.longName || meta.symbol || symbol,
-    price,
-    changePct:
-      price != null && prevClose != null && prevClose !== 0
-        ? ((price - prevClose) / prevClose) * 100
-        : null,
-  };
-}
-
-function quoteRowToInfo(row) {
-  return {
-    shortName: row?.longName || row?.shortName || null,
-    price: toNumber(row?.regularMarketPrice),
-    changePct: toNumber(row?.regularMarketChangePercent),
-    marketCap: toNumber(row?.marketCap),
-  };
-}
-
 async function fetchUsdKrw() {
   try {
-    const json = await fetchJson("https://api.frankfurter.app/latest?from=USD&to=KRW");
+    const json = await fetchJson(
+      "https://api.frankfurter.app/latest?from=USD&to=KRW"
+    );
     return toNumber(json?.rates?.KRW) || 1350;
   } catch {
     return 1350;
@@ -227,7 +203,7 @@ function getCacheBucket(market) {
 async function getUsdKrwCached(bucket) {
   const now = Date.now();
 
-  if (bucket.usdKrw && now - bucket.fxAt < PRICE_TTL_MS) {
+  if (bucket.usdKrw && now - bucket.fxAt < FX_TTL_MS) {
     return bucket.usdKrw;
   }
 
@@ -286,7 +262,9 @@ function parseCsv(text) {
 
   if (lines.length < 2) return [];
 
-  const headers = splitCsvLine(lines[0]).map((h) => h.replace(/^\uFEFF/, "").trim());
+  const headers = splitCsvLine(lines[0]).map((h) =>
+    h.replace(/^\uFEFF/, "").trim()
+  );
 
   return lines.slice(1).map((line) => {
     const cols = splitCsvLine(line);
@@ -350,16 +328,22 @@ function loadKospiMaster() {
         getByNormalizedKeys(row, ["단축코드", "종목코드", "표준단축코드"])
       );
 
-      const name = getByNormalizedKeys(row, ["한글종목명", "종목명", "한글 종목명"]);
-      const displayNameEN = getByNormalizedKeys(row, ["영문종목명", "영문명", "영문 종목명"]);
+      const name = getByNormalizedKeys(row, [
+        "한글종목명",
+        "종목명",
+        "한글 종목명",
+      ]);
+      const displayNameEN = getByNormalizedKeys(row, [
+        "영문종목명",
+        "영문명",
+        "영문 종목명",
+      ]);
       const stockType = getByNormalizedKeys(row, ["주식종류"]);
       const listedShares = normalizeListedShares(
         getByNormalizedKeys(row, ["상장주식수"])
       );
 
       if (!symbol || !name || !listedShares) return null;
-
-      // 우선주/전환주 등 최대한 제외
       if (stockType && !stockType.includes("보통주")) return null;
 
       return {
@@ -367,7 +351,6 @@ function loadKospiMaster() {
         name,
         displayNameEN: displayNameEN || name,
         listedShares,
-        yahoo: `${symbol}.KS`,
       };
     })
     .filter(Boolean);
@@ -377,39 +360,128 @@ function loadKospiMaster() {
   return items;
 }
 
+async function getKisAccessToken() {
+  if (!KIS_APP_KEY || !KIS_APP_SECRET) {
+    throw new Error("KIS credentials are missing");
+  }
+
+  const now = Date.now();
+  if (kisTokenCache.token && now - kisTokenCache.at < KIS_TOKEN_TTL_MS) {
+    return kisTokenCache.token;
+  }
+
+  const json = await fetchJson(`${KIS_BASE_URL}/oauth2/tokenP`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      grant_type: "client_credentials",
+      appkey: KIS_APP_KEY,
+      appsecret: KIS_APP_SECRET,
+    }),
+  });
+
+  const token = String(json?.access_token || "").trim();
+  if (!token) {
+    throw new Error("KIS access token not returned");
+  }
+
+  kisTokenCache.token = token;
+  kisTokenCache.at = now;
+  return token;
+}
+
+async function fetchKisDomesticPrice(symbol) {
+  const token = await getKisAccessToken();
+  const url = new URL(
+    `${KIS_BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-price`
+  );
+  url.searchParams.set("fid_cond_mrkt_div_code", "J");
+  url.searchParams.set("fid_input_iscd", symbol);
+
+  const json = await fetchJson(url.toString(), {
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${token}`,
+      appkey: KIS_APP_KEY,
+      appsecret: KIS_APP_SECRET,
+      tr_id: "FHKST01010100",
+    },
+  });
+
+  const out = json?.output || {};
+  const price = toNumber(out?.stck_prpr);
+  const changePct = toNumber(out?.prdy_ctrt);
+
+  if (price == null) {
+    throw new Error(`KIS price not found for ${symbol}`);
+  }
+
+  return {
+    symbol,
+    price,
+    changePct,
+  };
+}
+
+async function fetchFmpBatchQuote(symbols) {
+  if (!FMP_API_KEY) {
+    throw new Error("FMP_API_KEY is missing");
+  }
+
+  const groups = chunk(symbols, 50);
+  const settled = await Promise.allSettled(
+    groups.map(async (group) => {
+      const url =
+        "https://financialmodelingprep.com/stable/batch-quote" +
+        `?symbols=${encodeURIComponent(group.join(","))}` +
+        `&apikey=${encodeURIComponent(FMP_API_KEY)}`;
+      const json = await fetchJson(url);
+      return Array.isArray(json) ? json : [];
+    })
+  );
+
+  const rows = [];
+  for (const entry of settled) {
+    if (entry.status === "fulfilled") {
+      rows.push(...entry.value);
+    }
+  }
+  return rows;
+}
+
 async function buildKospiRankSnapshot() {
   const universe = loadKospiMaster();
-  const quoteRows = await fetchYahooQuoteBatch(universe.map((x) => x.yahoo));
-  const quoteMap = new Map(quoteRows.map((q) => [q.symbol, q]));
 
-  const rows = universe
-    .map((item) => {
-      const quote = quoteMap.get(item.yahoo);
-      const price = toNumber(quote?.regularMarketPrice);
-
-      if (price == null) return null;
-
-      const capKRW = Math.round(price * item.listedShares);
-
+  const quoteRows = await mapLimit(universe, 5, async (item) => {
+    try {
+      const info = await fetchKisDomesticPrice(item.symbol);
       return {
-        rank: 0,
-        name: item.name,
-        displayNameEN: item.displayNameEN,
-        symbol: item.symbol,
-        yahoo: item.yahoo,
-        iconUrl: buildLogo(pickStockDomain(item.symbol)),
-        capKRW,
+        ...item,
+        price: info.price,
       };
-    })
+    } catch {
+      return null;
+    }
+  });
+
+  return quoteRows
     .filter(Boolean)
+    .map((item) => ({
+      rank: 0,
+      name: item.name,
+      displayNameEN: item.displayNameEN,
+      symbol: item.symbol,
+      iconUrl: buildLogo(pickStockDomain(item.symbol)),
+      capKRW: Math.round(item.price * item.listedShares),
+    }))
     .sort((a, b) => (b.capKRW ?? 0) - (a.capKRW ?? 0))
     .slice(0, 30)
     .map((row, index) => ({
       ...row,
       rank: index + 1,
     }));
-
-  return rows;
 }
 
 async function buildNasdaqRankSnapshot() {
@@ -417,20 +489,19 @@ async function buildNasdaqRankSnapshot() {
     throw new Error("FMP_API_KEY is missing");
   }
 
-  // NASDAQ 전체 대상 스크리닝 후 marketCap 기준 정렬
-  // limit는 여유 있게 잡고, ETF/펀드는 제외
   const url =
     "https://financialmodelingprep.com/stable/company-screener" +
-    `?exchange=NASDAQ&isEtf=false&isFund=false&limit=300&apikey=${encodeURIComponent(FMP_API_KEY)}`;
+    `?exchange=NASDAQ&isEtf=false&isFund=false&limit=300&apikey=${encodeURIComponent(
+      FMP_API_KEY
+    )}`;
 
   const json = await fetchJson(url);
   const rows = Array.isArray(json) ? json : [];
 
-  const normalized = rows
+  return rows
     .map((row) => {
       const symbol = String(row.symbol || "").toUpperCase().trim();
       const capUSD = toNumber(row.marketCap);
-
       if (!symbol || capUSD == null) return null;
 
       return {
@@ -438,7 +509,6 @@ async function buildNasdaqRankSnapshot() {
         name: row.companyName || row.name || symbol,
         displayNameEN: row.companyName || row.name || symbol,
         symbol,
-        yahoo: symbol,
         iconUrl: row.image || buildLogo(pickStockDomain(symbol)),
         capUSD,
       };
@@ -450,8 +520,6 @@ async function buildNasdaqRankSnapshot() {
       ...row,
       rank: index + 1,
     }));
-
-  return normalized;
 }
 
 async function ensureRankSnapshot(market) {
@@ -477,60 +545,56 @@ async function ensureRankSnapshot(market) {
 }
 
 async function buildPriceSnapshot(rankedItems, market) {
-  const bucket = getCacheBucket(market);
-  const usdKrw = market === "NASDAQ" ? await getUsdKrwCached(bucket) : 1;
-
-  const quoteRows = await fetchYahooQuoteBatch(rankedItems.map((item) => item.yahoo));
-  const quoteMap = new Map(quoteRows.map((q) => [q.symbol, q]));
-
-  const rows = await Promise.all(
-    rankedItems.map(async (item) => {
-      const quote = quoteMap.get(item.yahoo);
-      let info = quote ? quoteRowToInfo(quote) : null;
-
-      if (info?.price == null || info?.changePct == null) {
-        try {
-          const chartInfo = await fetchYahooChartMeta(item.yahoo);
-          info = {
-            shortName: info?.shortName || chartInfo.shortName || item.displayNameEN || item.name,
-            price: info?.price ?? chartInfo.price,
-            changePct: info?.changePct ?? chartInfo.changePct,
-          };
-        } catch {
-          info = info || {
-            shortName: item.displayNameEN || item.name,
-            price: null,
-            changePct: null,
-          };
-        }
-      }
-
+  if (market === "KOSPI") {
+    const rows = await mapLimit(rankedItems, 5, async (item) => {
+      const info = await fetchKisDomesticPrice(item.symbol);
       return {
         rank: item.rank,
         name: item.name,
-        displayNameEN: info?.shortName || item.displayNameEN || item.name,
+        displayNameEN: item.displayNameEN || item.name,
         symbol: item.symbol,
         iconUrl: item.iconUrl || buildLogo(pickStockDomain(item.symbol)),
-        capKRW:
-          market === "NASDAQ"
-            ? item.capUSD != null
-              ? Math.round(item.capUSD * usdKrw)
-              : null
-            : item.capKRW ?? null,
-        priceKRW:
-          market === "NASDAQ"
-            ? info?.price != null
-              ? Number((info.price * usdKrw).toFixed(2))
-              : null
-            : info?.price != null
-              ? Number(info.price.toFixed(2))
-              : null,
-        changePct: info?.changePct ?? null,
+        capKRW: item.capKRW ?? null,
+        priceKRW: info.price != null ? Number(info.price.toFixed(2)) : null,
+        changePct: info.changePct ?? null,
       };
-    })
+    });
+
+    return rows.filter(Boolean);
+  }
+
+  const bucket = getCacheBucket(market);
+  const usdKrw = await getUsdKrwCached(bucket);
+  const quoteRows = await fetchFmpBatchQuote(
+    rankedItems.map((item) => item.symbol)
+  );
+  const quoteMap = new Map(
+    quoteRows.map((q) => [String(q.symbol || "").toUpperCase(), q])
   );
 
-  return rows;
+  return rankedItems.map((item) => {
+    const quote = quoteMap.get(item.symbol) || {};
+    const price =
+      toNumber(quote?.price) ??
+      toNumber(quote?.previousClose) ??
+      toNumber(quote?.dayLow) ??
+      null;
+    const changePct =
+      toNumber(quote?.changesPercentage) ??
+      toNumber(quote?.changePercentage) ??
+      null;
+
+    return {
+      rank: item.rank,
+      name: item.name,
+      displayNameEN: item.displayNameEN || item.name,
+      symbol: item.symbol,
+      iconUrl: item.iconUrl || buildLogo(pickStockDomain(item.symbol)),
+      capKRW: item.capUSD != null ? Math.round(item.capUSD * usdKrw) : null,
+      priceKRW: price != null ? Number((price * usdKrw).toFixed(2)) : null,
+      changePct,
+    };
+  });
 }
 
 async function ensurePriceSnapshot(market) {
