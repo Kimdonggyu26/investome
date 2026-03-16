@@ -71,6 +71,15 @@ function buildPath(points, width = 100, height = 100) {
   const max = Math.max(...points);
   const gap = max - min || 1;
 
+  return points
+    .map((value, idx) => {
+      const x = (idx / (points.length - 1)) * width;
+      const y = height - ((value - min) / gap) * height;
+      return `${x},${y}`;
+    })
+    .join(" ");
+}
+
 function buildSvgPath(points, width = 100, height = 100, topPadding = 12) {
   const min = Math.min(...points);
   const max = Math.max(...points);
@@ -102,7 +111,6 @@ function buildAreaPath(points, width = 100, height = 100, topPadding = 12) {
 }
 
 
-
   return points
     .map((value, idx) => {
       const x = (idx / (points.length - 1)) * width;
@@ -110,7 +118,7 @@ function buildAreaPath(points, width = 100, height = 100, topPadding = 12) {
       return `${x},${y}`;
     })
     .join(" ");
-}
+
 
 function AssetLogo({ iconUrl, name }) {
   const [imgError, setImgError] = useState(false);
