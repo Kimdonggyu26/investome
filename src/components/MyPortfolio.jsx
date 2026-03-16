@@ -101,6 +101,8 @@ function buildAreaPath(points, width = 100, height = 100, topPadding = 12) {
   return `M ${topLine} L ${width},${height} L 0,${height} Z`;
 }
 
+
+
   return points
     .map((value, idx) => {
       const x = (idx / (points.length - 1)) * width;
