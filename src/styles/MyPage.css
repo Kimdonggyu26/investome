@@ -2233,3 +2233,90 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== Today Performance Card ===== */
+
+.portfolioTodayGrid{
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.portfolioTodayStat{
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.portfolioTodayStat strong{
+  font-size: 18px;
+  color: rgba(255,255,255,0.96);
+}
+
+.portfolioTopMoverCard{
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.025));
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.portfolioTopMoverLabel{
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.48);
+  margin-bottom: 12px;
+}
+
+.portfolioTopMoverBody{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.portfolioTopMoverLeft{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.portfolioTopMoverName{
+  font-size: 15px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.96);
+}
+
+.portfolioTopMoverSub{
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.56);
+}
+
+.portfolioTopMoverRight{
+  font-size: 20px;
+  font-weight: 900;
+  color: rgba(54,213,255,.96);
+  white-space: nowrap;
+}
+
+.portfolioTopMoverEmpty{
+  font-size: 13px;
+  color: rgba(255,255,255,0.56);
+}
+
+@media (max-width: 860px){
+  .portfolioTodayGrid{
+    grid-template-columns: 1fr;
+  }
+
+  .portfolioTopMoverBody{
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

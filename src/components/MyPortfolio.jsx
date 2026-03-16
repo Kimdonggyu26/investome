@@ -317,6 +317,37 @@ export default function MyPortfolio() {
   const maxRate = performanceSeries.length ? Math.max(...performanceSeries) : 0;
   const minRate = performanceSeries.length ? Math.min(...performanceSeries) : 0;
 
+  const todayUpCount = enrichedItems.filter(
+  (item) => typeof item.changePct === "number" && item.changePct > 0
+).length;
+
+const todayDownCount = enrichedItems.filter(
+  (item) => typeof item.changePct === "number" && item.changePct < 0
+).length;
+
+const todayFlatCount = enrichedItems.filter(
+  (item) => typeof item.changePct === "number" && item.changePct === 0
+).length;
+
+const todayChangeValue = enrichedItems.reduce((sum, item) => {
+  if (item.currentPrice == null || typeof item.changePct !== "number") return sum;
+
+  const prevPrice =
+    item.changePct === -100
+      ? item.currentPrice
+      : item.currentPrice / (1 + item.changePct / 100);
+
+  const todayDiffPerUnit = item.currentPrice - prevPrice;
+  return sum + todayDiffPerUnit * item.amount;
+}, 0);
+
+const todayChangeRate =
+  totalValue > 0 ? (todayChangeValue / Math.max(totalValue - todayChangeValue, 1)) * 100 : 0;
+
+const topGainer = [...enrichedItems]
+  .filter((item) => typeof item.changePct === "number")
+  .sort((a, b) => (b.changePct || 0) - (a.changePct || 0))[0] || null;
+
   const ringGradient = useMemo(() => {
     let current = 0;
     const segments = [];
@@ -547,28 +578,21 @@ export default function MyPortfolio() {
 
         <div className="portfolioBottomGrid">
           <div className={`portfolioFlowCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
-            <div className="portfolioCardHead portfolioFlowHead">
+            <div className="portfolioCardHead">
               <div>
-                <div className="portfolioEyebrow">PERFORMANCE</div>
-                <h3 className="portfolioTitleSm">수익률 추이</h3>
+                <div className="portfolioEyebrow">TODAY PERFORMANCE</div>
+                <h3 className="portfolioTitleSm">오늘의 포트폴리오 변동</h3>
               </div>
 
-              <div className="portfolioRangeTabs">
-                <button type="button" className="isActive">
-                  1M
-                </button>
-                <button type="button">3M</button>
-                <button type="button">1Y</button>
-                <button type="button">ALL</button>
-              </div>
+              <div className="portfolioGhostTag">Live Snapshot</div>
             </div>
 
             {emptyState ? (
               <div className="portfolioEmptySoft">
                 <div className="portfolioEmptySoftIcon">↗</div>
                 <div>
-                  <strong>성과 데이터 준비 전</strong>
-                  <p>보유 종목을 추가하면 포트폴리오 수익률 추이가 표시돼요.</p>
+                  <strong>오늘 변동 데이터 준비 전</strong>
+                  <p>보유 종목을 추가하면 오늘의 성과가 자동으로 표시돼요.</p>
                 </div>
               </div>
             ) : (
@@ -577,65 +601,67 @@ export default function MyPortfolio() {
                   className="portfolioFlowValue"
                   style={{
                     color:
-                      totalRate >= 0 ? "rgba(54,213,255,.96)" : "rgba(255,120,170,.96)",
+                      todayChangeValue >= 0
+                        ? "rgba(54,213,255,.96)"
+                        : "rgba(255,120,170,.96)",
                   }}
                 >
-                  {totalRate > 0 ? "+" : ""}
-                  {totalRate.toFixed(2)}%
+                  {formatSignedKRW(todayChangeValue)}
                 </div>
 
-                <div className="portfolioFlowCaption">최근 흐름 기준 포트폴리오 수익률</div>
-
-                <div className="portfolioFlowBox performance">
-                  <svg
-                    className="portfolioFlowSvg"
-                    viewBox="0 0 100 100"
-                    preserveAspectRatio="none"
-                  >
-                    <defs>
-                      <linearGradient id="portfolio-flow-line" x1="0" x2="1" y1="0" y2="0">
-                        <stop offset="0%" stopColor="#36d5ff" />
-                        <stop offset="100%" stopColor="#7c4dff" />
-                      </linearGradient>
-                      <linearGradient id="portfolio-flow-fill" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="rgba(54,213,255,0.28)" />
-                        <stop offset="100%" stopColor="rgba(54,213,255,0)" />
-                      </linearGradient>
-                    </defs>
-
-                    <path
-                      d={performanceAreaPath}
-                      fill="url(#portfolio-flow-fill)"
-                      className="portfolioFlowArea"
-                    />
-                    <path
-                      d={performancePath}
-                      fill="none"
-                      stroke="url(#portfolio-flow-line)"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="portfolioFlowLine"
-                    />
-                  </svg>
+                <div
+                  className="portfolioFlowCaption"
+                  style={{
+                    color:
+                      todayChangeRate >= 0
+                        ? "rgba(54,213,255,.78)"
+                        : "rgba(255,120,170,.78)",
+                  }}
+                >
+                  {todayChangeRate > 0 ? "+" : ""}
+                  {todayChangeRate.toFixed(2)}% today
                 </div>
 
-                <div className="portfolioFlowStats">
-                  <div className="portfolioFlowStat">
-                    <span className="label">최고 수익률</span>
-                    <strong>
-                      {maxRate > 0 ? "+" : ""}
-                      {maxRate.toFixed(2)}%
-                    </strong>
+                <div className="portfolioTodayGrid">
+                  <div className="portfolioTodayStat">
+                    <span className="label">상승</span>
+                    <strong>{todayUpCount}개</strong>
                   </div>
 
-                  <div className="portfolioFlowStat">
-                    <span className="label">최저 수익률</span>
-                    <strong>
-                      {minRate > 0 ? "+" : ""}
-                      {minRate.toFixed(2)}%
-                    </strong>
+                  <div className="portfolioTodayStat">
+                    <span className="label">하락</span>
+                    <strong>{todayDownCount}개</strong>
                   </div>
+
+                  <div className="portfolioTodayStat">
+                    <span className="label">보합</span>
+                    <strong>{todayFlatCount}개</strong>
+                  </div>
+                </div>
+
+                <div className="portfolioTopMoverCard">
+                  <div className="portfolioTopMoverLabel">TOP GAINER</div>
+
+                  {topGainer ? (
+                    <div className="portfolioTopMoverBody">
+                      <div className="portfolioTopMoverLeft">
+                        <AssetLogo iconUrl={topGainer.iconUrl} name={topGainer.name} />
+                        <div>
+                          <div className="portfolioTopMoverName">{topGainer.name}</div>
+                          <div className="portfolioTopMoverSub">
+                            {topGainer.symbol} · {marketLabel(topGainer.market)}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="portfolioTopMoverRight">
+                        {topGainer.changePct > 0 ? "+" : ""}
+                        {topGainer.changePct.toFixed(2)}%
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="portfolioTopMoverEmpty">오늘 변동 데이터를 불러오는 중이에요.</div>
+                  )}
                 </div>
               </>
             )}
