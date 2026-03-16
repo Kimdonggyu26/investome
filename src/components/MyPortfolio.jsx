@@ -625,17 +625,17 @@ const topGainer = [...enrichedItems]
                 <div className="portfolioTodayGrid">
                   <div className="portfolioTodayGrid">
                     <div className="portfolioTodayStat">
-                      <span className="label">상승 종목</span>
+                      <span className="label">상승</span>
                       <strong>{todayUpCount}<em>개</em></strong>
                     </div>
 
                     <div className="portfolioTodayStat">
-                      <span className="label">하락 종목</span>
+                      <span className="label">하락</span>
                       <strong>{todayDownCount}<em>개</em></strong>
                     </div>
 
                     <div className="portfolioTodayStat">
-                      <span className="label">보합 종목</span>
+                      <span className="label">보합</span>
                       <strong>{todayFlatCount}<em>개</em></strong>
                     </div>
                   </div>
