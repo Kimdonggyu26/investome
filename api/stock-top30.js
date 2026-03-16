@@ -15,14 +15,33 @@ const KIS_APP_SECRET = process.env.KIS_APP_SECRET || "";
 const KIS_BASE_URL =
   process.env.KIS_BASE_URL || "https://openapi.koreainvestment.com:9443";
 
+/**
+ * KIS market-cap ranking endpoint / params are consistent with
+ * publicly documented "국내주식 시가총액 상위" availability on KIS docs,
+ * and this default TR value is the one commonly used in working examples.
+ * If your account/doc shows a different TR, only this env value needs changing.
+ */
+const KIS_MARKET_CAP_TR_ID =
+  process.env.KIS_MARKET_CAP_TR_ID || "FHPST01740000";
+
 const kisTokenCache = {
   token: "",
   at: 0,
 };
 
 function toNumber(value) {
-  const n = Number(value);
+  if (value === null || value === undefined) return null;
+  const cleaned = String(value).replace(/[,%\s,]/g, "");
+  const n = Number(cleaned);
   return Number.isFinite(n) ? n : null;
+}
+
+function normalizeSymbol(value) {
+  const raw = String(value || "").trim().toUpperCase();
+  if (/^\d{6}$/.test(raw)) return raw;
+  const onlyDigits = raw.replace(/\D/g, "");
+  if (!onlyDigits) return raw;
+  return onlyDigits.padStart(6, "0");
 }
 
 function chunk(arr, size) {
@@ -31,23 +50,6 @@ function chunk(arr, size) {
     out.push(arr.slice(i, i + size));
   }
   return out;
-}
-
-async function mapLimit(items, limit, worker) {
-  const results = new Array(items.length);
-  let index = 0;
-
-  async function run() {
-    while (index < items.length) {
-      const current = index;
-      index += 1;
-      results[current] = await worker(items[current], current);
-    }
-  }
-
-  const concurrency = Math.max(1, Math.min(limit, items.length));
-  await Promise.all(Array.from({ length: concurrency }, run));
-  return results;
 }
 
 function buildLogo(domain) {
@@ -144,6 +146,22 @@ function pickStockDomain(symbol) {
   return map[String(symbol || "").toUpperCase()] || "";
 }
 
+function getCacheBucket(market) {
+  if (!cache.has(market)) {
+    cache.set(market, {
+      rankAt: 0,
+      rankedItems: [],
+      priceAt: 0,
+      pricedItems: [],
+      fxAt: 0,
+      usdKrw: 1350,
+      masterLoaded: false,
+      masterItems: [],
+    });
+  }
+  return cache.get(market);
+}
+
 async function fetchText(url, options = {}) {
   const res = await fetch(url, {
     ...options,
@@ -157,7 +175,7 @@ async function fetchText(url, options = {}) {
   const text = await res.text();
 
   if (!res.ok) {
-    throw new Error(`Upstream failed: ${res.status} ${text.slice(0, 200)}`);
+    throw new Error(`Upstream failed: ${res.status} ${text.slice(0, 250)}`);
   }
 
   return text;
@@ -165,11 +183,10 @@ async function fetchText(url, options = {}) {
 
 async function fetchJson(url, options = {}) {
   const text = await fetchText(url, options);
-
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error(`Non-JSON response: ${text.slice(0, 200)}`);
+    throw new Error(`Non-JSON response: ${text.slice(0, 250)}`);
   }
 }
 
@@ -184,25 +201,8 @@ async function fetchUsdKrw() {
   }
 }
 
-function getCacheBucket(market) {
-  if (!cache.has(market)) {
-    cache.set(market, {
-      rankAt: 0,
-      rankedItems: [],
-      priceAt: 0,
-      pricedItems: [],
-      masterLoaded: false,
-      masterItems: [],
-      fxAt: 0,
-      usdKrw: 1350,
-    });
-  }
-  return cache.get(market);
-}
-
 async function getUsdKrwCached(bucket) {
   const now = Date.now();
-
   if (bucket.usdKrw && now - bucket.fxAt < FX_TTL_MS) {
     return bucket.usdKrw;
   }
@@ -295,26 +295,28 @@ function getByNormalizedKeys(row, candidates) {
   return "";
 }
 
-function normalizeSymbol(value) {
-  const onlyDigits = String(value || "").replace(/\D/g, "");
-  if (!onlyDigits) return "";
-  return onlyDigits.padStart(6, "0");
-}
-
-function normalizeListedShares(value) {
-  const n = Number(String(value || "").replace(/[^\d]/g, ""));
-  return Number.isFinite(n) ? n : 0;
-}
-
 function readCp949Csv(filePath) {
   const buffer = fs.readFileSync(filePath);
   const text = iconv.decode(buffer, "cp949");
   return text.replace(/^\uFEFF/, "");
 }
 
+function normalizeCompanyName(name) {
+  return String(name || "")
+    .replace(/\s+/g, "")
+    .replace(/보통주$/g, "")
+    .replace(/주식$/g, "")
+    .trim();
+}
+
+function titleCaseEnglish(value) {
+  const s = String(value || "").trim();
+  if (!s) return s;
+  return s;
+}
+
 function loadKospiMaster() {
   const bucket = getCacheBucket("KOSPI");
-
   if (bucket.masterLoaded && bucket.masterItems.length) {
     return bucket.masterItems;
   }
@@ -322,35 +324,79 @@ function loadKospiMaster() {
   const filePath = path.join(process.cwd(), "tmp", "kospi.csv");
   const rows = parseCsv(readCp949Csv(filePath));
 
+  const nameOverrides = {
+    "005930": { name: "삼성전자", displayNameEN: "Samsung Electronics" },
+    "000660": { name: "SK하이닉스", displayNameEN: "SK hynix" },
+    "373220": { name: "LG에너지솔루션", displayNameEN: "LG Energy Solution" },
+    "207940": { name: "삼성바이오로직스", displayNameEN: "Samsung Biologics" },
+    "005380": { name: "현대차", displayNameEN: "Hyundai Motor" },
+    "068270": { name: "셀트리온", displayNameEN: "Celltrion" },
+    "000270": { name: "기아", displayNameEN: "Kia" },
+    "105560": { name: "KB금융", displayNameEN: "KB Financial Group" },
+    "035420": { name: "NAVER", displayNameEN: "NAVER" },
+    "055550": { name: "신한지주", displayNameEN: "Shinhan Financial Group" },
+    "005490": { name: "POSCO홀딩스", displayNameEN: "POSCO Holdings" },
+    "006400": { name: "삼성SDI", displayNameEN: "Samsung SDI" },
+    "035720": { name: "카카오", displayNameEN: "Kakao" },
+    "051910": { name: "LG화학", displayNameEN: "LG Chem" },
+    "028260": { name: "삼성물산", displayNameEN: "Samsung C&T" },
+    "086790": { name: "하나금융지주", displayNameEN: "Hana Financial Group" },
+    "015760": { name: "한국전력", displayNameEN: "KEPCO" },
+    "329180": {
+      name: "HD현대중공업",
+      displayNameEN: "HD Hyundai Heavy Industries",
+    },
+    "138040": {
+      name: "메리츠금융지주",
+      displayNameEN: "Meritz Financial Group",
+    },
+    "032830": { name: "삼성생명", displayNameEN: "Samsung Life" },
+    "259960": { name: "크래프톤", displayNameEN: "Krafton" },
+    "033780": { name: "KT&G", displayNameEN: "KT&G" },
+    "011200": { name: "HMM", displayNameEN: "HMM" },
+    "316140": { name: "우리금융지주", displayNameEN: "Woori Financial Group" },
+    "034020": { name: "두산에너빌리티", displayNameEN: "Doosan Enerbility" },
+    "003490": { name: "대한항공", displayNameEN: "Korean Air" },
+    "066570": { name: "LG전자", displayNameEN: "LG Electronics" },
+    "003670": { name: "포스코퓨처엠", displayNameEN: "POSCO Future M" },
+    "009150": {
+      name: "삼성전기",
+      displayNameEN: "Samsung Electro-Mechanics",
+    },
+    "012450": { name: "한화에어로스페이스", displayNameEN: "Hanwha Aerospace" },
+  };
+
   const items = rows
     .map((row) => {
       const symbol = normalizeSymbol(
         getByNormalizedKeys(row, ["단축코드", "종목코드", "표준단축코드"])
       );
+      if (!symbol) return null;
 
-      const name = getByNormalizedKeys(row, [
+      const rawName = getByNormalizedKeys(row, [
         "한글종목명",
         "종목명",
         "한글 종목명",
       ]);
-      const displayNameEN = getByNormalizedKeys(row, [
+      const rawEnglish = getByNormalizedKeys(row, [
         "영문종목명",
         "영문명",
         "영문 종목명",
       ]);
       const stockType = getByNormalizedKeys(row, ["주식종류"]);
-      const listedShares = normalizeListedShares(
-        getByNormalizedKeys(row, ["상장주식수"])
-      );
 
-      if (!symbol || !name || !listedShares) return null;
+      if (!rawName) return null;
       if (stockType && !stockType.includes("보통주")) return null;
+
+      const override = nameOverrides[symbol] || null;
 
       return {
         symbol,
-        name,
-        displayNameEN: displayNameEN || name,
-        listedShares,
+        name: override?.name || normalizeCompanyName(rawName),
+        displayNameEN:
+          override?.displayNameEN ||
+          titleCaseEnglish(rawEnglish) ||
+          normalizeCompanyName(rawName),
       };
     })
     .filter(Boolean);
@@ -358,6 +404,10 @@ function loadKospiMaster() {
   bucket.masterLoaded = true;
   bucket.masterItems = items;
   return items;
+}
+
+function getKospiMasterMap() {
+  return new Map(loadKospiMaster().map((item) => [item.symbol, item]));
 }
 
 async function getKisAccessToken() {
@@ -372,9 +422,7 @@ async function getKisAccessToken() {
 
   const json = await fetchJson(`${KIS_BASE_URL}/oauth2/tokenP`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       grant_type: "client_credentials",
       appkey: KIS_APP_KEY,
@@ -392,13 +440,21 @@ async function getKisAccessToken() {
   return token;
 }
 
-async function fetchKisDomesticPrice(symbol) {
+async function fetchKisMarketCapTop30() {
   const token = await getKisAccessToken();
+
   const url = new URL(
-    `${KIS_BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-price`
+    `${KIS_BASE_URL}/uapi/domestic-stock/v1/ranking/market-cap`
   );
-  url.searchParams.set("fid_cond_mrkt_div_code", "J");
-  url.searchParams.set("fid_input_iscd", symbol);
+  url.searchParams.set("fid_cond_mrkt_div_code", "J"); // KRX
+  url.searchParams.set("fid_cond_scr_div_code", "20174");
+  url.searchParams.set("fid_div_cls_code", "0");
+  url.searchParams.set("fid_input_iscd", "0000"); // KOSPI
+  url.searchParams.set("fid_trgt_cls_code", "0");
+  url.searchParams.set("fid_trgt_exls_cls_code", "0");
+  url.searchParams.set("fid_input_price_1", "");
+  url.searchParams.set("fid_input_price_2", "");
+  url.searchParams.set("fid_vol_cnt", "");
 
   const json = await fetchJson(url.toString(), {
     headers: {
@@ -406,22 +462,59 @@ async function fetchKisDomesticPrice(symbol) {
       authorization: `Bearer ${token}`,
       appkey: KIS_APP_KEY,
       appsecret: KIS_APP_SECRET,
-      tr_id: "FHKST01010100",
+      tr_id: KIS_MARKET_CAP_TR_ID,
     },
   });
 
-  const out = json?.output || {};
-  const price = toNumber(out?.stck_prpr);
-  const changePct = toNumber(out?.prdy_ctrt);
-
-  if (price == null) {
-    throw new Error(`KIS price not found for ${symbol}`);
+  const rows = Array.isArray(json?.output) ? json.output : [];
+  if (!rows.length) {
+    throw new Error("KIS market-cap output is empty");
   }
 
+  return rows.slice(0, 30);
+}
+
+function firstNonEmpty(obj, keys) {
+  for (const key of keys) {
+    const value = obj?.[key];
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      return value;
+    }
+  }
+  return "";
+}
+
+function normalizeKisMarketCapRow(row, index, masterMap) {
+  const symbol = normalizeSymbol(
+    firstNonEmpty(row, [
+      "mksc_shrn_iscd",
+      "stck_shrn_iscd",
+      "shrn_iscd",
+      "isu_cd",
+      "iscd",
+      "stck_shrn_iscd1",
+    ])
+  );
+
+  const master = masterMap.get(symbol);
+  const rawKorName = firstNonEmpty(row, ["hts_kor_isnm", "prdt_name", "stck_name"]);
+  const rawPrice = firstNonEmpty(row, ["stck_prpr", "cur_prc", "bstp_nmix_prpr"]);
+  const rawPct = firstNonEmpty(row, ["prdy_ctrt", "flu_rt", "chg_rate"]);
+  const rawCap = firstNonEmpty(row, ["stck_avls", "data_valx", "mkt_cap"]);
+  const rawRank = firstNonEmpty(row, ["data_rank", "rank", "rprs_mrkt_kor_name"]);
+
+  const name = master?.name || normalizeCompanyName(rawKorName) || symbol;
+  const displayNameEN = master?.displayNameEN || name;
+
   return {
+    rank: toNumber(rawRank) || index + 1,
+    name,
+    displayNameEN,
     symbol,
-    price,
-    changePct,
+    iconUrl: buildLogo(pickStockDomain(symbol)),
+    capKRW: toNumber(rawCap),
+    priceKRW: toNumber(rawPrice),
+    changePct: toNumber(rawPct),
   };
 }
 
@@ -443,45 +536,32 @@ async function fetchFmpBatchQuote(symbols) {
   );
 
   const rows = [];
-  for (const entry of settled) {
-    if (entry.status === "fulfilled") {
-      rows.push(...entry.value);
+  for (const item of settled) {
+    if (item.status === "fulfilled") {
+      rows.push(...item.value);
     }
   }
   return rows;
 }
 
 async function buildKospiRankSnapshot() {
-  const universe = loadKospiMaster();
+  const masterMap = getKospiMasterMap();
+  const rows = await fetchKisMarketCapTop30();
 
-  const quoteRows = await mapLimit(universe, 5, async (item) => {
-    try {
-      const info = await fetchKisDomesticPrice(item.symbol);
-      return {
-        ...item,
-        price: info.price,
-      };
-    } catch {
-      return null;
-    }
-  });
+  const normalized = rows
+    .map((row, index) => normalizeKisMarketCapRow(row, index, masterMap))
+    .filter((item) => item.symbol && item.capKRW != null)
+    .sort((a, b) => (a.rank || 9999) - (b.rank || 9999))
+    .slice(0, 30);
 
-  return quoteRows
-    .filter(Boolean)
-    .map((item) => ({
-      rank: 0,
-      name: item.name,
-      displayNameEN: item.displayNameEN,
-      symbol: item.symbol,
-      iconUrl: buildLogo(pickStockDomain(item.symbol)),
-      capKRW: Math.round(item.price * item.listedShares),
-    }))
-    .sort((a, b) => (b.capKRW ?? 0) - (a.capKRW ?? 0))
-    .slice(0, 30)
-    .map((row, index) => ({
-      ...row,
-      rank: index + 1,
-    }));
+  if (!normalized.length) {
+    throw new Error("KOSPI top30 normalization failed");
+  }
+
+  return normalized.map((item, index) => ({
+    ...item,
+    rank: index + 1,
+  }));
 }
 
 async function buildNasdaqRankSnapshot() {
@@ -498,7 +578,7 @@ async function buildNasdaqRankSnapshot() {
   const json = await fetchJson(url);
   const rows = Array.isArray(json) ? json : [];
 
-  return rows
+  const normalized = rows
     .map((row) => {
       const symbol = String(row.symbol || "").toUpperCase().trim();
       const capUSD = toNumber(row.marketCap);
@@ -520,6 +600,12 @@ async function buildNasdaqRankSnapshot() {
       ...row,
       rank: index + 1,
     }));
+
+  if (!normalized.length) {
+    throw new Error("NASDAQ top30 normalization failed");
+  }
+
+  return normalized;
 }
 
 async function ensureRankSnapshot(market) {
@@ -546,21 +632,16 @@ async function ensureRankSnapshot(market) {
 
 async function buildPriceSnapshot(rankedItems, market) {
   if (market === "KOSPI") {
-    const rows = await mapLimit(rankedItems, 5, async (item) => {
-      const info = await fetchKisDomesticPrice(item.symbol);
-      return {
-        rank: item.rank,
-        name: item.name,
-        displayNameEN: item.displayNameEN || item.name,
-        symbol: item.symbol,
-        iconUrl: item.iconUrl || buildLogo(pickStockDomain(item.symbol)),
-        capKRW: item.capKRW ?? null,
-        priceKRW: info.price != null ? Number(info.price.toFixed(2)) : null,
-        changePct: info.changePct ?? null,
-      };
-    });
-
-    return rows.filter(Boolean);
+    return rankedItems.map((item) => ({
+      rank: item.rank,
+      name: item.name,
+      displayNameEN: item.displayNameEN,
+      symbol: item.symbol,
+      iconUrl: item.iconUrl,
+      capKRW: item.capKRW,
+      priceKRW: item.priceKRW,
+      changePct: item.changePct,
+    }));
   }
 
   const bucket = getCacheBucket(market);
@@ -587,7 +668,7 @@ async function buildPriceSnapshot(rankedItems, market) {
     return {
       rank: item.rank,
       name: item.name,
-      displayNameEN: item.displayNameEN || item.name,
+      displayNameEN: item.displayNameEN,
       symbol: item.symbol,
       iconUrl: item.iconUrl || buildLogo(pickStockDomain(item.symbol)),
       capKRW: item.capUSD != null ? Math.round(item.capUSD * usdKrw) : null,
