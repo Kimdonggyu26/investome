@@ -126,7 +126,8 @@
   flex: 1;
   min-height: 0;
   max-height: 520px;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   border-radius:12px;
   border:1px solid rgba(255,255,255,0.08);
   background: rgba(255,255,255,0.02);
@@ -163,10 +164,10 @@
   filter: saturate(.9);
 }
 
-.rankingTable {
+.rankingTable{
   width: 100%;
-  table-layout: fixed;
   border-collapse: collapse;
+  table-layout: auto;
 }
 
 .rankingTable thead th{
@@ -182,9 +183,25 @@
   z-index: 6;
 }
 
-.rankingTable td:nth-child(2) {
-  overflow: hidden;
-  text-overflow: ellipsis;
+.rankingTable th:nth-child(1),
+.rankingTable td:nth-child(1){
+  width: 52px;
+}
+
+.rankingTable th:nth-child(3),
+.rankingTable td:nth-child(3){
+  width: 170px;
+}
+
+.rankingTable th:nth-child(4),
+.rankingTable td:nth-child(4){
+  width: 140px;
+  white-space: nowrap;
+}
+
+.rankingTable th:nth-child(5),
+.rankingTable td:nth-child(5){
+  width: 96px;
   white-space: nowrap;
 }
 
