@@ -191,7 +191,7 @@
   display: grid;
   grid-template-columns: 200px minmax(0, 1fr);
   gap: 20px;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .portfolioRing{
@@ -232,6 +232,14 @@
 .portfolioLegend{
   display: grid;
   gap: 12px;
+  max-height: 252px;
+  overflow-y: auto;
+  padding-right: 6px;
+  align-content: start;
+}
+
+.portfolioLegendItem{
+  min-height: 48px;
 }
 
 .portfolioLegendItem{

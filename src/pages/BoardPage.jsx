@@ -19,7 +19,16 @@ export default function BoardPage() {
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
-    setPosts(getBoardPosts());
+    const syncPosts = () => setPosts(getBoardPosts());
+
+    syncPosts();
+    window.addEventListener("board-storage-updated", syncPosts);
+    window.addEventListener("storage", syncPosts);
+
+    return () => {
+      window.removeEventListener("board-storage-updated", syncPosts);
+      window.removeEventListener("storage", syncPosts);
+    };
   }, []);
 
   const filteredPosts = useMemo(() => {
@@ -28,10 +37,10 @@ export default function BoardPage() {
     if (tab === "popular") {
       next.sort(
         (a, b) =>
-          b.likes - a.likes ||
-          b.views - a.views ||
-          b.comments - a.comments ||
-          b.no - a.no
+          (b.likes || 0) - (a.likes || 0) ||
+          (b.views || 0) - (a.views || 0) ||
+          (b.commentCount || 0) - (a.commentCount || 0) ||
+          (b.no || 0) - (a.no || 0)
       );
     } else if (tab === "notice") {
       next = next.filter((post) => post.category === "notice");
@@ -87,7 +96,7 @@ export default function BoardPage() {
               <div className="boardEyebrow">COMMUNITY BOARD</div>
               <h1 className="boardTitle">게시판</h1>
               <p className="boardDesc">
-                시장 이야기, 종목 토론, 관점 공유를 자유롭게 올릴 수 있는 커뮤니티형 게시판 기본 화면이야.
+                시장 이야기, 종목 토론, 관점 공유를 자유롭게 올릴 수 있는 커뮤니티 공간이야.
               </p>
             </div>
 
@@ -162,15 +171,19 @@ export default function BoardPage() {
                   <div className="boardNo">{post.no}</div>
 
                   <div className="boardSubject">
-                    <button type="button" className="boardSubjectBtn">
+                    <button
+                      type="button"
+                      className="boardSubjectBtn"
+                      onClick={() => navigate(`/board/${post.id}`)}
+                    >
                       {post.category === "notice" ? (
                         <span className="boardNoticeBadge">공지</span>
                       ) : null}
 
                       <span className="boardSubjectText">{post.title}</span>
 
-                      {post.comments > 0 ? (
-                        <span className="boardComments">[{post.comments}]</span>
+                      {(post.commentCount || 0) > 0 ? (
+                        <span className="boardComments">[{post.commentCount}]</span>
                       ) : null}
                     </button>
 

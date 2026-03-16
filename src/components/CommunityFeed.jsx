@@ -1,34 +1,25 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getTodayPopularPosts } from "../utils/boardStorage";
 import "../styles/CommunityFeed.css";
 
-const posts = [
-  {
-    category: "HOT",
-    title: "비트코인 11만 달러 부근 공방",
-    meta: "방금 전 · 조회 128",
-  },
-  {
-    category: "인기",
-    title: "엔비디아 조정, 지금 분할매수 괜찮을까?",
-    meta: "12분 전 · 댓글 18",
-  },
-  {
-    category: "토론",
-    title: "한화에어로스페이스 눌림목 보는 사람?",
-    meta: "25분 전 · 댓글 9",
-  },
-  {
-    category: "관심",
-    title: "솔라나 다시 강세 전환 가능성",
-    meta: "39분 전 · 조회 302",
-  },
-  {
-    category: "요약",
-    title: "오늘 시장에서 가장 많이 언급된 종목",
-    meta: "1시간 전 · 조회 421",
-  },
-];
-
 export default function CommunityFeed() {
+  const navigate = useNavigate();
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    const sync = () => setPosts(getTodayPopularPosts(5));
+
+    sync();
+    window.addEventListener("board-storage-updated", sync);
+    window.addEventListener("storage", sync);
+
+    return () => {
+      window.removeEventListener("board-storage-updated", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
   return (
     <section className="communityFloatPanel">
       <div className="communityFloatHeader">
@@ -36,19 +27,32 @@ export default function CommunityFeed() {
           <div className="communityFloatEyebrow">TRENDING NOW</div>
           <h3 className="communityFloatTitle">실시간 인기 글</h3>
         </div>
-        <span className="communityFloatLive">LIVE</span>
+        <span className="communityFloatLive">TODAY</span>
       </div>
 
       <div className="communityFloatList">
-        {posts.map((post, index) => (
-          <button key={index} type="button" className="communityFloatItem">
-            <div className="communityFloatItemTop">
-              <span className="communityFloatTag">{post.category}</span>
-            </div>
-            <div className="communityFloatItemTitle">{post.title}</div>
-            <div className="communityFloatItemMeta">{post.meta}</div>
-          </button>
-        ))}
+        {posts.length === 0 ? (
+          <div className="communityFloatEmpty">
+            오늘 작성된 게시글이 아직 없어.
+          </div>
+        ) : (
+          posts.map((post) => (
+            <button
+              key={post.id}
+              type="button"
+              className="communityFloatItem"
+              onClick={() => navigate(`/board/${post.id}`)}
+            >
+              <div className="communityFloatItemTop">
+                <span className="communityFloatTag">조회 {post.views}</span>
+              </div>
+              <div className="communityFloatItemTitle">{post.title}</div>
+              <div className="communityFloatItemMeta">
+                {post.author} · 추천 {post.likes} · 댓글 {post.commentCount || 0}
+              </div>
+            </button>
+          ))
+        )}
       </div>
     </section>
   );

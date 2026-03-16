@@ -457,7 +457,7 @@ export default function MyPortfolio() {
                 </div>
               </div>
 
-              <div className="portfolioLegend">
+              <div className="portfolioLegend luxuryScroll">
                 {emptyState ? (
                   <div className="portfolioEmptyMiniCard">
                     <strong>아직 비중 데이터가 없어요</strong>

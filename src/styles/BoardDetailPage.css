@@ -1,0 +1,226 @@
+.boardDetailPage{
+  padding: 18px 0 40px;
+}
+
+.boardDetailCard,
+.boardCommentCard{
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.025);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.26);
+  padding: 22px;
+}
+
+.boardCommentCard{
+  margin-top: 18px;
+}
+
+.boardDetailTopBar{
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 16px;
+}
+
+.boardDetailGhostBtn{
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.92);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.boardDetailBadgeRow{
+  margin-bottom: 12px;
+}
+
+.boardDetailBadge{
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(14,165,255,0.16);
+  border: 1px solid rgba(14,165,255,0.22);
+  color: #dff6ff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.boardDetailTitle{
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.25;
+  font-weight: 900;
+}
+
+.boardDetailMeta{
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  color: rgba(255,255,255,0.56);
+  font-size: 13px;
+}
+
+.boardDetailContent{
+  margin-top: 24px;
+  min-height: 220px;
+  padding: 20px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.92);
+  white-space: pre-wrap;
+  line-height: 1.9;
+  font-size: 15px;
+}
+
+.boardDetailActionRow{
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+}
+
+.boardDetailLikeBtn{
+  min-width: 160px;
+  height: 46px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.92);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.boardDetailLikeBtn.active{
+  background: linear-gradient(135deg, rgba(14,165,255,0.22), rgba(124,77,255,0.16));
+  color: white;
+}
+
+.boardCommentHead{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.boardCommentHead h3{
+  margin: 0;
+  font-size: 22px;
+}
+
+.boardCommentHead span{
+  color: rgba(255,255,255,0.56);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.boardCommentForm{
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.boardCommentFormTop{
+  margin-bottom: 10px;
+}
+
+.boardCommentForm input,
+.boardCommentForm textarea{
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.92);
+  outline: none;
+  padding: 12px 14px;
+}
+
+.boardCommentForm textarea{
+  min-height: 120px;
+  resize: vertical;
+}
+
+.boardCommentError{
+  margin-top: 10px;
+  color: #ff8db3;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.boardCommentSubmitRow{
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.boardCommentSubmitRow button{
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: linear-gradient(135deg, rgba(14,165,255,0.22), rgba(124,77,255,0.16));
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.boardCommentList{
+  margin-top: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.boardCommentItem{
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.boardCommentItemTop{
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.boardCommentItemTop strong{
+  font-size: 14px;
+}
+
+.boardCommentItemTop span{
+  color: rgba(255,255,255,0.48);
+  font-size: 12px;
+}
+
+.boardCommentItemContent{
+  color: rgba(255,255,255,0.86);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.boardCommentEmpty,
+.boardDetailEmpty{
+  padding: 40px 20px;
+  text-align: center;
+  color: rgba(255,255,255,0.62);
+}
+
+.boardDetailEmpty button{
+  margin-top: 14px;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.92);
+  cursor: pointer;
+}
