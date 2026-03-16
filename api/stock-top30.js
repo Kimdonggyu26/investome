@@ -6,11 +6,9 @@ const cache = new Map();
 
 const RANK_TTL_MS = 6 * 60 * 60 * 1000; // 6시간
 const PRICE_TTL_MS = 20 * 1000; // 20초
-const PROFILE_TTL_MS = 24 * 60 * 60 * 1000; // 24시간
 const FX_TTL_MS = 20 * 1000;
 const KIS_TOKEN_TTL_MS = 23 * 60 * 60 * 1000;
 
-const FMP_API_KEY = process.env.FMP_API_KEY || "";
 const KIS_APP_KEY = process.env.KIS_APP_KEY || "";
 const KIS_APP_SECRET = process.env.KIS_APP_SECRET || "";
 const KIS_BASE_URL =
@@ -23,18 +21,234 @@ const kisTokenCache = {
   at: 0,
 };
 
+/**
+ * 무료 운영용 NASDAQ 고정 TOP30 후보군
+ * - 자동 재선정이 아니라 운영용 고정 목록
+ * - 가격/등락률/시총은 Yahoo에서 실시간 반영
+ * - 필요하면 한 달에 1번 정도 수동 업데이트
+ *
+ * 참고용 대형주 기준:
+ * Nvidia, Apple, Alphabet, Microsoft, Amazon, Broadcom, Meta, Tesla, ASML,
+ * Netflix, Costco, AMD, Micron 등은 2026년 초 NASDAQ 대형주 상위권에 해당. :contentReference[oaicite:1]{index=1}
+ */
+const NASDAQ_FIXED_TOP30 = [
+  {
+    rank: 1,
+    symbol: "NVDA",
+    name: "NVIDIA",
+    displayNameEN: "NVIDIA Corporation",
+    domain: "nvidia.com",
+  },
+  {
+    rank: 2,
+    symbol: "AAPL",
+    name: "애플",
+    displayNameEN: "Apple Inc.",
+    domain: "apple.com",
+  },
+  {
+    rank: 3,
+    symbol: "GOOGL",
+    name: "알파벳",
+    displayNameEN: "Alphabet Inc.",
+    domain: "google.com",
+  },
+  {
+    rank: 4,
+    symbol: "GOOG",
+    name: "알파벳C",
+    displayNameEN: "Alphabet Inc. Class C",
+    domain: "google.com",
+  },
+  {
+    rank: 5,
+    symbol: "MSFT",
+    name: "마이크로소프트",
+    displayNameEN: "Microsoft Corporation",
+    domain: "microsoft.com",
+  },
+  {
+    rank: 6,
+    symbol: "AMZN",
+    name: "아마존",
+    displayNameEN: "Amazon.com, Inc.",
+    domain: "amazon.com",
+  },
+  {
+    rank: 7,
+    symbol: "AVGO",
+    name: "브로드컴",
+    displayNameEN: "Broadcom Inc.",
+    domain: "broadcom.com",
+  },
+  {
+    rank: 8,
+    symbol: "META",
+    name: "메타",
+    displayNameEN: "Meta Platforms, Inc.",
+    domain: "meta.com",
+  },
+  {
+    rank: 9,
+    symbol: "TSLA",
+    name: "테슬라",
+    displayNameEN: "Tesla, Inc.",
+    domain: "tesla.com",
+  },
+  {
+    rank: 10,
+    symbol: "ASML",
+    name: "ASML",
+    displayNameEN: "ASML Holding N.V.",
+    domain: "asml.com",
+  },
+  {
+    rank: 11,
+    symbol: "NFLX",
+    name: "넷플릭스",
+    displayNameEN: "Netflix, Inc.",
+    domain: "netflix.com",
+  },
+  {
+    rank: 12,
+    symbol: "COST",
+    name: "코스트코",
+    displayNameEN: "Costco Wholesale Corporation",
+    domain: "costco.com",
+  },
+  {
+    rank: 13,
+    symbol: "AMD",
+    name: "AMD",
+    displayNameEN: "Advanced Micro Devices, Inc.",
+    domain: "amd.com",
+  },
+  {
+    rank: 14,
+    symbol: "MU",
+    name: "마이크론",
+    displayNameEN: "Micron Technology, Inc.",
+    domain: "micron.com",
+  },
+  {
+    rank: 15,
+    symbol: "CSCO",
+    name: "시스코",
+    displayNameEN: "Cisco Systems, Inc.",
+    domain: "cisco.com",
+  },
+  {
+    rank: 16,
+    symbol: "AZN",
+    name: "아스트라제네카",
+    displayNameEN: "AstraZeneca PLC",
+    domain: "astrazeneca.com",
+  },
+  {
+    rank: 17,
+    symbol: "LRCX",
+    name: "램리서치",
+    displayNameEN: "Lam Research Corporation",
+    domain: "lamresearch.com",
+  },
+  {
+    rank: 18,
+    symbol: "TMUS",
+    name: "T-모바일",
+    displayNameEN: "T-Mobile US, Inc.",
+    domain: "t-mobile.com",
+  },
+  {
+    rank: 19,
+    symbol: "AMAT",
+    name: "어플라이드머티어리얼즈",
+    displayNameEN: "Applied Materials, Inc.",
+    domain: "appliedmaterials.com",
+  },
+  {
+    rank: 20,
+    symbol: "ISRG",
+    name: "인튜이티브서지컬",
+    displayNameEN: "Intuitive Surgical, Inc.",
+    domain: "intuitive.com",
+  },
+  {
+    rank: 21,
+    symbol: "LIN",
+    name: "린데",
+    displayNameEN: "Linde plc",
+    domain: "linde.com",
+  },
+  {
+    rank: 22,
+    symbol: "PEP",
+    name: "펩시코",
+    displayNameEN: "PepsiCo, Inc.",
+    domain: "pepsico.com",
+  },
+  {
+    rank: 23,
+    symbol: "INTC",
+    name: "인텔",
+    displayNameEN: "Intel Corporation",
+    domain: "intel.com",
+  },
+  {
+    rank: 24,
+    symbol: "QCOM",
+    name: "퀄컴",
+    displayNameEN: "Qualcomm Incorporated",
+    domain: "qualcomm.com",
+  },
+  {
+    rank: 25,
+    symbol: "AMGN",
+    name: "암젠",
+    displayNameEN: "Amgen Inc.",
+    domain: "amgen.com",
+  },
+  {
+    rank: 26,
+    symbol: "INTU",
+    name: "인튜이트",
+    displayNameEN: "Intuit Inc.",
+    domain: "intuit.com",
+  },
+  {
+    rank: 27,
+    symbol: "BKNG",
+    name: "부킹홀딩스",
+    displayNameEN: "Booking Holdings Inc.",
+    domain: "bookingholdings.com",
+  },
+  {
+    rank: 28,
+    symbol: "KLAC",
+    name: "KLA",
+    displayNameEN: "KLA Corporation",
+    domain: "kla.com",
+  },
+  {
+    rank: 29,
+    symbol: "PDD",
+    name: "핀둬둬",
+    displayNameEN: "PDD Holdings Inc.",
+    domain: "pddholdings.com",
+  },
+  {
+    rank: 30,
+    symbol: "ADBE",
+    name: "어도비",
+    displayNameEN: "Adobe Inc.",
+    domain: "adobe.com",
+  },
+];
+
 function toNumber(value) {
   if (value === null || value === undefined || value === "") return null;
-  const n = Number(String(value).replace(/[,%\s,]/g, ""));
+  const cleaned = String(value).replace(/[,%\s,]/g, "");
+  const n = Number(cleaned);
   return Number.isFinite(n) ? n : null;
-}
-
-function chunk(arr, size) {
-  const out = [];
-  for (let i = 0; i < arr.length; i += size) {
-    out.push(arr.slice(i, i + size));
-  }
-  return out;
 }
 
 function buildLogo(domain) {
@@ -68,8 +282,6 @@ function getCacheBucket(market) {
       rankedItems: [],
       priceAt: 0,
       pricedItems: [],
-      profileAt: 0,
-      profileMap: new Map(),
       fxAt: 0,
       usdKrw: 1350,
       masterLoaded: false,
@@ -120,6 +332,7 @@ async function fetchUsdKrw() {
 
 async function getUsdKrwCached(bucket) {
   const now = Date.now();
+
   if (bucket.usdKrw && now - bucket.fxAt < FX_TTL_MS) {
     return bucket.usdKrw;
   }
@@ -220,6 +433,7 @@ function readCp949Csv(filePath) {
 
 function loadKospiMaster() {
   const bucket = getCacheBucket("KOSPI");
+
   if (bucket.masterLoaded && bucket.masterItems.length) {
     return bucket.masterItems;
   }
@@ -348,58 +562,36 @@ function pickStockDomain(symbol) {
     "009150": "sem.samsung.com",
     "012450": "hanwhaaerospace.com",
 
-    AAPL: "apple.com",
-    MSFT: "microsoft.com",
     NVDA: "nvidia.com",
-    AMZN: "amazon.com",
+    AAPL: "apple.com",
     GOOGL: "google.com",
     GOOG: "google.com",
-    META: "meta.com",
+    MSFT: "microsoft.com",
+    AMZN: "amazon.com",
     AVGO: "broadcom.com",
+    META: "meta.com",
     TSLA: "tesla.com",
-    COST: "costco.com",
-    NFLX: "netflix.com",
-    ADBE: "adobe.com",
-    PEP: "pepsico.com",
-    QCOM: "qualcomm.com",
-    CSCO: "cisco.com",
-    AMD: "amd.com",
-    INTU: "intuit.com",
-    TXN: "ti.com",
-    ISRG: "intuitive.com",
-    AZN: "astrazeneca.com",
-    PLTR: "palantir.com",
-    ADI: "analog.com",
-    MRVL: "marvell.com",
-    MU: "micron.com",
-    FI: "fiserv.com",
-    AMGN: "amgen.com",
-    GILD: "gilead.com",
-    INTC: "intel.com",
-    ABNB: "airbnb.com",
-    BKNG: "bookingholdings.com",
-    SBUX: "starbucks.com",
-    TMUS: "t-mobile.com",
     ASML: "asml.com",
-    LIN: "linde.com",
-    HON: "honeywell.com",
-    MELI: "mercadolibre.com",
-    PANW: "paloaltonetworks.com",
-    CRWD: "crowdstrike.com",
+    NFLX: "netflix.com",
+    COST: "costco.com",
+    AMD: "amd.com",
+    MU: "micron.com",
+    CSCO: "cisco.com",
+    AZN: "astrazeneca.com",
+    LRCX: "lamresearch.com",
+    TMUS: "t-mobile.com",
     AMAT: "appliedmaterials.com",
-    ADP: "adp.com",
+    ISRG: "intuitive.com",
+    LIN: "linde.com",
+    PEP: "pepsico.com",
+    INTC: "intel.com",
+    QCOM: "qualcomm.com",
+    AMGN: "amgen.com",
+    INTU: "intuit.com",
+    BKNG: "bookingholdings.com",
     KLAC: "kla.com",
-    CDNS: "cadence.com",
-    SNPS: "synopsys.com",
-    REGN: "regeneron.com",
-    PYPL: "paypal.com",
-    MAR: "marriott.com",
-    CTAS: "cintas.com",
-    FTNT: "fortinet.com",
-    ARM: "arm.com",
-    DDOG: "datadoghq.com",
-    MSTR: "microstrategy.com",
-    APP: "app.io",
+    PDD: "pddholdings.com",
+    ADBE: "adobe.com",
   };
 
   return map[String(symbol || "").toUpperCase()] || "";
@@ -513,124 +705,49 @@ function normalizeKisMarketCapRow(row, index, masterMap) {
   };
 }
 
-async function fetchFmpNasdaqUniverse() {
-  if (!FMP_API_KEY) {
-    throw new Error("FMP_API_KEY is missing");
-  }
-
+async function fetchYahooBatchQuote(symbols) {
   const url =
-    "https://financialmodelingprep.com/stable/company-screener" +
-    `?exchange=NASDAQ` +
-    `&isEtf=false` +
-    `&isFund=false` +
-    `&marketCapMoreThan=0` +
-    `&limit=10000` +
-    `&apikey=${encodeURIComponent(FMP_API_KEY)}`;
-
+    "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" +
+    encodeURIComponent(symbols.join(","));
   const json = await fetchJson(url);
-  const rows = Array.isArray(json) ? json : [];
-
-  if (!rows.length) {
-    throw new Error("NASDAQ screener output is empty");
-  }
-
-  return rows;
+  return Array.isArray(json?.quoteResponse?.result)
+    ? json.quoteResponse.result
+    : [];
 }
 
-async function fetchFmpBatchQuote(symbols) {
-  if (!FMP_API_KEY) {
-    throw new Error("FMP_API_KEY is missing");
-  }
+function normalizeYahooNasdaqRow(baseItem, quote, usdKrw) {
+  const marketCapUSD =
+    toNumber(quote?.marketCap) ??
+    toNumber(quote?.regularMarketCap) ??
+    null;
 
-  const groups = chunk(symbols, 50);
-  const settled = await Promise.allSettled(
-    groups.map(async (group) => {
-      const url =
-        "https://financialmodelingprep.com/stable/batch-quote" +
-        `?symbols=${encodeURIComponent(group.join(","))}` +
-        `&apikey=${encodeURIComponent(FMP_API_KEY)}`;
-      const json = await fetchJson(url);
-      return Array.isArray(json) ? json : [];
-    })
-  );
+  const priceUSD =
+    toNumber(quote?.regularMarketPrice) ??
+    toNumber(quote?.postMarketPrice) ??
+    toNumber(quote?.preMarketPrice) ??
+    toNumber(quote?.regularMarketPreviousClose) ??
+    null;
 
-  const rows = [];
-  for (const item of settled) {
-    if (item.status === "fulfilled") {
-      rows.push(...item.value);
-    }
-  }
-  return rows;
-}
-
-async function fetchFmpProfileBulk(symbols) {
-  if (!FMP_API_KEY || !symbols.length) {
-    return [];
-  }
-
-  const groups = chunk(symbols, 50);
-  const settled = await Promise.allSettled(
-    groups.map(async (group) => {
-      const url =
-        "https://financialmodelingprep.com/stable/profile-bulk" +
-        `?symbols=${encodeURIComponent(group.join(","))}` +
-        `&apikey=${encodeURIComponent(FMP_API_KEY)}`;
-      const json = await fetchJson(url);
-      return Array.isArray(json) ? json : [];
-    })
-  );
-
-  const rows = [];
-  for (const item of settled) {
-    if (item.status === "fulfilled") {
-      rows.push(...item.value);
-    }
-  }
-  return rows;
-}
-
-function normalizeNasdaqScreenerRow(row) {
-  const symbol = String(row?.symbol || "").toUpperCase().trim();
-  const capUSD = toNumber(row?.marketCap);
-  if (!symbol || capUSD == null || capUSD <= 0) return null;
+  const changePct =
+    toNumber(quote?.regularMarketChangePercent) ??
+    toNumber(quote?.postMarketChangePercent) ??
+    toNumber(quote?.preMarketChangePercent) ??
+    null;
 
   return {
-    symbol,
-    capUSD,
-    name: String(row?.companyName || row?.name || symbol).trim(),
-    displayNameEN: String(row?.companyName || row?.name || symbol).trim(),
-    iconUrl: row?.image || buildLogo(pickStockDomain(symbol)),
+    rank: baseItem.rank,
+    name:
+      String(quote?.shortName || "").trim() ||
+      baseItem.name,
+    displayNameEN:
+      String(quote?.longName || quote?.shortName || "").trim() ||
+      baseItem.displayNameEN,
+    symbol: baseItem.symbol,
+    iconUrl: buildLogo(baseItem.domain || pickStockDomain(baseItem.symbol)),
+    capKRW: marketCapUSD != null ? Math.round(marketCapUSD * usdKrw) : null,
+    priceKRW: priceUSD != null ? Number((priceUSD * usdKrw).toFixed(2)) : null,
+    changePct,
   };
-}
-
-async function ensureNasdaqProfiles(symbols) {
-  const bucket = getCacheBucket("NASDAQ");
-  const now = Date.now();
-  const needsRefresh = now - bucket.profileAt >= PROFILE_TTL_MS;
-  const missingAny = symbols.some((symbol) => !bucket.profileMap.has(symbol));
-
-  if (!needsRefresh && !missingAny) {
-    return bucket.profileMap;
-  }
-
-  const profileRows = await fetchFmpProfileBulk(symbols);
-  const nextMap = new Map(bucket.profileMap);
-
-  for (const row of profileRows) {
-    const symbol = String(row?.symbol || "").toUpperCase().trim();
-    if (!symbol) continue;
-    nextMap.set(symbol, {
-      name: String(row?.companyName || row?.name || symbol).trim(),
-      displayNameEN: String(row?.companyName || row?.name || symbol).trim(),
-      iconUrl:
-        String(row?.image || row?.logo || "").trim() ||
-        buildLogo(pickStockDomain(symbol)),
-    });
-  }
-
-  bucket.profileMap = nextMap;
-  bucket.profileAt = now;
-  return bucket.profileMap;
 }
 
 async function buildKospiRankSnapshot() {
@@ -655,38 +772,14 @@ async function buildKospiRankSnapshot() {
 }
 
 async function buildNasdaqRankSnapshot() {
-  const rows = await fetchFmpNasdaqUniverse();
-
-  const normalized = rows
-    .map(normalizeNasdaqScreenerRow)
-    .filter(Boolean)
-    .sort((a, b) => (b.capUSD ?? 0) - (a.capUSD ?? 0))
-    .slice(0, 30)
-    .map((item, index) => ({
-      ...item,
-      rank: index + 1,
-    }));
-
-  if (!normalized.length) {
-    throw new Error("NASDAQ top30 normalization failed");
-  }
-
-  const profileMap = await ensureNasdaqProfiles(
-    normalized.map((item) => item.symbol)
-  );
-
-  return normalized.map((item) => {
-    const profile = profileMap.get(item.symbol);
-    return {
-      ...item,
-      name: profile?.name || item.name,
-      displayNameEN: profile?.displayNameEN || item.displayNameEN || item.name,
-      iconUrl:
-        profile?.iconUrl ||
-        item.iconUrl ||
-        buildLogo(pickStockDomain(item.symbol)),
-    };
-  });
+  return NASDAQ_FIXED_TOP30.map((item) => ({
+    rank: item.rank,
+    symbol: item.symbol,
+    name: item.name,
+    displayNameEN: item.displayNameEN,
+    iconUrl: buildLogo(item.domain),
+    domain: item.domain,
+  }));
 }
 
 async function ensureRankSnapshot(market) {
@@ -708,7 +801,7 @@ async function ensureRankSnapshot(market) {
 
   bucket.rankAt = now;
   bucket.rankedItems = rankedItems;
-  return bucket.rankedItems;
+  return rankedItems;
 }
 
 async function buildPriceSnapshot(rankedItems, market) {
@@ -727,34 +820,16 @@ async function buildPriceSnapshot(rankedItems, market) {
 
   const bucket = getCacheBucket(market);
   const usdKrw = await getUsdKrwCached(bucket);
-  const quoteRows = await fetchFmpBatchQuote(rankedItems.map((item) => item.symbol));
+  const quoteRows = await fetchYahooBatchQuote(
+    rankedItems.map((item) => item.symbol)
+  );
   const quoteMap = new Map(
-    quoteRows.map((q) => [String(q.symbol || "").toUpperCase(), q])
+    quoteRows.map((row) => [String(row?.symbol || "").toUpperCase(), row])
   );
 
-  return rankedItems.map((item) => {
-    const quote = quoteMap.get(item.symbol) || {};
-    const price =
-      toNumber(quote?.price) ??
-      toNumber(quote?.previousClose) ??
-      toNumber(quote?.dayLow) ??
-      null;
-    const changePct =
-      toNumber(quote?.changesPercentage) ??
-      toNumber(quote?.changePercentage) ??
-      null;
-
-    return {
-      rank: item.rank,
-      name: item.name,
-      displayNameEN: item.displayNameEN,
-      symbol: item.symbol,
-      iconUrl: item.iconUrl || buildLogo(pickStockDomain(item.symbol)),
-      capKRW: item.capUSD != null ? Math.round(item.capUSD * usdKrw) : null,
-      priceKRW: price != null ? Number((price * usdKrw).toFixed(2)) : null,
-      changePct,
-    };
-  });
+  return rankedItems.map((item) =>
+    normalizeYahooNasdaqRow(item, quoteMap.get(item.symbol) || {}, usdKrw)
+  );
 }
 
 async function ensurePriceSnapshot(market) {
@@ -774,7 +849,7 @@ async function ensurePriceSnapshot(market) {
 
   bucket.priceAt = now;
   bucket.pricedItems = pricedItems;
-  return bucket.pricedItems;
+  return pricedItems;
 }
 
 export default async function handler(req, res) {
@@ -797,6 +872,10 @@ export default async function handler(req, res) {
       priceUpdatedAt: bucket.priceAt || null,
       rankRefreshHours: 6,
       priceRefreshSeconds: 20,
+      mode:
+        market === "NASDAQ"
+          ? "fixed-top30-yahoo-live-quotes"
+          : "live-market-cap-ranking",
     });
   } catch (error) {
     const bucket = getCacheBucket(market);
@@ -811,6 +890,10 @@ export default async function handler(req, res) {
       rankRefreshHours: 6,
       priceRefreshSeconds: 20,
       error: String(error?.message || error),
+      mode:
+        market === "NASDAQ"
+          ? "fixed-top30-yahoo-live-quotes"
+          : "live-market-cap-ranking",
     });
   }
 }
