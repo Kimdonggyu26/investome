@@ -101,7 +101,7 @@ export default function BoardWritePage() {
                   <input
                     type="text"
                     value={form.title}
-                    placeholder="제목을 입력해줘"
+                    placeholder="제목을 입력해 주세요."
                     onChange={(e) => updateField("title", e.target.value)}
                   />
                 </label>
