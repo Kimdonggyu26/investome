@@ -5,6 +5,7 @@ import MyPortfolio from "../components/MyPortfolio";
 import WatchlistPanel from "../components/WatchlistPanel";
 import { useTicker } from "../hooks/useTicker";
 import "../styles/MyPage.css";
+import { isLoggedIn as getIsLoggedIn } from "../utils/auth";
 
 function MyPagePreviewMock() {
   return (
@@ -270,7 +271,7 @@ function MyPageGuestView() {
 
 export default function MyPage() {
   const { prices, changes, loading, error } = useTicker();
-  const isLoggedIn = localStorage.getItem("investome_logged_in") === "true";
+  const isLoggedIn = getIsLoggedIn();
 
   return (
     <>

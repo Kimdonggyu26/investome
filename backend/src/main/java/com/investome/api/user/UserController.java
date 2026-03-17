@@ -11,12 +11,13 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public User signup(@RequestBody SignupRequest request) {
-        return userService.signup(
+    public String signup(@RequestBody SignupRequest request) {
+        userService.signup(
                 request.getEmail(),
                 request.getPassword(),
                 request.getNickname()
         );
+        return "회원가입 성공";
     }
 
     @PostMapping("/login")

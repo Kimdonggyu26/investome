@@ -76,6 +76,7 @@ export default function AuthPage() {
 
         localStorage.setItem("accessToken", data.accessToken);
         localStorage.setItem("investome_user", JSON.stringify(data));
+        localStorage.setItem("investome_logged_in", "true");
         localStorage.setItem(
           "investome_keep_login",
           keepLogin ? "true" : "false"
@@ -108,14 +109,15 @@ export default function AuthPage() {
       });
 
       if (!res.ok) {
-        throw new Error("회원가입 실패");
+        const message = await res.text();
+        throw new Error(message || "회원가입 실패");
       }
 
       alert("회원가입 성공! 로그인 해주세요.");
       navigate("/login");
-    } catch (err) {
-      alert("회원가입 실패 (이미 존재하는 이메일/닉네임일 수 있음)");
-    }
+      } catch (err) {
+        alert(err.message || "회원가입 실패");
+      }
   }
 
   return (
