@@ -67,7 +67,7 @@ export default function NewsPage() {
                     letterSpacing: "-1px",
                   }}
                 >
-                  경제 · 증시 · 코인 한눈에보는 뉴스룸
+                  경제 · 증시 · 코인 뉴스룸
                 </h1>
 
                 <p
@@ -79,7 +79,7 @@ export default function NewsPage() {
                     maxWidth: 760,
                   }}
                 >
-                  오늘의 최신 뉴스를 카테고리별로 빠르게 훑고, 클릭하여 원문 기사까지 확인해보세요!
+                  오늘의 최신 뉴스를 카테고리별로 빠르게 훑고, 클릭하여 원문 기사까지 확인해 보세요!
                 </p>
               </div>
 

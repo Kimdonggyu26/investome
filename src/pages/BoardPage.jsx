@@ -96,7 +96,7 @@ export default function BoardPage() {
               <div className="boardEyebrow">COMMUNITY BOARD</div>
               <h1 className="boardTitle">게시판</h1>
               <p className="boardDesc">
-                시장 이야기, 종목 토론, 관점 공유를 자유롭게 올릴 수 있는 커뮤니티 공간이야.
+                시장 이야기, 종목 토론, 관점 공유를 자유롭게 나눠 보세요 !
               </p>
             </div>
 

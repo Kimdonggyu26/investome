@@ -445,7 +445,7 @@ export default function RankingTable() {
       )}
 
       <div className="rankingHint">
-        실제 데이터 갱신 주기와 카운트다운이 맞물리도록 동작해요.
+        각 종목을 클릭하여 상세페이지로 이동해 보세요.
       </div>
     </div>
   );

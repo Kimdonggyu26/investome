@@ -61,13 +61,13 @@ export default function BoardDetailPage() {
     setCommentError("");
 
     if (!commentForm.content.trim()) {
-      setCommentError("댓글 내용을 입력해줘.");
+      setCommentError("내용을 입력해 주세요.");
       return;
     }
 
     const nextPost = addBoardComment(postId, commentForm);
     if (!nextPost) {
-      setCommentError("댓글 등록 중 오류가 발생했어.");
+      setCommentError("댓글 등록 중 오류가 발생 했습니다. 다시 시도해 주세요.");
       return;
     }
 
@@ -171,7 +171,7 @@ export default function BoardDetailPage() {
               </div>
 
               <textarea
-                placeholder="댓글을 입력해줘"
+                placeholder="댓글을 입력해 주세요."
                 value={commentForm.content}
                 onChange={(e) =>
                   setCommentForm((prev) => ({ ...prev, content: e.target.value }))
@@ -189,7 +189,7 @@ export default function BoardDetailPage() {
 
             <div className="boardCommentList">
               {(post.comments || []).length === 0 ? (
-                <div className="boardCommentEmpty">첫 댓글을 남겨봐.</div>
+                <div className="boardCommentEmpty">아직 댓글이 없는 게시글이에요.</div>
               ) : (
                 [...post.comments].reverse().map((comment) => (
                   <div className="boardCommentItem" key={comment.id}>

@@ -30,17 +30,17 @@ export default function BoardWritePage() {
       setSubmitError("");
 
       if (!form.title.trim()) {
-        throw new Error("제목을 입력해줘.");
+        throw new Error("제목을 입력해 주세요.");
       }
 
       if (!form.content.trim()) {
-        throw new Error("내용을 입력해줘.");
+        throw new Error("내용을 입력해 주세요.");
       }
 
       createBoardPost(form);
       navigate("/board");
     } catch (err) {
-      setSubmitError(err.message || "글 등록 중 오류가 발생했어.");
+      setSubmitError(err.message || "글 등록 중 오류가 발생했습니다. 다시 시도해 주세요.");
     }
   }
 
@@ -110,7 +110,7 @@ export default function BoardWritePage() {
                   <span>내용</span>
                   <textarea
                     value={form.content}
-                    placeholder="시장 의견, 종목 관점, 매매 복기 등을 자유롭게 적어줘"
+                    placeholder="내용을 입력해 주세요."
                     onChange={(e) => updateField("content", e.target.value)}
                   />
                 </label>

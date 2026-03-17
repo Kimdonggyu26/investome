@@ -218,12 +218,6 @@ function MyPageGuestView() {
 
         <h1 className="mypageGuestTitle">로그인 후 이용해주세요</h1>
 
-        <p className="mypageGuestDesc">
-          Investome의 마이페이지에서는
-          <br />
-          보유 종목 관리, 자산 비중 확인, 포트폴리오 흐름 확인 기능을 사용할 수 있어요.
-        </p>
-
         <div className="mypageGuestFeatureRow">
           <div className="mypageGuestFeature">
             <strong>보유 종목 관리</strong>
