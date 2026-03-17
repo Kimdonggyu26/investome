@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
 import { useTicker } from "../hooks/useTicker";
@@ -8,16 +8,12 @@ import "../styles/AuthPage.css";
 function validateSignup({ nickname, email, password, passwordConfirm }) {
   return {
     nickname:
-      nickname.trim().length >= 2
-        ? ""
-        : "닉네임은 2자 이상 입력해주세요.",
+      nickname.trim().length >= 2 ? "" : "닉네임은 2자 이상 입력해주세요.",
     email: /\S+@\S+\.\S+/.test(email)
       ? ""
       : "올바른 이메일 형식을 입력해주세요.",
     password:
-      password.length >= 8
-        ? ""
-        : "비밀번호는 8자 이상 입력해주세요.",
+      password.length >= 8 ? "" : "비밀번호는 8자 이상 입력해주세요.",
     passwordConfirm:
       password === passwordConfirm
         ? ""
@@ -25,15 +21,12 @@ function validateSignup({ nickname, email, password, passwordConfirm }) {
   };
 }
 
-export default function AuthPage({ mode = "login" }) {
+export default function AuthPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isLogin = location.pathname === "/login";
+
   const { prices, changes, loading, error } = useTicker();
-
-  const isLogin = mode === "login";
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
-  const [keepLogin, setKeepLogin] = useState(true);
 
   const [form, setForm] = useState({
     nickname: "",
@@ -42,34 +35,57 @@ export default function AuthPage({ mode = "login" }) {
     passwordConfirm: "",
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [keepLogin, setKeepLogin] = useState(false);
+
   const signupErrors = useMemo(() => validateSignup(form), [form]);
 
   const isSignupValid = useMemo(() => {
-    return Object.values(signupErrors).every((v) => !v);
+    return Object.values(signupErrors).every((value) => value === "");
   }, [signupErrors]);
 
-  function updateField(key, value) {
-    setForm((prev) => ({ ...prev, [key]: value }));
+  function updateField(field, value) {
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     if (isLogin) {
-      const mockUser = {
-        nickname: "코직",
-        email: form.email || "example@email.com",
-      };
+      try {
+        const res = await fetch("http://localhost:8080/api/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: form.email,
+            password: form.password,
+          }),
+        });
 
-      localStorage.setItem("investome_logged_in", "true");
-      localStorage.setItem("investome_user", JSON.stringify(mockUser));
-      localStorage.setItem(
-        "investome_keep_login",
-        keepLogin ? "true" : "false"
-      );
+        if (!res.ok) {
+          throw new Error("로그인 실패");
+        }
 
-      window.dispatchEvent(new Event("investome-auth-changed"));
-      navigate("/mypage");
+        const data = await res.json();
+
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("investome_user", JSON.stringify(data));
+        localStorage.setItem(
+          "investome_keep_login",
+          keepLogin ? "true" : "false"
+        );
+
+        window.dispatchEvent(new Event("investome-auth-changed"));
+        navigate("/mypage");
+      } catch (err) {
+        alert("이메일 또는 비밀번호가 틀렸습니다.");
+      }
       return;
     }
 
@@ -78,8 +94,28 @@ export default function AuthPage({ mode = "login" }) {
       return;
     }
 
-    alert("회원가입 UI 검증까지 완료했어요. 실제 가입 기능은 추후 백엔드 연결 예정입니다.");
-    navigate("/login");
+    try {
+      const res = await fetch("http://localhost:8080/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+          nickname: form.nickname,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("회원가입 실패");
+      }
+
+      alert("회원가입 성공! 로그인 해주세요.");
+      navigate("/login");
+    } catch (err) {
+      alert("회원가입 실패 (이미 존재하는 이메일/닉네임일 수 있음)");
+    }
   }
 
   return (
@@ -96,32 +132,28 @@ export default function AuthPage({ mode = "login" }) {
         <div className="authSingleWrap">
           <section className="authCard authCardSingle">
             <div className="authTopArea">
-                <div className="authTabRowWrap">
-                    <div className="authTabRow">
-                    <Link
-                        to="/login"
-                        className={`authTab ${isLogin ? "active" : ""}`}
-                    >
-                        로그인
-                    </Link>
-                    <Link
-                        to="/signup"
-                        className={`authTab ${!isLogin ? "active" : ""}`}
-                    >
-                        회원가입
-                    </Link>
-                    </div>
-
-                    <div className="authSignupHint">
-                        10초면 돼요!
-                    </div>
+              <div className="authTabRowWrap">
+                <div className="authTabRow">
+                  <Link
+                    to="/login"
+                    className={`authTab ${isLogin ? "active" : ""}`}
+                  >
+                    로그인
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className={`authTab ${!isLogin ? "active" : ""}`}
+                  >
+                    회원가입
+                  </Link>
                 </div>
+
+                <div className="authSignupHint">10초면 돼요!</div>
+              </div>
             </div>
 
             <div className="authCardHeader">
-              <h1 className="authTitle">
-                {isLogin ? "로그인" : "회원가입"}
-              </h1>
+              <h1 className="authTitle">{isLogin ? "로그인" : "회원가입"}</h1>
               <p className="authSub">
                 {isLogin
                   ? "계정으로 로그인해서 관심종목, 포트폴리오, 게시판 활동을 관리해보세요."
@@ -140,7 +172,9 @@ export default function AuthPage({ mode = "login" }) {
                     onChange={(e) => updateField("nickname", e.target.value)}
                   />
                   {form.nickname && signupErrors.nickname && (
-                    <div className="authFieldError">{signupErrors.nickname}</div>
+                    <div className="authFieldError">
+                      {signupErrors.nickname}
+                    </div>
                   )}
                 </div>
               )}
@@ -195,9 +229,7 @@ export default function AuthPage({ mode = "login" }) {
                     <button
                       type="button"
                       className="authToggleBtn"
-                      onClick={() =>
-                        setShowPasswordConfirm((prev) => !prev)
-                      }
+                      onClick={() => setShowPasswordConfirm((prev) => !prev)}
                     >
                       {showPasswordConfirm ? "숨김" : "보기"}
                     </button>

@@ -1,0 +1,21 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/investome
+    username: postgres
+    password: 6894
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  jackson:
+    time-zone: Asia/Seoul
+
+jwt:
+  secret: investome-secret-key-investome-secret-key-1234567890
+  access-token-expiration-ms: 86400000
