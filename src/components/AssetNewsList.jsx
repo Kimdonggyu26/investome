@@ -14,8 +14,89 @@ function formatDate(dateStr) {
   return `${y}.${m}.${day} ${hh}:${mm}`;
 }
 
+function getAssetFilters(market, symbol, assetName) {
+  const upper = String(symbol || "").toUpperCase();
+
+  if (market === "COMMODITIES") {
+    const map = {
+      "GC=F": {
+        include: ["금", "금값", "금 선물", "gold", "xau"],
+        exclude: ["금성", "지금은", "이번엔", "현금", "입금", "송금"],
+      },
+      "SI=F": {
+        include: ["은", "은값", "은 선물", "silver", "xag"],
+        exclude: ["지금은", "은평", "은하", "은지원", "은퇴"],
+      },
+      "CL=F": {
+        include: ["wti", "국제유가", "원유", "crude oil"],
+        exclude: [],
+      },
+      "BZ=F": {
+        include: ["브렌트", "brent"],
+        exclude: [],
+      },
+      "NG=F": {
+        include: ["천연가스", "natural gas", "henry hub"],
+        exclude: [],
+      },
+      "PL=F": {
+        include: ["백금", "platinum"],
+        exclude: [],
+      },
+      "PA=F": {
+        include: ["팔라듐", "palladium"],
+        exclude: [],
+      },
+    };
+
+    return map[upper] || {
+      include: [String(assetName || "").toLowerCase()],
+      exclude: [],
+    };
+  }
+
+  if (market === "CRYPTO") {
+    const map = {
+      BTC: { include: ["비트코인", "bitcoin", "btc"], exclude: [] },
+      ETH: { include: ["이더리움", "ethereum", "eth"], exclude: [] },
+      XRP: { include: ["리플", "xrp"], exclude: [] },
+      SOL: { include: ["솔라나", "solana", "sol"], exclude: [] },
+      DOGE: { include: ["도지", "dogecoin", "doge"], exclude: [] },
+    };
+
+    return map[upper] || {
+      include: [String(assetName || "").toLowerCase(), upper.toLowerCase()],
+      exclude: [],
+    };
+  }
+
+  return {
+    include: [
+      String(assetName || "").toLowerCase(),
+      upper.toLowerCase(),
+    ].filter(Boolean),
+    exclude: [],
+  };
+}
+
+function isRelevantNews(item, filters) {
+  const text = `${item.title || ""} ${item.description || ""}`.toLowerCase();
+
+  const hasInclude = filters.include.some((keyword) =>
+    text.includes(String(keyword).toLowerCase())
+  );
+
+  const hasExclude = filters.exclude.some((keyword) =>
+    text.includes(String(keyword).toLowerCase())
+  );
+
+  return hasInclude && !hasExclude;
+}
+
 export default function AssetNewsList({
   assetName,
+  market,
+  symbol,
   query,
   limit = 8,
 }) {
@@ -23,16 +104,27 @@ export default function AssetNewsList({
   const [err, setErr] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const filters = useMemo(
+    () => getAssetFilters(market, symbol, assetName),
+    [market, symbol, assetName]
+  );
+
   useEffect(() => {
     let alive = true;
 
     setLoading(true);
     setErr(null);
 
-    fetchNews({ q: query, limit })
+    fetchNews({ q: query, limit: Math.max(limit * 3, 18) })
       .then((data) => {
         if (!alive) return;
-        setItems(data);
+
+        const filtered = data
+          .filter((item) => isRelevantNews(item, filters))
+          .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))
+          .slice(0, limit);
+
+        setItems(filtered);
         setLoading(false);
       })
       .catch((e) => {
@@ -44,7 +136,7 @@ export default function AssetNewsList({
     return () => {
       alive = false;
     };
-  }, [query, limit]);
+  }, [query, limit, filters]);
 
   const view = useMemo(() => {
     return [...items].sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));

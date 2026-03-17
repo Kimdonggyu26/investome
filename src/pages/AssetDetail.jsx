@@ -150,29 +150,34 @@ function getTradingViewPageUrl(market, symbol) {
 
 /* ⭐ 뉴스 검색어 */
 function getNewsQuery({ market, symbol, name, displayNameEN }) {
+  const upper = String(symbol || "").toUpperCase();
+
   if (market === "CRYPTO") {
-    if (symbol === "BTC") return "비트코인 OR Bitcoin OR BTC";
-    if (symbol === "ETH") return "이더리움 OR Ethereum OR ETH";
-    if (symbol === "XRP") return "리플 OR XRP";
-    return `${name || symbol} OR ${displayNameEN || symbol} OR ${symbol}`;
+    if (upper === "BTC") return `"비트코인" OR "Bitcoin" OR "BTC"`;
+    if (upper === "ETH") return `"이더리움" OR "Ethereum" OR "ETH"`;
+    if (upper === "XRP") return `"리플" OR "XRP"`;
+    return `"${name || symbol}" OR "${displayNameEN || symbol}" OR "${symbol}"`;
   }
 
   if (market === "COMMODITIES") {
     const map = {
-      "GC=F": "금 OR Gold",
-      "SI=F": "은 OR Silver",
-      "CL=F": "WTI OR 국제유가 OR Crude Oil",
-      "BZ=F": "Brent OR 브렌트유",
-      "NG=F": "천연가스 OR Natural Gas",
-      "PL=F": "백금 OR Platinum",
-      "PA=F": "팔라듐 OR Palladium",
+      "GC=F": `"국제 금값" OR "금 선물" OR "gold futures" OR "gold price" OR "XAUUSD"`,
+      "SI=F": `"국제 은값" OR "은 선물" OR "silver futures" OR "silver price" OR "XAGUSD"`,
+      "CL=F": `"WTI" OR "서부텍사스원유" OR "국제유가" OR "crude oil"`,
+      "BZ=F": `"브렌트유" OR "Brent oil" OR "Brent crude"`,
+      "NG=F": `"천연가스" OR "natural gas" OR "Henry Hub gas"`,
+      "PL=F": `"백금" OR "platinum price" OR "platinum futures"`,
+      "PA=F": `"팔라듐" OR "palladium price" OR "palladium futures"`,
     };
 
-    return map[String(symbol || "").toUpperCase()] || `${name || symbol}`;
+    return map[upper] || `"${name || symbol}"`;
   }
 
-  const base = [name, displayNameEN, symbol].filter(Boolean).join(" OR ");
-  return base || symbol;
+  const names = [name, displayNameEN, symbol]
+    .filter(Boolean)
+    .map((v) => `"${v}"`);
+
+  return names.join(" OR ");
 }
 
 function getFallbackAsset(market, symbol) {
@@ -558,7 +563,13 @@ export default function AssetDetail() {
             </section>
 
             <section className="assetBottomGrid">
-              <AssetNewsList assetName={asset.name} query={newsQuery} limit={8} />
+              <AssetNewsList
+                assetName={asset.name}
+                market={market}
+                symbol={symbol}
+                query={newsQuery}
+                limit={8}
+              />
 
               <AssetCommunity
                 market={market}

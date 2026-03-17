@@ -197,9 +197,6 @@ export default function NewsList({
         )}
       </div>
 
-      <div className="newsDesc newsDescBottom">
-        카테고리별 최신 뉴스와 많이 보는 이슈를 빠르게 확인해보세요.
-      </div>
 
       {err && <div className="muted">뉴스를 불러오지 못했어요.</div>}
 
@@ -256,6 +253,12 @@ export default function NewsList({
           )}
         </div>
       )}
+
+      
+      <div className="newsDesc newsDescBottom">
+        카테고리별 최신 뉴스와 많이 보는 이슈를 빠르게 확인해보세요.
+      </div>
+      
     </div>
   );
 }

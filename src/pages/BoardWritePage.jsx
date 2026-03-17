@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
 import { useTicker } from "../hooks/useTicker";
@@ -7,59 +7,22 @@ import { createBoardPost } from "../utils/boardStorage";
 import { getAuthNickname, isLoggedIn } from "../utils/auth";
 import "../styles/BoardWritePage.css";
 
-const MAX_IMAGE_WIDTH = 1400;
-const MAX_IMAGE_HEIGHT = 1400;
-const IMAGE_QUALITY = 0.82;
-
 function readFileAsDataURL(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error("이미지를 읽지 못했어요."));
+    reader.onerror = () => reject(new Error("이미지를 불러오지 못했어요."));
     reader.readAsDataURL(file);
   });
-}
-
-function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error("이미지 미리보기를 불러오지 못했어요."));
-    img.src = src;
-  });
-}
-
-async function compressImage(file) {
-  const dataUrl = await readFileAsDataURL(file);
-  const img = await loadImage(dataUrl);
-
-  let { width, height } = img;
-  const ratio = Math.min(
-    1,
-    MAX_IMAGE_WIDTH / width,
-    MAX_IMAGE_HEIGHT / height
-  );
-
-  width = Math.max(1, Math.round(width * ratio));
-  height = Math.max(1, Math.round(height * ratio));
-
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return dataUrl;
-
-  ctx.drawImage(img, 0, 0, width, height);
-  return canvas.toDataURL("image/jpeg", IMAGE_QUALITY);
 }
 
 export default function BoardWritePage() {
   const navigate = useNavigate();
   const { prices, changes, loading, error } = useTicker();
+  const fileInputRef = useRef(null);
 
-  const loggedIn = useMemo(() => isLoggedIn(), []);
-  const nickname = useMemo(() => getAuthNickname("사용자"), []);
+  const loggedIn = isLoggedIn();
+  const nickname = getAuthNickname("사용자");
 
   const [form, setForm] = useState({
     category: "free",
@@ -68,36 +31,26 @@ export default function BoardWritePage() {
     imageData: "",
     imageName: "",
   });
-  const [isUploading, setIsUploading] = useState(false);
-  const [submitError, setSubmitError] = useState("");
 
-  useEffect(() => {
-    if (!loggedIn) {
-      setSubmitError("게시글 작성은 로그인 후 이용할 수 있어요.");
-    }
-  }, [loggedIn]);
+  const [submitError, setSubmitError] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
 
   function updateField(key, value) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  async function handleImageChange(e) {
-    const file = e.target.files?.[0];
-    if (!file) {
-      setForm((prev) => ({ ...prev, imageData: "", imageName: "" }));
-      return;
-    }
+  async function handleFile(file) {
+    if (!file) return;
 
     if (!file.type.startsWith("image/")) {
       setSubmitError("이미지 파일만 업로드할 수 있어요.");
-      e.target.value = "";
       return;
     }
 
     try {
       setSubmitError("");
-      setIsUploading(true);
-      const imageData = await compressImage(file);
+      const imageData = await readFileAsDataURL(file);
+
       setForm((prev) => ({
         ...prev,
         imageData,
@@ -105,13 +58,21 @@ export default function BoardWritePage() {
       }));
     } catch (err) {
       setSubmitError(err.message || "이미지 업로드 중 오류가 발생했어요.");
-    } finally {
-      setIsUploading(false);
     }
   }
 
-  function handleRemoveImage() {
-    setForm((prev) => ({ ...prev, imageData: "", imageName: "" }));
+  function handleInputFileChange(e) {
+    const file = e.target.files?.[0];
+    handleFile(file);
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+    handleFile(file);
   }
 
   function handleSubmit(e) {
@@ -121,7 +82,7 @@ export default function BoardWritePage() {
       setSubmitError("");
 
       if (!loggedIn) {
-        throw new Error("게시글 작성은 로그인 후 이용할 수 있어요.");
+        throw new Error("로그인 후 게시글을 작성할 수 있어요.");
       }
 
       if (!form.title.trim()) {
@@ -133,14 +94,59 @@ export default function BoardWritePage() {
       }
 
       createBoardPost({
-        ...form,
-        author: nickname,
         category: "free",
+        title: form.title,
+        content: form.content,
+        author: nickname,
+        imageData: form.imageData,
+        imageName: form.imageName,
       });
+
       navigate("/board");
     } catch (err) {
-      setSubmitError(err.message || "글 등록 중 오류가 발생했습니다. 다시 시도해 주세요.");
+      setSubmitError(err.message || "글 등록 중 오류가 발생했습니다.");
     }
+  }
+
+  if (!loggedIn) {
+    return (
+      <>
+        <TopTickerBar
+          prices={prices}
+          changes={changes}
+          loading={loading}
+          error={error}
+        />
+        <Header />
+
+        <main className="boardWritePage">
+          <div className="container">
+            <section className="boardWriteLockedCard">
+              <div className="boardWriteLockedBadge">MEMBERS ONLY</div>
+              <h1 className="boardWriteLockedTitle">로그인 후 게시글 작성이 가능해요</h1>
+              <p className="boardWriteLockedText">
+                게시글 작성, 사진 업로드, 댓글 기능은
+                <br />
+                로그인한 사용자만 이용할 수 있어요.
+              </p>
+
+              <div className="boardWriteLockedActions">
+                <Link to="/login" className="boardWriteSubmitBtn">
+                  로그인하러 가기
+                </Link>
+                <button
+                  type="button"
+                  className="boardWriteGhostBtn"
+                  onClick={() => navigate("/board")}
+                >
+                  게시판으로
+                </button>
+              </div>
+            </section>
+          </div>
+        </main>
+      </>
+    );
   }
 
   return (
@@ -180,12 +186,7 @@ export default function BoardWritePage() {
 
                 <label>
                   <span>작성자</span>
-                  <input
-                    type="text"
-                    value={nickname}
-                    disabled
-                    placeholder="로그인한 닉네임이 자동으로 들어가요"
-                  />
+                  <input type="text" value={nickname} disabled />
                 </label>
 
                 <label className="full">
@@ -195,7 +196,6 @@ export default function BoardWritePage() {
                     value={form.title}
                     placeholder="제목을 입력해 주세요."
                     onChange={(e) => updateField("title", e.target.value)}
-                    maxLength={120}
                   />
                 </label>
 
@@ -208,26 +208,62 @@ export default function BoardWritePage() {
                   />
                 </label>
 
-                <label className="full">
-                  <span>사진 업로드</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                  />
-                  <div className="boardWriteHint">
-                    {isUploading
-                      ? "이미지를 최적화하는 중이에요..."
-                      : "현재는 1장만 업로드되며, 프론트 기준으로 저장돼요."}
+                <div className="full">
+                  <span className="boardWriteFieldLabel">사진 업로드</span>
+
+                  <div
+                    className={`boardDropZone ${isDragging ? "isDragging" : ""}`}
+                    onDragEnter={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsDragging(true);
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsDragging(true);
+                    }}
+                    onDragLeave={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsDragging(false);
+                    }}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleInputFileChange}
+                      hidden
+                    />
+
+                    <div className="boardDropZoneIcon">＋</div>
+                    <div className="boardDropZoneTitle">
+                      클릭하거나 드래그해서 이미지를 올려보세요
+                    </div>
+                    <div className="boardDropZoneSub">
+                      JPG, PNG, WEBP 업로드 가능
+                    </div>
                   </div>
-                </label>
+                </div>
 
                 {form.imageData ? (
                   <div className="boardWriteImagePreview full">
-                    <img src={form.imageData} alt={form.imageName || "업로드 미리보기"} />
+                    <img src={form.imageData} alt={form.imageName || "업로드 이미지"} />
                     <div className="boardWriteImageMeta">
-                      <span>{form.imageName || "업로드 이미지"}</span>
-                      <button type="button" onClick={handleRemoveImage}>
+                      <span>{form.imageName}</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setForm((prev) => ({
+                            ...prev,
+                            imageData: "",
+                            imageName: "",
+                          }))
+                        }
+                      >
                         삭제
                       </button>
                     </div>
@@ -239,15 +275,6 @@ export default function BoardWritePage() {
                 <div className="boardWriteError">{submitError}</div>
               ) : null}
 
-              {!loggedIn ? (
-                <div className="boardWriteLoginGuide">
-                  로그인 후 게시글을 작성할 수 있어요.
-                  <button type="button" onClick={() => navigate("/login")}>
-                    로그인하러 가기
-                  </button>
-                </div>
-              ) : null}
-
               <div className="boardWriteActions">
                 <button
                   type="button"
@@ -257,11 +284,7 @@ export default function BoardWritePage() {
                   취소
                 </button>
 
-                <button
-                  type="submit"
-                  className="boardWriteSubmitBtn"
-                  disabled={!loggedIn || isUploading}
-                >
+                <button type="submit" className="boardWriteSubmitBtn">
                   등록하기
                 </button>
               </div>

@@ -12,10 +12,11 @@ export function getAuthUser() {
   }
 }
 
-export function getAuthNickname(fallback = "사용자") {
-  return String(getAuthUser()?.nickname || fallback).trim() || fallback;
-}
-
 export function isLoggedIn() {
   return !!getAuthUser();
+}
+
+export function getAuthNickname(fallback = "사용자") {
+  const nick = getAuthUser()?.nickname;
+  return String(nick || fallback).trim() || fallback;
 }
