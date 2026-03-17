@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { getAuthNickname, isLoggedIn } from "../utils/auth";
 
 function formatTime(value) {
   const d = new Date(value);
@@ -13,28 +14,51 @@ function formatTime(value) {
   return `${y}.${m}.${day} ${hh}:${mm}`;
 }
 
+function isToday(value) {
+  const d = new Date(value);
+  const now = new Date();
+  if (Number.isNaN(d.getTime())) return false;
+
+  return (
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+  );
+}
+
+function getTodayComments(storageKey) {
+  try {
+    const saved = localStorage.getItem(storageKey);
+    const parsed = saved ? JSON.parse(saved) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item) => isToday(item.createdAt));
+  } catch {
+    return [];
+  }
+}
+
 export default function AssetCommunity({ market, symbol, assetName }) {
   const storageKey = useMemo(
     () => `investome-community-${market}-${symbol}`,
     [market, symbol]
   );
 
-  const [nickname, setNickname] = useState("");
+  const loggedIn = useMemo(() => isLoggedIn(), []);
+  const nickname = useMemo(() => getAuthNickname("사용자"), []);
+
   const [content, setContent] = useState("");
   const [comments, setComments] = useState([]);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      setComments(saved ? JSON.parse(saved) : []);
-    } catch {
-      setComments([]);
-    }
+    const next = getTodayComments(storageKey);
+    setComments(next);
+    localStorage.setItem(storageKey, JSON.stringify(next));
   }, [storageKey]);
 
   useEffect(() => {
     try {
-      localStorage.setItem(storageKey, JSON.stringify(comments));
+      const todayOnly = comments.filter((item) => isToday(item.createdAt));
+      localStorage.setItem(storageKey, JSON.stringify(todayOnly));
     } catch {
       // noop
     }
@@ -43,17 +67,19 @@ export default function AssetCommunity({ market, symbol, assetName }) {
   function handleSubmit(e) {
     e.preventDefault();
 
+    if (!loggedIn) return;
+
     const trimmed = content.trim();
     if (!trimmed) return;
 
     const next = {
       id: Date.now(),
-      nickname: nickname.trim() || "익명",
+      nickname,
       content: trimmed,
       createdAt: new Date().toISOString(),
     };
 
-    setComments((prev) => [next, ...prev]);
+    setComments((prev) => [next, ...prev.filter((item) => isToday(item.createdAt))]);
     setContent("");
   }
 
@@ -66,32 +92,37 @@ export default function AssetCommunity({ market, symbol, assetName }) {
         </div>
       </div>
 
-      <form className="communityForm" onSubmit={handleSubmit}>
-        <input
-          className="communityInput"
-          type="text"
-          placeholder="닉네임 (선택)"
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
-          maxLength={20}
-        />
+      {loggedIn ? (
+        <form className="communityForm" onSubmit={handleSubmit}>
+          <input
+            className="communityInput"
+            type="text"
+            value={nickname}
+            disabled
+            maxLength={20}
+          />
 
-        <textarea
-          className="communityTextarea"
-          placeholder={`${assetName}에 대한 의견을 남겨보세요`}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          maxLength={300}
-        />
+          <textarea
+            className="communityTextarea"
+            placeholder={`${assetName}에 대한 의견을 남겨보세요`}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            maxLength={300}
+          />
 
-        <button type="submit" className="btn primary communitySubmit">
-          등록
-        </button>
-      </form>
+          <button type="submit" className="btn primary communitySubmit">
+            등록
+          </button>
+        </form>
+      ) : (
+        <div className="communityLoginNotice">
+          로그인하면 {assetName} 커뮤니티에 글을 남길 수 있어요.
+        </div>
+      )}
 
-      <div className="communityList">
+      <div className="communityList communityListScrollable">
         {comments.length === 0 && (
-          <div className="assetEmpty">첫 댓글을 남겨보세요.</div>
+          <div className="assetEmpty">오늘 등록된 글이 아직 없어요.</div>
         )}
 
         {comments.map((item) => (

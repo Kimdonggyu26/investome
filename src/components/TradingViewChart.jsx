@@ -3,10 +3,10 @@ import { useMemo } from "react";
 export default function TradingViewChart({ symbol, title }) {
   const src = useMemo(() => {
     const params = new URLSearchParams({
-      frameElementId: "tradingview_widget",
+      frameElementId: `tradingview_widget_${String(symbol || "chart").replace(/[^A-Z0-9_:-]/gi, "_")}`,
       symbol,
       interval: "D",
-      hidesidetoolbar: "0",
+      hidesidetoolbar: "1",
       symboledit: "0",
       saveimage: "0",
       toolbarbg: "#0f172a",
@@ -22,6 +22,7 @@ export default function TradingViewChart({ symbol, title }) {
       details: "0",
       hotlist: "0",
       calendar: "0",
+      hide_side_toolbar: "1",
       locale: "kr",
       autosize: "1",
       tvwidgetsymbol: symbol,

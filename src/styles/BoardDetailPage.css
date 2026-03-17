@@ -224,3 +224,44 @@
   color: rgba(255,255,255,0.92);
   cursor: pointer;
 }
+
+.boardDetailImageWrap{
+  margin-top: 18px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+}
+
+.boardDetailImage{
+  width: 100%;
+  max-height: 680px;
+  object-fit: contain;
+  display:block;
+  background: rgba(0,0,0,0.2);
+}
+
+.boardCommentLoginGuide{
+  margin-top: 8px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.75);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.boardCommentLoginGuide button{
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.92);
+  font-weight: 800;
+  cursor: pointer;
+}

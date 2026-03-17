@@ -195,3 +195,79 @@
   background: #0f1725;
   color: rgba(255,255,255,0.96);
 }
+
+.boardWriteGrid input:disabled,
+.boardWriteGrid textarea:disabled{
+  opacity: .72;
+  cursor: not-allowed;
+}
+
+.boardWriteHint{
+  font-size: 12px;
+  color: rgba(255,255,255,0.52);
+  margin-top: -2px;
+}
+
+.boardWriteImagePreview{
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.025);
+  padding: 16px;
+}
+
+.boardWriteImagePreview img{
+  width: 100%;
+  max-height: 460px;
+  object-fit: contain;
+  border-radius: 14px;
+  display: block;
+  background: rgba(0,0,0,0.18);
+}
+
+.boardWriteImageMeta{
+  margin-top: 12px;
+  display:flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  color: rgba(255,255,255,0.72);
+  font-size: 13px;
+}
+
+.boardWriteImageMeta button,
+.boardWriteLoginGuide button{
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.94);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.boardWriteLoginGuide{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.76);
+}
+
+.boardWriteSubmitBtn:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+@media (max-width: 768px){
+  .boardWriteLoginGuide{
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

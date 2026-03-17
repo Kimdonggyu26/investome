@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
@@ -11,12 +11,10 @@ import {
   isBoardPostLiked,
   toggleBoardPostLike,
 } from "../utils/boardStorage";
+import { getAuthNickname, isLoggedIn } from "../utils/auth";
 import "../styles/BoardDetailPage.css";
 
-function categoryLabel(category) {
-  if (category === "notice") return "공지";
-  if (category === "info") return "정보";
-  if (category === "trade") return "매매일지";
+function categoryLabel() {
   return "자유";
 }
 
@@ -25,10 +23,13 @@ export default function BoardDetailPage() {
   const navigate = useNavigate();
   const { prices, changes, loading, error } = useTicker();
 
+  const loggedIn = useMemo(() => isLoggedIn(), []);
+  const nickname = useMemo(() => getAuthNickname("사용자"), []);
+
   const [post, setPost] = useState(null);
   const [liked, setLiked] = useState(false);
   const [commentForm, setCommentForm] = useState({
-    author: "",
+    author: nickname,
     content: "",
   });
   const [commentError, setCommentError] = useState("");
@@ -49,6 +50,10 @@ export default function BoardDetailPage() {
     setLiked(isBoardPostLiked(postId));
   }, [postId]);
 
+  useEffect(() => {
+    setCommentForm((prev) => ({ ...prev, author: nickname }));
+  }, [nickname]);
+
   function handleLike() {
     const result = toggleBoardPostLike(postId);
     if (!result?.post) return;
@@ -60,12 +65,21 @@ export default function BoardDetailPage() {
     e.preventDefault();
     setCommentError("");
 
+    if (!loggedIn) {
+      setCommentError("댓글 작성은 로그인 후 이용할 수 있어요.");
+      return;
+    }
+
     if (!commentForm.content.trim()) {
       setCommentError("내용을 입력해 주세요.");
       return;
     }
 
-    const nextPost = addBoardComment(postId, commentForm);
+    const nextPost = addBoardComment(postId, {
+      author: nickname,
+      content: commentForm.content,
+    });
+
     if (!nextPost) {
       setCommentError("댓글 등록 중 오류가 발생 했습니다. 다시 시도해 주세요.");
       return;
@@ -73,7 +87,7 @@ export default function BoardDetailPage() {
 
     setPost(nextPost);
     setCommentForm({
-      author: "",
+      author: nickname,
       content: "",
     });
   }
@@ -91,7 +105,7 @@ export default function BoardDetailPage() {
         <main className="boardDetailPage">
           <div className="container">
             <div className="boardDetailEmpty">
-              존재하지 않는 게시글이야.
+              존재하지 않는 게시글이에요.
               <button type="button" onClick={() => navigate("/board")}>
                 게시판으로 돌아가기
               </button>
@@ -141,6 +155,16 @@ export default function BoardDetailPage() {
 
             <div className="boardDetailContent">{post.content}</div>
 
+            {post.imageData ? (
+              <div className="boardDetailImageWrap">
+                <img
+                  src={post.imageData}
+                  alt={post.imageName || post.title}
+                  className="boardDetailImage"
+                />
+              </div>
+            ) : null}
+
             <div className="boardDetailActionRow">
               <button
                 type="button"
@@ -158,34 +182,36 @@ export default function BoardDetailPage() {
               <span>{post.commentCount || 0}개</span>
             </div>
 
-            <form className="boardCommentForm" onSubmit={handleCommentSubmit}>
-              <div className="boardCommentFormTop">
-                <input
-                  type="text"
-                  placeholder="닉네임"
-                  value={commentForm.author}
+            {loggedIn ? (
+              <form className="boardCommentForm" onSubmit={handleCommentSubmit}>
+                <div className="boardCommentFormTop">
+                  <input type="text" value={nickname} disabled />
+                </div>
+
+                <textarea
+                  placeholder="댓글을 입력해 주세요."
+                  value={commentForm.content}
                   onChange={(e) =>
-                    setCommentForm((prev) => ({ ...prev, author: e.target.value }))
+                    setCommentForm((prev) => ({ ...prev, content: e.target.value }))
                   }
                 />
+
+                {commentError ? (
+                  <div className="boardCommentError">{commentError}</div>
+                ) : null}
+
+                <div className="boardCommentSubmitRow">
+                  <button type="submit">댓글 등록</button>
+                </div>
+              </form>
+            ) : (
+              <div className="boardCommentLoginGuide">
+                댓글 작성은 로그인 후 이용할 수 있어요.
+                <button type="button" onClick={() => navigate("/login")}>
+                  로그인하러 가기
+                </button>
               </div>
-
-              <textarea
-                placeholder="댓글을 입력해 주세요."
-                value={commentForm.content}
-                onChange={(e) =>
-                  setCommentForm((prev) => ({ ...prev, content: e.target.value }))
-                }
-              />
-
-              {commentError ? (
-                <div className="boardCommentError">{commentError}</div>
-              ) : null}
-
-              <div className="boardCommentSubmitRow">
-                <button type="submit">댓글 등록</button>
-              </div>
-            </form>
+            )}
 
             <div className="boardCommentList">
               {(post.comments || []).length === 0 ? (

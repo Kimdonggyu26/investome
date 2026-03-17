@@ -152,9 +152,6 @@ export default function NewsList({
 
           <h2 className="newsHeading">{title}</h2>
           <div className="newsSub">Real-Time Market Headlines</div>
-          <div className="newsDesc">
-            카테고리별 최신 뉴스와 많이 보는 이슈를 빠르게 확인해보세요.
-          </div>
         </div>
 
         <div className="newsHeaderRight">
@@ -200,6 +197,10 @@ export default function NewsList({
         )}
       </div>
 
+      <div className="newsDesc newsDescBottom">
+        카테고리별 최신 뉴스와 많이 보는 이슈를 빠르게 확인해보세요.
+      </div>
+
       {err && <div className="muted">뉴스를 불러오지 못했어요.</div>}
 
       {isLoading && items.length === 0 ? (
@@ -236,18 +237,20 @@ export default function NewsList({
                   rel="noreferrer"
                   className="newsItem"
                 >
-                  <div className="newsItemTitle">{item.title}</div>
-                  <div className="newsMeta">
-                    <span>{item.source || "Google News"}</span>
-                    <span className="newsDot">•</span>
-                    <span>{ymdhm(item.pubDate)}</span>
+                  <div className="newsItemMain">
+                    <div className="newsItemTitle">{item.title}</div>
+                    <div className="newsItemMeta">
+                      <span>{item.source || "Google News"}</span>
+                      <span className="newsDot">•</span>
+                      <span>{ymdhm(item.pubDate)}</span>
+                    </div>
                   </div>
                 </a>
               ))}
           </div>
 
           {isSwitching && (
-            <div className="newsLoadingOverlay">
+            <div className="newsLoadingOverlay" aria-hidden="true">
               <div className="newsLoadingSweep" />
             </div>
           )}

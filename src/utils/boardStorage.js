@@ -61,6 +61,8 @@ function normalizePost(post) {
     title: String(post.title || ""),
     content: String(post.content || ""),
     author: String(post.author || "익명"),
+    imageData: String(post.imageData || ""),
+    imageName: String(post.imageName || ""),
     date: post.date || toDisplayDate(createdAt),
     createdAt,
     updatedAt: post.updatedAt || createdAt,
@@ -115,7 +117,7 @@ export function getBoardPostById(postId) {
   return getBoardPosts().find((post) => String(post.id) === id) || null;
 }
 
-export function createBoardPost({ category, title, content, author }) {
+export function createBoardPost({ category, title, content, author, imageData, imageName }) {
   const posts = getBoardPosts();
   const maxNo = posts.reduce((max, post) => Math.max(max, Number(post.no) || 0), 0);
   const createdAt = nowIso();
@@ -127,6 +129,8 @@ export function createBoardPost({ category, title, content, author }) {
     title: String(title || "").trim(),
     content: String(content || "").trim(),
     author: String(author || "").trim() || "익명",
+    imageData: String(imageData || ""),
+    imageName: String(imageName || ""),
     date: toDisplayDate(createdAt),
     createdAt,
     updatedAt: createdAt,
