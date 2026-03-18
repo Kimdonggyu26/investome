@@ -40,4 +40,26 @@ public class JwtTokenProvider {
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
+
+    public Long getUserId(String token) {
+        String subject = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
+
+        return Long.parseLong(subject);
+    }
+
+    public Long getUserId(String token) {
+        String subject = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
+
+        return Long.parseLong(subject);
+    }
 }

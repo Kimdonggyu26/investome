@@ -203,6 +203,7 @@ export default function Header() {
   }
 
   function handleLogout() {
+    localStorage.removeItem("accessToken");
     localStorage.removeItem("investome_logged_in");
     localStorage.removeItem("investome_user");
     localStorage.removeItem("investome_keep_login");

@@ -1,9 +1,13 @@
-import { useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
 import { useTicker } from "../hooks/useTicker";
-import { createBoardPost } from "../utils/boardStorage";
+import {
+  createBoardPost,
+  fetchBoardPost,
+  updateBoardPost,
+} from "../api/boardApi";
 import { getAuthNickname, isLoggedIn } from "../utils/auth";
 import "../styles/BoardWritePage.css";
 
@@ -18,6 +22,8 @@ function readFileAsDataURL(file) {
 
 export default function BoardWritePage() {
   const navigate = useNavigate();
+  const { postId } = useParams();
+  const isEditMode = !!postId;
   const { prices, changes, loading, error } = useTicker();
   const fileInputRef = useRef(null);
 
@@ -34,6 +40,31 @@ export default function BoardWritePage() {
 
   const [submitError, setSubmitError] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+
+  useEffect(() => {
+    if (!isEditMode) return;
+
+    fetchBoardPost(postId, false)
+      .then((data) => {
+        if (!data.mine) {
+          alert("본인 글만 수정할 수 있어요.");
+          navigate("/board");
+          return;
+        }
+
+        setForm({
+          category: data.category || "free",
+          title: data.title || "",
+          content: data.content || "",
+          imageData: data.imageData || "",
+          imageName: data.imageName || "",
+        });
+      })
+      .catch(() => {
+        alert("게시글을 불러오지 못했어요.");
+        navigate("/board");
+      });
+  }, [isEditMode, postId, navigate]);       
 
   function updateField(key, value) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -75,38 +106,43 @@ export default function BoardWritePage() {
     handleFile(file);
   }
 
-  function handleSubmit(e) {
-    e.preventDefault();
+    async function handleSubmit(e) {
+      e.preventDefault();
 
-    try {
-      setSubmitError("");
+      try {
+        setSubmitError("");
 
-      if (!loggedIn) {
-        throw new Error("로그인 후 게시글을 작성할 수 있어요.");
+        if (!loggedIn) {
+          throw new Error("로그인 후 게시글을 작성할 수 있어요.");
+        }
+
+        if (!form.title.trim()) {
+          throw new Error("제목을 입력해 주세요.");
+        }
+
+        if (!form.content.trim()) {
+          throw new Error("내용을 입력해 주세요.");
+        }
+
+        const payload = {
+          category: "free",
+          title: form.title,
+          content: form.content,
+          imageData: form.imageData,
+          imageName: form.imageName,
+        };
+
+        if (isEditMode) {
+          await updateBoardPost(postId, payload);
+          navigate(`/board/${postId}`);
+        } else {
+          const created = await createBoardPost(payload);
+          navigate(`/board/${created.id}`);
+        }
+      } catch (err) {
+        setSubmitError(err.message || "글 등록 중 오류가 발생했습니다.");
       }
-
-      if (!form.title.trim()) {
-        throw new Error("제목을 입력해 주세요.");
-      }
-
-      if (!form.content.trim()) {
-        throw new Error("내용을 입력해 주세요.");
-      }
-
-      createBoardPost({
-        category: "free",
-        title: form.title,
-        content: form.content,
-        author: nickname,
-        imageData: form.imageData,
-        imageName: form.imageName,
-      });
-
-      navigate("/board");
-    } catch (err) {
-      setSubmitError(err.message || "글 등록 중 오류가 발생했습니다.");
     }
-  }
 
   if (!loggedIn) {
     return (

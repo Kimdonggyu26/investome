@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
 import { useTicker } from "../hooks/useTicker";
 import "../styles/AuthPage.css";
+import { apiUrl } from "../lib/apiClient";
 
 function validateSignup({ nickname, email, password, passwordConfirm }) {
   return {
@@ -57,7 +58,7 @@ export default function AuthPage() {
 
     if (isLogin) {
       try {
-        const res = await fetch("http://localhost:8080/api/auth/login", {
+        const res = await fetch(apiUrl("/api/auth/login"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -96,7 +97,7 @@ export default function AuthPage() {
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/auth/signup", {
+      const res = await fetch(apiUrl("/api/auth/signup"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -277,3 +278,5 @@ export default function AuthPage() {
     </>
   );
 }
+
+console.log(import.meta.env.VITE_API_BASE_URL);

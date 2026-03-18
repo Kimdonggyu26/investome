@@ -16,6 +16,7 @@ export default function App() {
       <Route path="/mypage" element={<MyPage />} />
       <Route path="/board" element={<BoardPage />} />
       <Route path="/board/write" element={<BoardWritePage />} />
+      <Route path="/board/:postId/edit" element={<BoardWritePage />} />
       <Route path="/board/:postId" element={<BoardDetailPage />} />
       <Route path="/login" element={<AuthPage mode="login" />} />
       <Route path="/signup" element={<AuthPage mode="signup" />} />

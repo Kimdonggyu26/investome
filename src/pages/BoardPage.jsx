@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
 import { useTicker } from "../hooks/useTicker";
-import { getBoardPosts } from "../utils/boardStorage";
+import { fetchBoardPosts } from "../api/boardApi";
 import "../styles/BoardPage.css";
 
 const POSTS_PER_PAGE = 10;
@@ -18,18 +18,25 @@ export default function BoardPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [posts, setPosts] = useState([]);
 
-  useEffect(() => {
-    const syncPosts = () => setPosts(getBoardPosts());
+useEffect(() => {
+  let mounted = true;
 
-    syncPosts();
-    window.addEventListener("board-storage-updated", syncPosts);
-    window.addEventListener("storage", syncPosts);
+  fetchBoardPosts()
+    .then((data) => {
+      if (mounted) {
+        setPosts(data);
+      }
+    })
+    .catch(() => {
+      if (mounted) {
+        setPosts([]);
+      }
+    });
 
-    return () => {
-      window.removeEventListener("board-storage-updated", syncPosts);
-      window.removeEventListener("storage", syncPosts);
-    };
-  }, []);
+  return () => {
+    mounted = false;
+  };
+}, []);
 
   const filteredPosts = useMemo(() => {
     let next = [...posts];

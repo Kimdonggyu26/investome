@@ -1,67 +1,101 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
-import TopTickerBar from "../components/TopTickerBar";
-import { useTicker } from "../hooks/useTicker";
 import {
-  addBoardComment,
-  formatBoardDateTime,
-  getBoardPostById,
-  incrementBoardPostViews,
-  isBoardPostLiked,
+  createBoardComment,
+  deleteBoardComment,
+  deleteBoardPost,
+  fetchBoardPost,
   toggleBoardPostLike,
-} from "../utils/boardStorage";
-import { getAuthNickname, isLoggedIn } from "../utils/auth";
+} from "../api/boardApi";
+import { getAuthUser, isLoggedIn } from "../utils/authStorage";
 import "../styles/BoardDetailPage.css";
 
-function categoryLabel() {
-  return "자유";
+function formatBoardDateTime(dateValue) {
+  const d = new Date(dateValue);
+  if (Number.isNaN(d.getTime())) return "-";
+
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(
+    d.getDate()
+  ).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(
+    d.getMinutes()
+  ).padStart(2, "0")}`;
 }
 
 export default function BoardDetailPage() {
-  const { postId } = useParams();
   const navigate = useNavigate();
-  const { prices, changes, loading, error } = useTicker();
+  const { postId } = useParams();
 
-  const loggedIn = useMemo(() => isLoggedIn(), []);
-  const nickname = useMemo(() => getAuthNickname("사용자"), []);
+  const authUser = useMemo(() => getAuthUser(), []);
+  const loggedIn = isLoggedIn();
+  const nickname = authUser?.nickname || authUser?.name || "사용자";
 
   const [post, setPost] = useState(null);
   const [liked, setLiked] = useState(false);
+  const [commentError, setCommentError] = useState("");
+  const [loading, setLoading] = useState(true);
+
   const [commentForm, setCommentForm] = useState({
     author: nickname,
     content: "",
   });
-  const [commentError, setCommentError] = useState("");
 
   useEffect(() => {
-    const viewedKey = `investome-board-viewed-${postId}`;
-
-    if (!sessionStorage.getItem(viewedKey)) {
-      const viewedPost = incrementBoardPostViews(postId);
-      if (viewedPost) {
-        setPost(viewedPost);
-      }
-      sessionStorage.setItem(viewedKey, "true");
-    } else {
-      setPost(getBoardPostById(postId));
-    }
-
-    setLiked(isBoardPostLiked(postId));
-  }, [postId]);
-
-  useEffect(() => {
-    setCommentForm((prev) => ({ ...prev, author: nickname }));
+    setCommentForm((prev) => ({
+      ...prev,
+      author: nickname,
+    }));
   }, [nickname]);
 
-  function handleLike() {
-    const result = toggleBoardPostLike(postId);
-    if (!result?.post) return;
-    setPost(result.post);
-    setLiked(result.liked);
+  useEffect(() => {
+    let mounted = true;
+    const viewedKey = `investome-board-viewed-${postId}`;
+    const shouldIncrease = !sessionStorage.getItem(viewedKey);
+
+    setLoading(true);
+
+    fetchBoardPost(postId, shouldIncrease)
+      .then((data) => {
+        if (!mounted) return;
+
+        setPost(data);
+        setLiked(!!data.likedByMe);
+
+        if (shouldIncrease) {
+          sessionStorage.setItem(viewedKey, "true");
+        }
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setPost(null);
+      })
+      .finally(() => {
+        if (!mounted) return;
+        setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [postId]);
+
+  async function handleLike() {
+    if (!loggedIn) {
+      alert("로그인 후 추천할 수 있어요.");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const nextPost = await toggleBoardPostLike(postId);
+      setPost(nextPost);
+      setLiked(!!nextPost.likedByMe);
+    } catch (err) {
+      alert(err.message || "추천 처리 중 오류가 발생했어요.");
+    }
   }
 
-  function handleCommentSubmit(e) {
+  async function handleCommentSubmit(e) {
     e.preventDefault();
     setCommentError("");
 
@@ -75,42 +109,76 @@ export default function BoardDetailPage() {
       return;
     }
 
-    const nextPost = addBoardComment(postId, {
-      author: nickname,
-      content: commentForm.content,
-    });
+    try {
+      const nextPost = await createBoardComment(postId, {
+        content: commentForm.content,
+      });
 
-    if (!nextPost) {
-      setCommentError("댓글 등록 중 오류가 발생 했습니다. 다시 시도해 주세요.");
-      return;
+      setPost(nextPost);
+      setLiked(!!nextPost.likedByMe);
+      setCommentForm({
+        author: nickname,
+        content: "",
+      });
+    } catch (err) {
+      setCommentError(err.message || "댓글 등록 중 오류가 발생했습니다.");
     }
+  }
 
-    setPost(nextPost);
-    setCommentForm({
-      author: nickname,
-      content: "",
-    });
+  async function handleDeletePost() {
+    const ok = window.confirm("정말 이 게시글을 삭제할까요?");
+    if (!ok) return;
+
+    try {
+      await deleteBoardPost(postId);
+      alert("게시글이 삭제되었어요.");
+      navigate("/board");
+    } catch (err) {
+      alert(err.message || "게시글 삭제 중 오류가 발생했어요.");
+    }
+  }
+
+  async function handleDeleteComment(commentId) {
+    const ok = window.confirm("이 댓글을 삭제할까요?");
+    if (!ok) return;
+
+    try {
+      const nextPost = await deleteBoardComment(postId, commentId);
+      setPost(nextPost);
+      setLiked(!!nextPost.likedByMe);
+    } catch (err) {
+      alert(err.message || "댓글 삭제 중 오류가 발생했어요.");
+    }
+  }
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <main className="boardDetailPage">
+          <section className="boardDetailWrap">
+            <div className="boardDetailEmpty">게시글을 불러오는 중입니다...</div>
+          </section>
+        </main>
+      </>
+    );
   }
 
   if (!post) {
     return (
       <>
-        <TopTickerBar
-          prices={prices}
-          changes={changes}
-          loading={loading}
-          error={error}
-        />
         <Header />
         <main className="boardDetailPage">
-          <div className="container">
+          <section className="boardDetailWrap">
             <div className="boardDetailEmpty">
-              존재하지 않는 게시글이에요.
-              <button type="button" onClick={() => navigate("/board")}>
-                게시판으로 돌아가기
-              </button>
+              게시글을 찾을 수 없습니다.
+              <div style={{ marginTop: 16 }}>
+                <Link to="/board" className="boardDetailGhostBtn">
+                  목록으로
+                </Link>
+              </div>
             </div>
-          </div>
+          </section>
         </main>
       </>
     );
@@ -118,42 +186,53 @@ export default function BoardDetailPage() {
 
   return (
     <>
-      <TopTickerBar
-        prices={prices}
-        changes={changes}
-        loading={loading}
-        error={error}
-      />
       <Header />
 
       <main className="boardDetailPage">
-        <div className="container">
-          <section className="boardDetailCard">
-            <div className="boardDetailTopBar">
-              <button
-                type="button"
-                className="boardDetailGhostBtn"
-                onClick={() => navigate("/board")}
-              >
-                목록으로
-              </button>
-            </div>
+        <section className="boardDetailWrap">
+          <div className="boardDetailTopBar">
+            <button
+              type="button"
+              className="boardDetailGhostBtn"
+              onClick={() => navigate("/board")}
+            >
+              목록으로
+            </button>
 
-            <div className="boardDetailBadgeRow">
-              <span className="boardDetailBadge">{categoryLabel(post.category)}</span>
+            {post.mine ? (
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button
+                  type="button"
+                  className="boardDetailGhostBtn"
+                  onClick={() => navigate(`/board/${post.id}/edit`)}
+                >
+                  수정
+                </button>
+                <button
+                  type="button"
+                  className="boardDetailGhostBtn"
+                  onClick={handleDeletePost}
+                >
+                  삭제
+                </button>
+              </div>
+            ) : null}
+          </div>
+
+          <article className="boardDetailCard">
+            <div className="boardDetailCategory">
+              {post.category === "free" ? "자유게시판" : post.category}
             </div>
 
             <h1 className="boardDetailTitle">{post.title}</h1>
 
             <div className="boardDetailMeta">
-              <span>{post.author}</span>
-              <span>{formatBoardDateTime(post.createdAt)}</span>
-              <span>조회 {post.views}</span>
-              <span>추천 {post.likes}</span>
-              <span>댓글 {post.commentCount || 0}</span>
+              <span>작성자 {post.author}</span>
+              <span>작성일 {formatBoardDateTime(post.createdAt)}</span>
+              <span>조회수 {post.views ?? 0}</span>
+              <span>추천 {post.likes ?? 0}</span>
+              <span>댓글 {post.commentCount ?? 0}</span>
             </div>
-
-            <div className="boardDetailContent">{post.content}</div>
 
             {post.imageData ? (
               <div className="boardDetailImageWrap">
@@ -165,71 +244,105 @@ export default function BoardDetailPage() {
               </div>
             ) : null}
 
+            <div className="boardDetailContent">{post.content}</div>
+
             <div className="boardDetailActionRow">
               <button
                 type="button"
-                className={`boardDetailLikeBtn ${liked ? "active" : ""}`}
+                className={`boardDetailLikeBtn ${liked ? "isActive" : ""}`}
                 onClick={handleLike}
               >
-                {liked ? "추천 취소" : "추천하기"} · {post.likes}
+                {liked ? "추천 취소" : "추천"}
               </button>
             </div>
-          </section>
+          </article>
 
-          <section className="boardCommentCard">
-            <div className="boardCommentHead">
-              <h3>댓글</h3>
-              <span>{post.commentCount || 0}개</span>
+          <section className="boardCommentSection">
+            <div className="boardCommentHeader">
+              <h2>댓글</h2>
+              <span>{post.comments?.length ?? 0}개</span>
             </div>
 
-            {loggedIn ? (
-              <form className="boardCommentForm" onSubmit={handleCommentSubmit}>
-                <div className="boardCommentFormTop">
-                  <input type="text" value={nickname} disabled />
-                </div>
+            <form className="boardCommentForm" onSubmit={handleCommentSubmit}>
+              <div className="boardCommentAuthor">
+                {loggedIn ? `${nickname} 님` : "로그인 후 댓글 작성 가능"}
+              </div>
 
-                <textarea
-                  placeholder="댓글을 입력해 주세요."
-                  value={commentForm.content}
-                  onChange={(e) =>
-                    setCommentForm((prev) => ({ ...prev, content: e.target.value }))
-                  }
-                />
+              <textarea
+                className="boardCommentTextarea"
+                placeholder={
+                  loggedIn
+                    ? "댓글을 입력해 주세요."
+                    : "로그인 후 댓글을 작성할 수 있어요."
+                }
+                value={commentForm.content}
+                onChange={(e) =>
+                  setCommentForm((prev) => ({
+                    ...prev,
+                    content: e.target.value,
+                  }))
+                }
+                disabled={!loggedIn}
+              />
 
-                {commentError ? (
-                  <div className="boardCommentError">{commentError}</div>
-                ) : null}
+              {commentError ? (
+                <div className="boardCommentError">{commentError}</div>
+              ) : null}
 
-                <div className="boardCommentSubmitRow">
-                  <button type="submit">댓글 등록</button>
-                </div>
-              </form>
-            ) : (
-              <div className="boardCommentLoginGuide">
-                댓글 작성은 로그인 후 이용할 수 있어요.
-                <button type="button" onClick={() => navigate("/login")}>
-                  로그인하러 가기
+              <div className="boardCommentSubmitRow">
+                <button
+                  type="submit"
+                  className="boardCommentSubmitBtn"
+                  disabled={!loggedIn}
+                >
+                  댓글 등록
                 </button>
               </div>
-            )}
+            </form>
 
             <div className="boardCommentList">
-              {(post.comments || []).length === 0 ? (
-                <div className="boardCommentEmpty">아직 댓글이 없는 게시글이에요.</div>
-              ) : (
-                [...post.comments].reverse().map((comment) => (
-                  <div className="boardCommentItem" key={comment.id}>
+              {post.comments && post.comments.length > 0 ? (
+                post.comments.map((comment) => (
+                  <div key={comment.id} className="boardCommentItem">
                     <div className="boardCommentItemTop">
-                      <strong>{comment.author}</strong>
-                      <span>{formatBoardDateTime(comment.createdAt)}</span>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "10px",
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <strong>{comment.author}</strong>
+                        <span>{formatBoardDateTime(comment.createdAt)}</span>
+                      </div>
+
+                      {comment.mine ? (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteComment(comment.id)}
+                          style={{
+                            border: "none",
+                            background: "transparent",
+                            color: "#ff8a8a",
+                            cursor: "pointer",
+                            fontSize: "13px",
+                          }}
+                        >
+                          삭제
+                        </button>
+                      ) : null}
                     </div>
+
                     <div className="boardCommentItemContent">{comment.content}</div>
                   </div>
                 ))
+              ) : (
+                <div className="boardCommentEmpty">아직 댓글이 없습니다.</div>
               )}
             </div>
           </section>
-        </div>
+        </section>
       </main>
     </>
   );
