@@ -18,6 +18,19 @@ export default function BoardPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [posts, setPosts] = useState([]);
 
+  function formatBoardDate(dateValue) {
+    if (!dateValue) return "-";
+
+    const d = new Date(dateValue);
+    if (Number.isNaN(d.getTime())) return "-";
+
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+
+    return `${yyyy}.${mm}.${dd}`;
+  }
+
 useEffect(() => {
   let mounted = true;
 
@@ -200,7 +213,7 @@ useEffect(() => {
                   </div>
 
                   <div className="boardAuthor">{post.author}</div>
-                  <div className="boardDate">{post.date}</div>
+                  <div className="boardDate">{formatBoardDate(post.createdAt)}</div>
                   <div className="boardViews">{post.views}</div>
                   <div className="boardLikes">{post.likes}</div>
                 </div>

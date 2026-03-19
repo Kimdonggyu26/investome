@@ -3,7 +3,9 @@ package com.investome.api.board;
 import com.investome.api.config.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -88,16 +90,22 @@ public class BoardController {
 
     private Long extractUserId(HttpServletRequest request) {
         String auth = request.getHeader("Authorization");
+
         if (auth == null || !auth.startsWith("Bearer ")) {
-            throw new RuntimeException("인증 토큰이 없습니다.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "인증 토큰이 없습니다.");
         }
 
-        String token = auth.substring(7);
-        return jwtTokenProvider.getUserId(token);
+        try {
+            String token = auth.substring(7);
+            return jwtTokenProvider.getUserId(token);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.");
+        }
     }
 
     private Long extractUserIdOrNull(HttpServletRequest request) {
         String auth = request.getHeader("Authorization");
+
         if (auth == null || !auth.startsWith("Bearer ")) {
             return null;
         }

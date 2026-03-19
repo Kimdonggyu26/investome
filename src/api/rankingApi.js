@@ -1,8 +1,12 @@
-
-
 function toNumber(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
+}
+
+function rankingApiUrl(path) {
+  const base = (import.meta.env.VITE_RANKING_API_BASE_URL || "").trim();
+  if (!base) return path;
+  return `${base.replace(/\/$/, "")}${path}`;
 }
 
 function buildLogo(domain) {
@@ -45,36 +49,49 @@ function pickStockDomain(symbol) {
     "009150": "sem.samsung.com",
     "012450": "hanwhaaerospace.com",
 
-    AAPL: "apple.com",
-    MSFT: "microsoft.com",
     NVDA: "nvidia.com",
-    AMZN: "amazon.com",
+    AAPL: "apple.com",
     GOOGL: "google.com",
-    META: "meta.com",
+    GOOG: "google.com",
+    MSFT: "microsoft.com",
+    AMZN: "amazon.com",
     AVGO: "broadcom.com",
+    META: "meta.com",
     TSLA: "tesla.com",
-    COST: "costco.com",
+    ASML: "asml.com",
     NFLX: "netflix.com",
-    ADBE: "adobe.com",
-    PEP: "pepsico.com",
-    QCOM: "qualcomm.com",
-    CSCO: "cisco.com",
+    COST: "costco.com",
     AMD: "amd.com",
-    INTU: "intuit.com",
-    TXN: "ti.com",
-    ISRG: "intuitive.com",
-    AZN: "astrazeneca.com",
-    PLTR: "palantir.com",
-    ADI: "analog.com",
-    MRVL: "marvell.com",
     MU: "micron.com",
-    FI: "fiserv.com",
-    AMGN: "amgen.com",
-    GILD: "gilead.com",
+    CSCO: "cisco.com",
+    AZN: "astrazeneca.com",
+    LRCX: "lamresearch.com",
+    TMUS: "t-mobile.com",
+    AMAT: "appliedmaterials.com",
+    ISRG: "intuitive.com",
+    LIN: "linde.com",
+    PEP: "pepsico.com",
     INTC: "intel.com",
-    ABNB: "airbnb.com",
+    QCOM: "qualcomm.com",
+    AMGN: "amgen.com",
+    INTU: "intuit.com",
     BKNG: "bookingholdings.com",
-    SBUX: "starbucks.com",
+    KLAC: "kla.com",
+    PDD: "pddholdings.com",
+    ADBE: "adobe.com",
+    PLTR: "palantir.com",
+    ORCL: "oracle.com",
+    CMCSA: "corporate.comcast.com",
+    ADI: "analog.com",
+    GILD: "gilead.com",
+    ABNB: "airbnb.com",
+    PANW: "paloaltonetworks.com",
+    MELI: "mercadolibre.com",
+    SNPS: "synopsys.com",
+    CDNS: "cadence.com",
+    ADP: "adp.com",
+    CRWD: "crowdstrike.com",
+    MRVL: "marvell.com",
   };
 
   return map[String(symbol || "").toUpperCase()] || "";
@@ -147,37 +164,74 @@ function toCryptoRow(coin, index) {
   };
 }
 
+async function readJsonOrThrow(res, label) {
+  if (!res.ok) {
+    throw new Error(`${label} failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+let cryptoClientCache = {
+  data: null,
+  at: 0,
+  inflight: null,
+};
+
 export async function fetchCryptoTop30KRW() {
-  const res = await fetch("/api/crypto-top30");
-  if (!res.ok) throw new Error(`Crypto top30 failed: ${res.status}`);
+  const now = Date.now();
 
-  const json = await res.json();
-  if (!Array.isArray(json)) return [];
+  if (
+    Array.isArray(cryptoClientCache.data) &&
+    cryptoClientCache.data.length > 0 &&
+    now - cryptoClientCache.at < 60_000
+  ) {
+    return cryptoClientCache.data;
+  }
 
-  return json.map(toCryptoRow);
+  if (cryptoClientCache.inflight) {
+    return cryptoClientCache.inflight;
+  }
+
+  cryptoClientCache.inflight = fetch(rankingApiUrl("/api/crypto-top30"))
+    .then(async (res) => {
+      if (!res.ok) {
+        throw new Error(`Crypto top30 failed: ${res.status}`);
+      }
+
+      const json = await res.json();
+      const rows = Array.isArray(json)
+        ? json.map(toCryptoRow)
+        : Array.isArray(json?.items)
+        ? json.items.map(normalizeRow)
+        : [];
+
+      cryptoClientCache.data = rows;
+      cryptoClientCache.at = Date.now();
+      return rows;
+    })
+    .finally(() => {
+      cryptoClientCache.inflight = null;
+    });
+
+  return cryptoClientCache.inflight;
 }
 
 export async function fetchCommoditiesTopKRW() {
-  const res = await fetch("/api/commodity-top");
-  if (!res.ok) throw new Error(`Commodities top failed: ${res.status}`);
-
-  const json = await res.json();
+  const json = await readJsonOrThrow(
+    await fetch(rankingApiUrl("/api/commodity-top")),
+    "commodities top"
+  );
   const items = Array.isArray(json?.items) ? json.items : [];
-
   return items.map(normalizeRow);
 }
 
 async function fetchStockTop30(market) {
-  const res = await fetch(`/api/stock-top30?market=${market}`);
-  if (!res.ok) throw new Error(`${market} top30 failed: ${res.status}`);
+  const json = await readJsonOrThrow(
+    await fetch(rankingApiUrl(`/api/stock-top30?market=${market}`)),
+    `${market} top30`
+  );
 
-  const json = await res.json();
   const items = Array.isArray(json?.items) ? json.items : [];
-
-  if (items.length === 0) {
-    throw new Error(`${market} top30 empty`);
-  }
-
   return items.map(normalizeRow);
 }
 
@@ -186,114 +240,5 @@ export async function fetchKospiTop30KRW() {
 }
 
 export async function fetchNasdaqTop30KRW() {
-  try {
-    return await fetchStockTop30("NASDAQ");
-  } catch (error) {
-    console.error("NASDAQ top30 fallback 적용:", error);
-    return getKoreanDummyTop30("NASDAQ");
-  }
-}
-
-function makeDummyRows(market, names) {
-  return names.map((item, idx) => {
-    const rank = idx + 1;
-
-    let baseCap = 0;
-    let basePrice = 0;
-
-    if (market === "KOSPI") {
-      baseCap = 420000000000000 - idx * 9000000000000;
-      basePrice = 82000 - idx * 1700;
-    } else {
-      baseCap = 4700000000000000 - idx * 120000000000000;
-      basePrice = 620000 - idx * 14000;
-    }
-
-    const wave = Math.sin((idx + 1) * 1.27);
-    const noise = Math.cos((idx + 2) * 0.83);
-
-    return {
-      rank,
-      name: item.name,
-      displayNameEN: item.displayNameEN || item.name,
-      symbol: item.symbol,
-      iconUrl: buildLogo(pickStockDomain(item.symbol)),
-      coinId: "",
-      capKRW: Math.max(50000000000000, Math.round(baseCap + wave * 15000000000000)),
-      priceKRW: Math.max(1000, Math.round(basePrice + noise * 5000)),
-      changePct: Number((wave * 2.15).toFixed(2)),
-    };
-  });
-}
-
-export function getKoreanDummyTop30(market) {
-  const kospiNames = [
-    { name: "삼성전자", displayNameEN: "Samsung Electronics", symbol: "005930" },
-    { name: "SK하이닉스", displayNameEN: "SK hynix", symbol: "000660" },
-    { name: "LG에너지솔루션", displayNameEN: "LG Energy Solution", symbol: "373220" },
-    { name: "삼성바이오로직스", displayNameEN: "Samsung Biologics", symbol: "207940" },
-    { name: "현대차", displayNameEN: "Hyundai Motor", symbol: "005380" },
-    { name: "셀트리온", displayNameEN: "Celltrion", symbol: "068270" },
-    { name: "기아", displayNameEN: "Kia", symbol: "000270" },
-    { name: "KB금융", displayNameEN: "KB Financial Group", symbol: "105560" },
-    { name: "NAVER", displayNameEN: "NAVER", symbol: "035420" },
-    { name: "신한지주", displayNameEN: "Shinhan Financial Group", symbol: "055550" },
-    { name: "POSCO홀딩스", displayNameEN: "POSCO Holdings", symbol: "005490" },
-    { name: "삼성SDI", displayNameEN: "Samsung SDI", symbol: "006400" },
-    { name: "카카오", displayNameEN: "Kakao", symbol: "035720" },
-    { name: "LG화학", displayNameEN: "LG Chem", symbol: "051910" },
-    { name: "삼성물산", displayNameEN: "Samsung C&T", symbol: "028260" },
-    { name: "하나금융지주", displayNameEN: "Hana Financial Group", symbol: "086790" },
-    { name: "한국전력", displayNameEN: "KEPCO", symbol: "015760" },
-    { name: "HD현대중공업", displayNameEN: "HD Hyundai Heavy Industries", symbol: "329180" },
-    { name: "메리츠금융지주", displayNameEN: "Meritz Financial Group", symbol: "138040" },
-    { name: "삼성생명", displayNameEN: "Samsung Life", symbol: "032830" },
-    { name: "크래프톤", displayNameEN: "Krafton", symbol: "259960" },
-    { name: "KT&G", displayNameEN: "KT&G", symbol: "033780" },
-    { name: "HMM", displayNameEN: "HMM", symbol: "011200" },
-    { name: "우리금융지주", displayNameEN: "Woori Financial Group", symbol: "316140" },
-    { name: "두산에너빌리티", displayNameEN: "Doosan Enerbility", symbol: "034020" },
-    { name: "대한항공", displayNameEN: "Korean Air", symbol: "003490" },
-    { name: "LG전자", displayNameEN: "LG Electronics", symbol: "066570" },
-    { name: "포스코퓨처엠", displayNameEN: "POSCO Future M", symbol: "003670" },
-    { name: "삼성전기", displayNameEN: "Samsung Electro-Mechanics", symbol: "009150" },
-    { name: "한화에어로스페이스", displayNameEN: "Hanwha Aerospace", symbol: "012450" },
-  ];
-
-  const nasdaqNames = [
-    { name: "애플", displayNameEN: "Apple", symbol: "AAPL" },
-    { name: "마이크로소프트", displayNameEN: "Microsoft", symbol: "MSFT" },
-    { name: "엔비디아", displayNameEN: "NVIDIA", symbol: "NVDA" },
-    { name: "아마존", displayNameEN: "Amazon", symbol: "AMZN" },
-    { name: "알파벳 A", displayNameEN: "Alphabet A", symbol: "GOOGL" },
-    { name: "메타", displayNameEN: "Meta", symbol: "META" },
-    { name: "브로드컴", displayNameEN: "Broadcom", symbol: "AVGO" },
-    { name: "테슬라", displayNameEN: "Tesla", symbol: "TSLA" },
-    { name: "코스트코", displayNameEN: "Costco", symbol: "COST" },
-    { name: "넷플릭스", displayNameEN: "Netflix", symbol: "NFLX" },
-    { name: "어도비", displayNameEN: "Adobe", symbol: "ADBE" },
-    { name: "펩시코", displayNameEN: "PepsiCo", symbol: "PEP" },
-    { name: "퀄컴", displayNameEN: "Qualcomm", symbol: "QCOM" },
-    { name: "시스코", displayNameEN: "Cisco", symbol: "CSCO" },
-    { name: "AMD", displayNameEN: "AMD", symbol: "AMD" },
-    { name: "인튜이트", displayNameEN: "Intuit", symbol: "INTU" },
-    { name: "텍사스인스트루먼트", displayNameEN: "Texas Instruments", symbol: "TXN" },
-    { name: "인튜이티브서지컬", displayNameEN: "Intuitive Surgical", symbol: "ISRG" },
-    { name: "아스트라제네카", displayNameEN: "AstraZeneca", symbol: "AZN" },
-    { name: "팔란티어", displayNameEN: "Palantir", symbol: "PLTR" },
-    { name: "아날로그디바이스", displayNameEN: "Analog Devices", symbol: "ADI" },
-    { name: "마벨", displayNameEN: "Marvell", symbol: "MRVL" },
-    { name: "마이크론", displayNameEN: "Micron", symbol: "MU" },
-    { name: "파이서브", displayNameEN: "Fiserv", symbol: "FI" },
-    { name: "암젠", displayNameEN: "Amgen", symbol: "AMGN" },
-    { name: "길리어드", displayNameEN: "Gilead Sciences", symbol: "GILD" },
-    { name: "인텔", displayNameEN: "Intel", symbol: "INTC" },
-    { name: "에어비앤비", displayNameEN: "Airbnb", symbol: "ABNB" },
-    { name: "부킹홀딩스", displayNameEN: "Booking Holdings", symbol: "BKNG" },
-    { name: "스타벅스", displayNameEN: "Starbucks", symbol: "SBUX" },
-  ];
-
-  return market === "KOSPI"
-    ? makeDummyRows("KOSPI", kospiNames)
-    : makeDummyRows("NASDAQ", nasdaqNames);
+  return fetchStockTop30("NASDAQ");
 }

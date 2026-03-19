@@ -2,8 +2,22 @@
   padding: 18px 0 40px;
 }
 
+.boardDetailWrap{
+  width: min(960px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.boardDetailTopBar{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
 .boardDetailCard,
-.boardCommentCard{
+.boardCommentSection{
   border-radius: 20px;
   border: 1px solid rgba(255,255,255,0.08);
   background: rgba(255,255,255,0.025);
@@ -11,14 +25,8 @@
   padding: 22px;
 }
 
-.boardCommentCard{
+.boardCommentSection{
   margin-top: 18px;
-}
-
-.boardDetailTopBar{
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 16px;
 }
 
 .boardDetailGhostBtn{
@@ -32,14 +40,10 @@
   cursor: pointer;
 }
 
-.boardDetailBadgeRow{
-  margin-bottom: 12px;
-}
-
-.boardDetailBadge{
+.boardDetailCategory{
   display: inline-flex;
   align-items: center;
-  height: 28px;
+  min-height: 28px;
   padding: 0 10px;
   border-radius: 999px;
   background: rgba(14,165,255,0.16);
@@ -47,6 +51,7 @@
   color: #dff6ff;
   font-size: 12px;
   font-weight: 900;
+  margin-bottom: 12px;
 }
 
 .boardDetailTitle{
@@ -63,6 +68,22 @@
   gap: 10px 16px;
   color: rgba(255,255,255,0.56);
   font-size: 13px;
+}
+
+.boardDetailImageWrap{
+  margin-top: 18px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+}
+
+.boardDetailImage{
+  width: 100%;
+  max-height: 680px;
+  object-fit: contain;
+  display: block;
+  background: rgba(0,0,0,0.2);
 }
 
 .boardDetailContent{
@@ -96,24 +117,25 @@
   cursor: pointer;
 }
 
-.boardDetailLikeBtn.active{
+.boardDetailLikeBtn.isActive{
   background: linear-gradient(135deg, rgba(14,165,255,0.22), rgba(124,77,255,0.16));
   color: white;
 }
 
-.boardCommentHead{
+.boardCommentHeader{
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  gap: 12px;
 }
 
-.boardCommentHead h3{
+.boardCommentHeader h2{
   margin: 0;
   font-size: 22px;
 }
 
-.boardCommentHead span{
+.boardCommentHeader span{
   color: rgba(255,255,255,0.56);
   font-size: 13px;
   font-weight: 800;
@@ -126,13 +148,17 @@
   border: 1px solid rgba(255,255,255,0.06);
 }
 
-.boardCommentFormTop{
+.boardCommentAuthor{
   margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.9);
 }
 
-.boardCommentForm input,
-.boardCommentForm textarea{
+.boardCommentTextarea{
   width: 100%;
+  min-height: 120px;
+  resize: vertical;
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,0.10);
   background: rgba(255,255,255,0.03);
@@ -141,9 +167,9 @@
   padding: 12px 14px;
 }
 
-.boardCommentForm textarea{
-  min-height: 120px;
-  resize: vertical;
+.boardCommentTextarea:disabled{
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .boardCommentError{
@@ -159,7 +185,7 @@
   justify-content: flex-end;
 }
 
-.boardCommentSubmitRow button{
+.boardCommentSubmitBtn{
   height: 42px;
   padding: 0 16px;
   border-radius: 12px;
@@ -168,6 +194,11 @@
   color: white;
   font-weight: 900;
   cursor: pointer;
+}
+
+.boardCommentSubmitBtn:disabled{
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .boardCommentList{
@@ -225,43 +256,22 @@
   cursor: pointer;
 }
 
-.boardDetailImageWrap{
-  margin-top: 18px;
-  border-radius: 18px;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.03);
-}
+@media (max-width: 768px){
+  .boardDetailWrap{
+    width: min(100%, calc(100% - 20px));
+  }
 
-.boardDetailImage{
-  width: 100%;
-  max-height: 680px;
-  object-fit: contain;
-  display:block;
-  background: rgba(0,0,0,0.2);
-}
+  .boardDetailCard,
+  .boardCommentSection{
+    padding: 18px;
+  }
 
-.boardCommentLoginGuide{
-  margin-top: 8px;
-  padding: 16px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.03);
-  color: rgba(255,255,255,0.75);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
+  .boardDetailTitle{
+    font-size: 24px;
+  }
 
-.boardCommentLoginGuide button{
-  height: 38px;
-  padding: 0 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.05);
-  color: rgba(255,255,255,0.92);
-  font-weight: 800;
-  cursor: pointer;
+  .boardDetailContent{
+    min-height: 180px;
+    padding: 16px;
+  }
 }

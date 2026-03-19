@@ -4,8 +4,8 @@ import iconv from "iconv-lite";
 
 const cache = new Map();
 
-const RANK_TTL_MS = 6 * 60 * 60 * 1000; // 6시간
-const PRICE_TTL_MS = 20 * 1000; // 20초
+const RANK_TTL_MS = 6 * 60 * 60 * 1000;
+const PRICE_TTL_MS = 20 * 1000;
 const FX_TTL_MS = 20 * 1000;
 const KIS_TOKEN_TTL_MS = 23 * 60 * 60 * 1000;
 
@@ -21,249 +21,67 @@ const kisTokenCache = {
   at: 0,
 };
 
-/**
- * 무료 운영용 NASDAQ 고정 TOP30 후보군
- * - 자동 재선정이 아니라 운영용 고정 목록
- * - 가격/등락률/시총은 Yahoo에서 실시간 반영
- * - 필요하면 한 달에 1번 정도 수동 업데이트
- *
- * 참고용 대형주 기준:
- * Nvidia, Apple, Alphabet, Microsoft, Amazon, Broadcom, Meta, Tesla, ASML,
- * Netflix, Costco, AMD, Micron 등은 2026년 초 NASDAQ 대형주 상위권에 해당. :contentReference[oaicite:1]{index=1}
- */
-const NASDAQ_FIXED_TOP30 = [
-  {
-    rank: 1,
-    symbol: "NVDA",
-    name: "NVIDIA",
-    displayNameEN: "NVIDIA Corporation",
-    domain: "nvidia.com",
-  },
-  {
-    rank: 2,
-    symbol: "AAPL",
-    name: "애플",
-    displayNameEN: "Apple Inc.",
-    domain: "apple.com",
-  },
-  {
-    rank: 3,
-    symbol: "GOOGL",
-    name: "알파벳",
-    displayNameEN: "Alphabet Inc.",
-    domain: "google.com",
-  },
-  {
-    rank: 4,
-    symbol: "GOOG",
-    name: "알파벳C",
-    displayNameEN: "Alphabet Inc. Class C",
-    domain: "google.com",
-  },
-  {
-    rank: 5,
-    symbol: "MSFT",
-    name: "마이크로소프트",
-    displayNameEN: "Microsoft Corporation",
-    domain: "microsoft.com",
-  },
-  {
-    rank: 6,
-    symbol: "AMZN",
-    name: "아마존",
-    displayNameEN: "Amazon.com, Inc.",
-    domain: "amazon.com",
-  },
-  {
-    rank: 7,
-    symbol: "AVGO",
-    name: "브로드컴",
-    displayNameEN: "Broadcom Inc.",
-    domain: "broadcom.com",
-  },
-  {
-    rank: 8,
-    symbol: "META",
-    name: "메타",
-    displayNameEN: "Meta Platforms, Inc.",
-    domain: "meta.com",
-  },
-  {
-    rank: 9,
-    symbol: "TSLA",
-    name: "테슬라",
-    displayNameEN: "Tesla, Inc.",
-    domain: "tesla.com",
-  },
-  {
-    rank: 10,
-    symbol: "ASML",
-    name: "ASML",
-    displayNameEN: "ASML Holding N.V.",
-    domain: "asml.com",
-  },
-  {
-    rank: 11,
-    symbol: "NFLX",
-    name: "넷플릭스",
-    displayNameEN: "Netflix, Inc.",
-    domain: "netflix.com",
-  },
-  {
-    rank: 12,
-    symbol: "COST",
-    name: "코스트코",
-    displayNameEN: "Costco Wholesale Corporation",
-    domain: "costco.com",
-  },
-  {
-    rank: 13,
-    symbol: "AMD",
-    name: "AMD",
-    displayNameEN: "Advanced Micro Devices, Inc.",
-    domain: "amd.com",
-  },
-  {
-    rank: 14,
-    symbol: "MU",
-    name: "마이크론",
-    displayNameEN: "Micron Technology, Inc.",
-    domain: "micron.com",
-  },
-  {
-    rank: 15,
-    symbol: "CSCO",
-    name: "시스코",
-    displayNameEN: "Cisco Systems, Inc.",
-    domain: "cisco.com",
-  },
-  {
-    rank: 16,
-    symbol: "AZN",
-    name: "아스트라제네카",
-    displayNameEN: "AstraZeneca PLC",
-    domain: "astrazeneca.com",
-  },
-  {
-    rank: 17,
-    symbol: "LRCX",
-    name: "램리서치",
-    displayNameEN: "Lam Research Corporation",
-    domain: "lamresearch.com",
-  },
-  {
-    rank: 18,
-    symbol: "TMUS",
-    name: "T-모바일",
-    displayNameEN: "T-Mobile US, Inc.",
-    domain: "t-mobile.com",
-  },
-  {
-    rank: 19,
-    symbol: "AMAT",
-    name: "어플라이드머티어리얼즈",
-    displayNameEN: "Applied Materials, Inc.",
-    domain: "appliedmaterials.com",
-  },
-  {
-    rank: 20,
-    symbol: "ISRG",
-    name: "인튜이티브서지컬",
-    displayNameEN: "Intuitive Surgical, Inc.",
-    domain: "intuitive.com",
-  },
-  {
-    rank: 21,
-    symbol: "LIN",
-    name: "린데",
-    displayNameEN: "Linde plc",
-    domain: "linde.com",
-  },
-  {
-    rank: 22,
-    symbol: "PEP",
-    name: "펩시코",
-    displayNameEN: "PepsiCo, Inc.",
-    domain: "pepsico.com",
-  },
-  {
-    rank: 23,
-    symbol: "INTC",
-    name: "인텔",
-    displayNameEN: "Intel Corporation",
-    domain: "intel.com",
-  },
-  {
-    rank: 24,
-    symbol: "QCOM",
-    name: "퀄컴",
-    displayNameEN: "Qualcomm Incorporated",
-    domain: "qualcomm.com",
-  },
-  {
-    rank: 25,
-    symbol: "AMGN",
-    name: "암젠",
-    displayNameEN: "Amgen Inc.",
-    domain: "amgen.com",
-  },
-  {
-    rank: 26,
-    symbol: "INTU",
-    name: "인튜이트",
-    displayNameEN: "Intuit Inc.",
-    domain: "intuit.com",
-  },
-  {
-    rank: 27,
-    symbol: "BKNG",
-    name: "부킹홀딩스",
-    displayNameEN: "Booking Holdings Inc.",
-    domain: "bookingholdings.com",
-  },
-  {
-    rank: 28,
-    symbol: "KLAC",
-    name: "KLA",
-    displayNameEN: "KLA Corporation",
-    domain: "kla.com",
-  },
-  {
-    rank: 29,
-    symbol: "PDD",
-    name: "핀둬둬",
-    displayNameEN: "PDD Holdings Inc.",
-    domain: "pddholdings.com",
-  },
-  {
-    rank: 30,
-    symbol: "ADBE",
-    name: "어도비",
-    displayNameEN: "Adobe Inc.",
-    domain: "adobe.com",
-  },
+const NASDAQ_FIXED_UNIVERSE = [
+  { symbol: "AAPL", name: "애플", displayNameEN: "Apple Inc.", domain: "apple.com" },
+  { symbol: "MSFT", name: "마이크로소프트", displayNameEN: "Microsoft Corporation", domain: "microsoft.com" },
+  { symbol: "NVDA", name: "엔비디아", displayNameEN: "NVIDIA Corporation", domain: "nvidia.com" },
+  { symbol: "AMZN", name: "아마존", displayNameEN: "Amazon.com, Inc.", domain: "amazon.com" },
+  { symbol: "GOOGL", name: "알파벳A", displayNameEN: "Alphabet Inc. Class A", domain: "google.com" },
+  { symbol: "GOOG", name: "알파벳C", displayNameEN: "Alphabet Inc. Class C", domain: "google.com" },
+  { symbol: "META", name: "메타", displayNameEN: "Meta Platforms, Inc.", domain: "meta.com" },
+  { symbol: "AVGO", name: "브로드컴", displayNameEN: "Broadcom Inc.", domain: "broadcom.com" },
+  { symbol: "TSLA", name: "테슬라", displayNameEN: "Tesla, Inc.", domain: "tesla.com" },
+  { symbol: "COST", name: "코스트코", displayNameEN: "Costco Wholesale Corporation", domain: "costco.com" },
+  { symbol: "NFLX", name: "넷플릭스", displayNameEN: "Netflix, Inc.", domain: "netflix.com" },
+  { symbol: "ASML", name: "ASML", displayNameEN: "ASML Holding N.V.", domain: "asml.com" },
+  { symbol: "TMUS", name: "T-모바일", displayNameEN: "T-Mobile US, Inc.", domain: "t-mobile.com" },
+  { symbol: "CSCO", name: "시스코", displayNameEN: "Cisco Systems, Inc.", domain: "cisco.com" },
+  { symbol: "AMD", name: "AMD", displayNameEN: "Advanced Micro Devices, Inc.", domain: "amd.com" },
+  { symbol: "PEP", name: "펩시코", displayNameEN: "PepsiCo, Inc.", domain: "pepsico.com" },
+  { symbol: "LIN", name: "린데", displayNameEN: "Linde plc", domain: "linde.com" },
+  { symbol: "INTU", name: "인튜이트", displayNameEN: "Intuit Inc.", domain: "intuit.com" },
+  { symbol: "QCOM", name: "퀄컴", displayNameEN: "QUALCOMM Incorporated", domain: "qualcomm.com" },
+  { symbol: "AMGN", name: "암젠", displayNameEN: "Amgen Inc.", domain: "amgen.com" },
+  { symbol: "TXN", name: "텍사스인스트루먼트", displayNameEN: "Texas Instruments Incorporated", domain: "ti.com" },
+  { symbol: "INTC", name: "인텔", displayNameEN: "Intel Corporation", domain: "intel.com" },
+  { symbol: "HON", name: "허니웰", displayNameEN: "Honeywell International Inc.", domain: "honeywell.com" },
+  { symbol: "AMAT", name: "어플라이드머티어리얼즈", displayNameEN: "Applied Materials, Inc.", domain: "appliedmaterials.com" },
+  { symbol: "BKNG", name: "부킹홀딩스", displayNameEN: "Booking Holdings Inc.", domain: "bookingholdings.com" },
+  { symbol: "ISRG", name: "인튜이티브서지컬", displayNameEN: "Intuitive Surgical, Inc.", domain: "intuitive.com" },
+  { symbol: "ADBE", name: "어도비", displayNameEN: "Adobe Inc.", domain: "adobe.com" },
+  { symbol: "MU", name: "마이크론", displayNameEN: "Micron Technology, Inc.", domain: "micron.com" },
+  { symbol: "ADP", name: "ADP", displayNameEN: "Automatic Data Processing, Inc.", domain: "adp.com" },
+  { symbol: "LRCX", name: "램리서치", displayNameEN: "Lam Research Corporation", domain: "lamresearch.com" },
+  { symbol: "KLAC", name: "KLA", displayNameEN: "KLA Corporation", domain: "kla.com" },
+  { symbol: "PANW", name: "팔로알토네트웍스", displayNameEN: "Palo Alto Networks, Inc.", domain: "paloaltonetworks.com" },
+  { symbol: "SNPS", name: "시놉시스", displayNameEN: "Synopsys, Inc.", domain: "synopsys.com" },
+  { symbol: "CDNS", name: "케이던스", displayNameEN: "Cadence Design Systems, Inc.", domain: "cadence.com" },
+  { symbol: "MRVL", name: "마벨", displayNameEN: "Marvell Technology, Inc.", domain: "marvell.com" },
+  { symbol: "PLTR", name: "팔란티어", displayNameEN: "Palantir Technologies Inc.", domain: "palantir.com" },
+  { symbol: "ADI", name: "아나로그디바이스", displayNameEN: "Analog Devices, Inc.", domain: "analog.com" },
+  { symbol: "CMCSA", name: "컴캐스트", displayNameEN: "Comcast Corporation", domain: "corporate.comcast.com" },
+  { symbol: "GILD", name: "길리어드", displayNameEN: "Gilead Sciences, Inc.", domain: "gilead.com" },
+  { symbol: "ABNB", name: "에어비앤비", displayNameEN: "Airbnb, Inc.", domain: "airbnb.com" },
+  { symbol: "PDD", name: "핀둬둬", displayNameEN: "PDD Holdings Inc.", domain: "pddholdings.com" },
+  { symbol: "MELI", name: "메르카도리브레", displayNameEN: "MercadoLibre, Inc.", domain: "mercadolibre.com" },
+  { symbol: "ORCL", name: "오라클", displayNameEN: "Oracle Corporation", domain: "oracle.com" },
 ];
 
 function toNumber(value) {
-  if (value === null || value === undefined || value === "") return null;
-  const cleaned = String(value).replace(/[,%\s,]/g, "");
-  const n = Number(cleaned);
+  const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }
 
 function buildLogo(domain) {
-  return domain
-    ? `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(
-        domain
-      )}`
-    : "";
+  if (!domain) return "";
+  return `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(
+    domain
+  )}`;
 }
 
-function normalizeSymbol(value) {
-  const raw = String(value || "").trim().toUpperCase();
-  if (/^\d{6}$/.test(raw)) return raw;
-  const onlyDigits = raw.replace(/\D/g, "");
-  if (!onlyDigits) return raw;
+function normalizeSymbol(raw) {
+  const onlyDigits = String(raw || "").replace(/\D/g, "");
+  if (!onlyDigits) return String(raw || "").trim().toUpperCase();
   return onlyDigits.padStart(6, "0");
 }
 
@@ -562,36 +380,49 @@ function pickStockDomain(symbol) {
     "009150": "sem.samsung.com",
     "012450": "hanwhaaerospace.com",
 
-    NVDA: "nvidia.com",
     AAPL: "apple.com",
+    MSFT: "microsoft.com",
+    NVDA: "nvidia.com",
+    AMZN: "amazon.com",
     GOOGL: "google.com",
     GOOG: "google.com",
-    MSFT: "microsoft.com",
-    AMZN: "amazon.com",
-    AVGO: "broadcom.com",
     META: "meta.com",
+    AVGO: "broadcom.com",
     TSLA: "tesla.com",
-    ASML: "asml.com",
-    NFLX: "netflix.com",
     COST: "costco.com",
-    AMD: "amd.com",
-    MU: "micron.com",
-    CSCO: "cisco.com",
-    AZN: "astrazeneca.com",
-    LRCX: "lamresearch.com",
+    NFLX: "netflix.com",
+    ASML: "asml.com",
     TMUS: "t-mobile.com",
-    AMAT: "appliedmaterials.com",
-    ISRG: "intuitive.com",
-    LIN: "linde.com",
+    CSCO: "cisco.com",
+    AMD: "amd.com",
     PEP: "pepsico.com",
-    INTC: "intel.com",
+    LIN: "linde.com",
+    INTU: "intuit.com",
     QCOM: "qualcomm.com",
     AMGN: "amgen.com",
-    INTU: "intuit.com",
+    TXN: "ti.com",
+    INTC: "intel.com",
+    HON: "honeywell.com",
+    AMAT: "appliedmaterials.com",
     BKNG: "bookingholdings.com",
-    KLAC: "kla.com",
-    PDD: "pddholdings.com",
+    ISRG: "intuitive.com",
     ADBE: "adobe.com",
+    MU: "micron.com",
+    ADP: "adp.com",
+    LRCX: "lamresearch.com",
+    KLAC: "kla.com",
+    PANW: "paloaltonetworks.com",
+    SNPS: "synopsys.com",
+    CDNS: "cadence.com",
+    MRVL: "marvell.com",
+    PLTR: "palantir.com",
+    ADI: "analog.com",
+    CMCSA: "corporate.comcast.com",
+    GILD: "gilead.com",
+    ABNB: "airbnb.com",
+    PDD: "pddholdings.com",
+    MELI: "mercadolibre.com",
+    ORCL: "oracle.com",
   };
 
   return map[String(symbol || "").toUpperCase()] || "";
@@ -715,7 +546,7 @@ async function fetchYahooBatchQuote(symbols) {
     : [];
 }
 
-function normalizeYahooNasdaqRow(baseItem, quote, usdKrw) {
+function normalizeYahooNasdaqRankRow(baseItem, quote, usdKrw) {
   const marketCapUSD =
     toNumber(quote?.marketCap) ??
     toNumber(quote?.regularMarketCap) ??
@@ -735,10 +566,8 @@ function normalizeYahooNasdaqRow(baseItem, quote, usdKrw) {
     null;
 
   return {
-    rank: baseItem.rank,
-    name:
-      String(quote?.shortName || "").trim() ||
-      baseItem.name,
+    rank: 0,
+    name: String(quote?.shortName || "").trim() || baseItem.name,
     displayNameEN:
       String(quote?.longName || quote?.shortName || "").trim() ||
       baseItem.displayNameEN,
@@ -772,14 +601,34 @@ async function buildKospiRankSnapshot() {
 }
 
 async function buildNasdaqRankSnapshot() {
-  return NASDAQ_FIXED_TOP30.map((item) => ({
-    rank: item.rank,
-    symbol: item.symbol,
-    name: item.name,
-    displayNameEN: item.displayNameEN,
-    iconUrl: buildLogo(item.domain),
-    domain: item.domain,
-  }));
+  const bucket = getCacheBucket("NASDAQ");
+  const usdKrw = await getUsdKrwCached(bucket);
+
+  const quoteRows = await fetchYahooBatchQuote(
+    NASDAQ_FIXED_UNIVERSE.map((item) => item.symbol)
+  );
+
+  const quoteMap = new Map(
+    quoteRows.map((row) => [String(row?.symbol || "").toUpperCase(), row])
+  );
+
+  const normalized = NASDAQ_FIXED_UNIVERSE
+    .map((item) =>
+      normalizeYahooNasdaqRankRow(item, quoteMap.get(item.symbol) || {}, usdKrw)
+    )
+    .filter((item) => item.symbol && item.capKRW != null)
+    .sort((a, b) => (b.capKRW || 0) - (a.capKRW || 0))
+    .slice(0, 30)
+    .map((item, index) => ({
+      ...item,
+      rank: index + 1,
+    }));
+
+  if (!normalized.length) {
+    throw new Error("NASDAQ top30 normalization failed");
+  }
+
+  return normalized;
 }
 
 async function ensureRankSnapshot(market) {
@@ -827,9 +676,40 @@ async function buildPriceSnapshot(rankedItems, market) {
     quoteRows.map((row) => [String(row?.symbol || "").toUpperCase(), row])
   );
 
-  return rankedItems.map((item) =>
-    normalizeYahooNasdaqRow(item, quoteMap.get(item.symbol) || {}, usdKrw)
-  );
+  return rankedItems.map((item) => {
+    const quote = quoteMap.get(item.symbol) || {};
+    const marketCapUSD =
+      toNumber(quote?.marketCap) ??
+      toNumber(quote?.regularMarketCap) ??
+      null;
+
+    const priceUSD =
+      toNumber(quote?.regularMarketPrice) ??
+      toNumber(quote?.postMarketPrice) ??
+      toNumber(quote?.preMarketPrice) ??
+      toNumber(quote?.regularMarketPreviousClose) ??
+      null;
+
+    const changePct =
+      toNumber(quote?.regularMarketChangePercent) ??
+      toNumber(quote?.postMarketChangePercent) ??
+      toNumber(quote?.preMarketChangePercent) ??
+      item.changePct ??
+      null;
+
+    return {
+      rank: item.rank,
+      name: String(quote?.shortName || "").trim() || item.name,
+      displayNameEN:
+        String(quote?.longName || quote?.shortName || "").trim() ||
+        item.displayNameEN,
+      symbol: item.symbol,
+      iconUrl: item.iconUrl || buildLogo(pickStockDomain(item.symbol)),
+      capKRW: marketCapUSD != null ? Math.round(marketCapUSD * usdKrw) : item.capKRW,
+      priceKRW: priceUSD != null ? Number((priceUSD * usdKrw).toFixed(2)) : item.priceKRW,
+      changePct,
+    };
+  });
 }
 
 async function ensurePriceSnapshot(market) {
@@ -874,26 +754,12 @@ export default async function handler(req, res) {
       priceRefreshSeconds: 20,
       mode:
         market === "NASDAQ"
-          ? "fixed-top30-yahoo-live-quotes"
+          ? "fixed-universe-yahoo-sorted-by-marketcap"
           : "live-market-cap-ranking",
     });
   } catch (error) {
     const bucket = getCacheBucket(market);
-
-    let fallbackItems = bucket.pricedItems?.length ? bucket.pricedItems : [];
-
-    if (!fallbackItems.length && market === "NASDAQ") {
-      fallbackItems = NASDAQ_FIXED_TOP30.map((item, index) => ({
-        rank: item.rank ?? index + 1,
-        symbol: item.symbol,
-        name: item.name,
-        displayNameEN: item.displayNameEN,
-        iconUrl: buildLogo(item.domain),
-        capKRW: null,
-        priceKRW: 620000 - index * 14000,
-        changePct: Number((Math.sin((index + 1) * 1.27) * 2.15).toFixed(2)),
-      }));
-    }
+    const fallbackItems = bucket.pricedItems?.length ? bucket.pricedItems : [];
 
     res.setHeader("Cache-Control", "s-maxage=20, stale-while-revalidate=40");
     res.status(200).json({
@@ -906,7 +772,7 @@ export default async function handler(req, res) {
       error: String(error?.message || error),
       mode:
         market === "NASDAQ"
-          ? "fixed-top30-yahoo-live-quotes"
+          ? "fixed-universe-yahoo-sorted-by-marketcap"
           : "live-market-cap-ranking",
     });
   }

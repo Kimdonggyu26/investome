@@ -1,3 +1,5 @@
+import { apiUrl } from "../lib/apiClient";
+
 export async function fetchNews({ category = "all", limit = 12, q = "" } = {}) {
   const qs = new URLSearchParams({
     category,
@@ -8,8 +10,11 @@ export async function fetchNews({ category = "all", limit = 12, q = "" } = {}) {
     qs.set("q", q.trim());
   }
 
-  const res = await fetch(`/api/news?${qs.toString()}`);
-  if (!res.ok) throw new Error(`News API failed: ${res.status}`);
+  const res = await fetch(apiUrl(`/api/news?${qs.toString()}`));
+
+  if (!res.ok) {
+    throw new Error(`News API failed: ${res.status}`);
+  }
 
   const json = await res.json();
   return Array.isArray(json.items) ? json.items : [];

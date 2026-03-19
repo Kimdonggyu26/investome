@@ -9,7 +9,6 @@ import {
   fetchCryptoTop30KRW,
   fetchKospiTop30KRW,
   fetchNasdaqTop30KRW,
-  getKoreanDummyTop30,
 } from "../api/rankingApi";
 import TradingViewChart from "../components/TradingViewChart";
 import AssetNewsList from "../components/AssetNewsList";
@@ -246,11 +245,9 @@ export default function AssetDetail() {
         if (market === "CRYPTO") {
           rows = await fetchCryptoTop30KRW().catch(() => []);
         } else if (market === "KOSPI") {
-          const real = await fetchKospiTop30KRW().catch(() => null);
-          rows = real ?? getKoreanDummyTop30("KOSPI");
+          rows = await fetchKospiTop30KRW().catch(() => []);
         } else if (market === "NASDAQ") {
-          const real = await fetchNasdaqTop30KRW().catch(() => null);
-          rows = real ?? getKoreanDummyTop30("NASDAQ");
+          rows = await fetchNasdaqTop30KRW().catch(() => []);
         } else if (market === "COMMODITIES") {
           rows = await fetchCommoditiesTopKRW().catch(() => []);
         }

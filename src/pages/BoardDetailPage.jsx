@@ -8,7 +8,7 @@ import {
   fetchBoardPost,
   toggleBoardPostLike,
 } from "../api/boardApi";
-import { getAuthUser, isLoggedIn } from "../utils/authStorage";
+import { getAuthUser, isLoggedIn } from "../utils/auth";
 import "../styles/BoardDetailPage.css";
 
 function formatBoardDateTime(dateValue) {
