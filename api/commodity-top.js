@@ -214,7 +214,7 @@ export default async function handler(_req, res) {
           name: item.name,
           displayNameEN: item.displayNameEN,
           symbol: item.symbol,
-          iconUrl: `/icons/commodities/${item.iconType}.png`,
+          iconUrl: buildCommodityIcon(item.iconType, item.name),
           coinId: "",
           capKRW: null,
           priceKRW:

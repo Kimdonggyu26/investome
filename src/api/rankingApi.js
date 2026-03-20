@@ -1,3 +1,5 @@
+import { SEARCH_ASSETS } from "../data/searchAssets";
+
 function toNumber(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
@@ -164,6 +166,42 @@ function toCryptoRow(coin, index) {
   };
 }
 
+function hasUsableRows(rows) {
+  return (
+    Array.isArray(rows) &&
+    rows.length > 0 &&
+    rows.some(
+      (row) =>
+        row &&
+        (row.priceKRW != null ||
+          row.capKRW != null ||
+          (row.name && row.name !== "-"))
+    )
+  );
+}
+
+function fallbackStockRows(market) {
+  return SEARCH_ASSETS
+    .filter((item) => item.market === market)
+    .slice(0, 30)
+    .map((item, index) =>
+      normalizeRow(
+        {
+          rank: index + 1,
+          name: item.name,
+          displayNameEN: item.displayNameEN,
+          symbol: item.symbol,
+          iconUrl: buildLogo(pickStockDomain(item.symbol)),
+          coinId: "",
+          capKRW: null,
+          priceKRW: null,
+          changePct: null,
+        },
+        index
+      )
+    );
+}
+
 async function readJsonOrThrow(res, label) {
   if (!res.ok) {
     throw new Error(`${label} failed: ${res.status}`);
@@ -226,13 +264,23 @@ export async function fetchCommoditiesTopKRW() {
 }
 
 async function fetchStockTop30(market) {
-  const json = await readJsonOrThrow(
-    await fetch(rankingApiUrl(`/api/stock-top30?market=${market}`)),
-    `${market} top30`
-  );
+  try {
+    const json = await readJsonOrThrow(
+      await fetch(rankingApiUrl(`/api/stock-top30?market=${market}`)),
+      `${market} top30`
+    );
 
-  const items = Array.isArray(json?.items) ? json.items : [];
-  return items.map(normalizeRow);
+    const items = Array.isArray(json?.items) ? json.items : [];
+    const rows = items.map(normalizeRow);
+
+    if (hasUsableRows(rows)) {
+      return rows;
+    }
+
+    return fallbackStockRows(market);
+  } catch {
+    return fallbackStockRows(market);
+  }
 }
 
 export async function fetchKospiTop30KRW() {

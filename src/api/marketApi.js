@@ -1,7 +1,5 @@
-import { apiUrl } from "../lib/apiClient";
-
 export async function fetchMarketTicker() {
-  const res = await fetch(apiUrl("/api/ticker"));
+  const res = await fetch("/api/ticker");
 
   if (!res.ok) {
     throw new Error(`Ticker failed: ${res.status}`);
