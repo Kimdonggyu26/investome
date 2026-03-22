@@ -57,39 +57,18 @@ function toNumber(value) {
   return Number.isFinite(n) ? n : null;
 }
 
-function svgDataUri(svg) {
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-}
-
-function buildCommodityIcon(type, label) {
+function getCommodityIconPath(symbol) {
   const map = {
-    gold: { c1: "#facc15", c2: "#f59e0b", text: "G" },
-    silver: { c1: "#e5e7eb", c2: "#94a3b8", text: "S" },
-    oil: { c1: "#38bdf8", c2: "#1d4ed8", text: "W" },
-    brent: { c1: "#0ea5e9", c2: "#2563eb", text: "B" },
-    gas: { c1: "#22c55e", c2: "#0f766e", text: "N" },
-    platinum: { c1: "#cbd5e1", c2: "#64748b", text: "P" },
-    palladium: { c1: "#d8b4fe", c2: "#7c3aed", text: "P" },
+    "GC=F": "/icons/commodities/gold.png",
+    "SI=F": "/icons/commodities/silver.png",
+    "CL=F": "/icons/commodities/oil.png",
+    "BZ=F": "/icons/commodities/brent.png",
+    "NG=F": "/icons/commodities/gas.png",
+    "PL=F": "/icons/commodities/platinum.png",
+    "PA=F": "/icons/commodities/palladium.png",
   };
 
-  const item = map[type] || map.gold;
-  const safeText = String(label || item.text || "?").trim().slice(0, 1).toUpperCase() || item.text;
-
-  return svgDataUri(`
-    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
-      <defs>
-        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="${item.c1}" />
-          <stop offset="100%" stop-color="${item.c2}" />
-        </linearGradient>
-      </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#g)" />
-      <circle cx="40" cy="40" r="35.5" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5" />
-      <text x="40" y="46" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="white">
-        ${safeText}
-      </text>
-    </svg>
-  `);
+  return map[String(symbol || "").toUpperCase()] || "";
 }
 
 async function fetchText(url) {
@@ -214,7 +193,7 @@ export default async function handler(_req, res) {
           name: item.name,
           displayNameEN: item.displayNameEN,
           symbol: item.symbol,
-          iconUrl: buildCommodityIcon(item.iconType, item.name),
+          iconUrl: getCommodityIconPath(item.symbol),
           coinId: "",
           capKRW: null,
           priceKRW:
@@ -236,7 +215,7 @@ export default async function handler(_req, res) {
         name: fallback.name,
         displayNameEN: fallback.displayNameEN,
         symbol: fallback.symbol,
-        iconUrl: buildCommodityIcon(fallback.iconType, fallback.name),
+        iconUrl: getCommodityIconPath(item.symbol),
         coinId: "",
         capKRW: null,
         priceKRW: null,

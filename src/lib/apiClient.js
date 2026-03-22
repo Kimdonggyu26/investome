@@ -1,8 +1,7 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").trim();
 
 export function apiUrl(path) {
-  if (!path.startsWith("/")) {
-    return `${API_BASE_URL}/${path}`;
-  }
-  return `${API_BASE_URL}${path}`;
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  if (!API_BASE_URL) return normalizedPath;
+  return `${API_BASE_URL.replace(/\/$/, "")}${normalizedPath}`;
 }

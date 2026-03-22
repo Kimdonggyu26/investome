@@ -129,7 +129,7 @@ function getCountdownLabel(secondsLeft, isRefreshingNow) {
 export default function RankingTable() {
   const navigate = useNavigate();
 
-  const [market, setMarket] = useState("CRYPTO");
+  const [market, setMarket] = useState("KOSPI");
   const [rows, setRows] = useState([]);
   const [err, setErr] = useState(null);
   const [flashMap, setFlashMap] = useState({});

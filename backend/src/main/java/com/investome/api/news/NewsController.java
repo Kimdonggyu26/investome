@@ -6,8 +6,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -25,15 +28,34 @@ public class NewsController {
             @RequestParam(defaultValue = "12") int limit,
             @RequestParam(required = false) String q
     ) {
+        Map<String, Object> result = new HashMap<>();
+
         try {
             String keyword = resolveKeyword(category, q);
             String rssUrl = "https://news.google.com/rss/search?q="
                     + URLEncoder.encode(keyword, StandardCharsets.UTF_8)
                     + "&hl=ko&gl=KR&ceid=KR:ko";
 
-            URL url = new URL(rssUrl);
+            HttpURLConnection conn = (HttpURLConnection) new URL(rssUrl).openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+            conn.setRequestProperty("Accept", "application/rss+xml, application/xml, text/xml;q=0.9, */*;q=0.8");
+
+            int status = conn.getResponseCode();
+            InputStream stream = status >= 200 && status < 300
+                    ? conn.getInputStream()
+                    : conn.getErrorStream();
+
+            if (stream == null) {
+                result.put("items", List.of());
+                result.put("error", "news_stream_null");
+                return result;
+            }
+
             BufferedReader br = new BufferedReader(
-                    new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)
+                    new InputStreamReader(stream, StandardCharsets.UTF_8)
             );
 
             StringBuilder xml = new StringBuilder();
@@ -42,6 +64,7 @@ public class NewsController {
                 xml.append(line);
             }
             br.close();
+            conn.disconnect();
 
             List<Map<String, String>> items = parseRss(xml.toString());
 
@@ -49,13 +72,14 @@ public class NewsController {
                 items = items.subList(0, limit);
             }
 
-            Map<String, Object> result = new HashMap<>();
             result.put("items", items);
+            result.put("count", items.size());
             return result;
 
         } catch (Exception e) {
-            Map<String, Object> result = new HashMap<>();
             result.put("items", List.of());
+            result.put("error", e.getClass().getSimpleName());
+            result.put("message", e.getMessage());
             return result;
         }
     }
@@ -82,15 +106,17 @@ public class NewsController {
             String item = chunks[i];
 
             String title = cleanText(extract(item, "title"));
-            String link = cleanText(extract(item, "link"));
+            String link = decodeGoogleNewsLink(cleanText(extract(item, "link")));
             String pubDate = cleanText(extract(item, "pubDate"));
             String description = cleanText(extract(item, "description"));
+            String source = cleanText(extract(item, "source"));
 
             Map<String, String> map = new HashMap<>();
             map.put("title", title);
             map.put("link", link);
             map.put("pubDate", pubDate);
             map.put("description", description);
+            map.put("source", source);
 
             result.add(map);
         }
@@ -124,6 +150,26 @@ public class NewsController {
                 .replace("&amp;", "&")
                 .replace("<![CDATA[", "")
                 .replace("]]>", "")
+                .replaceAll("<[^>]*>", "")
                 .trim();
+    }
+
+    private String decodeGoogleNewsLink(String link) {
+        try {
+            if (link == null || link.isBlank()) return "";
+            String decoded = URLDecoder.decode(link, StandardCharsets.UTF_8);
+            int idx = decoded.indexOf("url=");
+            if (idx >= 0) {
+                String real = decoded.substring(idx + 4);
+                int amp = real.indexOf('&');
+                if (amp >= 0) {
+                    real = real.substring(0, amp);
+                }
+                return real;
+            }
+            return decoded;
+        } catch (Exception e) {
+            return link == null ? "" : link;
+        }
     }
 }

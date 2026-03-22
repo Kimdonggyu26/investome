@@ -569,14 +569,68 @@ function normalizeKisMarketCapRow(row, index, masterMap) {
   };
 }
 
-async function fetchYahooBatchQuote(symbols) {
+async function fetchYahooChartMetaQuote(symbol) {
   const url =
-    "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" +
-    encodeURIComponent(symbols.join(","));
+    `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}` +
+    `?interval=1d&range=5d&includePrePost=false`;
+
   const json = await fetchJson(url);
-  return Array.isArray(json?.quoteResponse?.result)
-    ? json.quoteResponse.result
-    : [];
+  const meta = json?.chart?.result?.[0]?.meta;
+
+  if (!meta) {
+    throw new Error(`No chart meta for ${symbol}`);
+  }
+
+  const regularMarketPrice = toNumber(meta?.regularMarketPrice);
+  const previousClose = toNumber(meta?.previousClose ?? meta?.chartPreviousClose);
+
+  let regularMarketChangePercent = null;
+  if (
+    regularMarketPrice != null &&
+    previousClose != null &&
+    previousClose !== 0
+  ) {
+    regularMarketChangePercent =
+      ((regularMarketPrice - previousClose) / previousClose) * 100;
+  }
+
+  return {
+    symbol,
+    shortName: meta?.shortName || meta?.longName || symbol,
+    longName: meta?.longName || meta?.shortName || symbol,
+    regularMarketPrice,
+    regularMarketPreviousClose: previousClose,
+    regularMarketChangePercent,
+    marketCap: null,
+    regularMarketCap: null,
+  };
+}
+
+async function fetchYahooBatchQuote(symbols) {
+  try {
+    const url =
+      "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" +
+      encodeURIComponent(symbols.join(","));
+
+    const json = await fetchJson(url);
+    const rows = Array.isArray(json?.quoteResponse?.result)
+      ? json.quoteResponse.result
+      : [];
+
+    if (rows.length > 0) {
+      return rows;
+    }
+  } catch (e) {
+    // 아래 chart fallback으로 진행
+  }
+
+  const settled = await Promise.allSettled(
+    symbols.map((symbol) => fetchYahooChartMetaQuote(symbol))
+  );
+
+  return settled
+    .filter((item) => item.status === "fulfilled" && item.value)
+    .map((item) => item.value);
 }
 
 function normalizeYahooNasdaqRankRow(baseItem, quote, usdKrw) {
@@ -649,6 +703,7 @@ async function buildKospiYahooFallbackSnapshot() {
       capKRW: marketCap,
       priceKRW: price,
       changePct,
+      __fixedOrder: index + 1,
     };
   });
 
@@ -659,13 +714,14 @@ async function buildKospiYahooFallbackSnapshot() {
       if (hasMarketCap) {
         return (b.capKRW || 0) - (a.capKRW || 0);
       }
-      return a.rank - b.rank;
+      return a.__fixedOrder - b.__fixedOrder;
     })
     .slice(0, 30)
     .map((item, index) => ({
       ...item,
       rank: index + 1,
-    }));
+    }))
+    .map(({ __fixedOrder, ...rest }) => rest);
 
   if (!sorted.length) {
     throw new Error("KOSPI Yahoo fallback snapshot build failed");
@@ -712,17 +768,26 @@ async function buildNasdaqRankSnapshot() {
     quoteRows.map((row) => [String(row?.symbol || "").toUpperCase(), row])
   );
 
-  const normalized = NASDAQ_FIXED_UNIVERSE
-    .map((item) =>
-      normalizeYahooNasdaqRankRow(item, quoteMap.get(item.symbol) || {}, usdKrw)
-    )
-    .filter((item) => item.symbol && item.capKRW != null)
-    .sort((a, b) => (b.capKRW || 0) - (a.capKRW || 0))
+  const normalizedBase = NASDAQ_FIXED_UNIVERSE.map((item, index) => ({
+    ...normalizeYahooNasdaqRankRow(item, quoteMap.get(item.symbol) || {}, usdKrw),
+    __fixedOrder: index + 1,
+  })).filter((item) => item.symbol);
+
+  const hasMarketCap = normalizedBase.some((item) => item.capKRW != null);
+
+  const normalized = [...normalizedBase]
+    .sort((a, b) => {
+      if (hasMarketCap) {
+        return (b.capKRW || 0) - (a.capKRW || 0);
+      }
+      return a.__fixedOrder - b.__fixedOrder;
+    })
     .slice(0, 30)
     .map((item, index) => ({
       ...item,
       rank: index + 1,
-    }));
+    }))
+    .map(({ __fixedOrder, ...rest }) => rest);
 
   if (!normalized.length) {
     throw new Error("NASDAQ top30 normalization failed");
