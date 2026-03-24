@@ -1,11 +1,11 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/investome
-    username: postgres
-    password: 6894
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/investome}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
   jpa:
     hibernate:
       ddl-auto: update
@@ -17,5 +17,10 @@ spring:
     time-zone: Asia/Seoul
 
 jwt:
-  secret: investome-secret-key-investome-secret-key-1234567890
-  access-token-expiration-ms: 86400000
+  secret: ${JWT_SECRET:change-this-jwt-secret-to-a-long-random-string}
+  access-token-expiration-ms: ${JWT_ACCESS_TOKEN_EXPIRATION_MS:86400000}
+
+KIS_APP_KEY: ${KIS_APP_KEY:}
+KIS_APP_SECRET: ${KIS_APP_SECRET:}
+KIS_BASE_URL: ${KIS_BASE_URL:https://openapi.koreainvestment.com:9443}
+KIS_MARKET_CAP_TR_ID: ${KIS_MARKET_CAP_TR_ID:FHPST01740000}

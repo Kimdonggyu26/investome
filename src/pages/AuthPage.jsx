@@ -278,5 +278,3 @@ export default function AuthPage() {
     </>
   );
 }
-
-console.log(import.meta.env.VITE_API_BASE_URL);
