@@ -5,6 +5,7 @@ import com.investome.api.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
@@ -30,21 +31,19 @@ public class BoardService {
                 .toList();
     }
 
+    @Transactional
     public BoardPostResponse getPost(Long postId, boolean increaseView, Long currentUserId) {
         BoardPost post = boardPostRepository.findWithCommentsById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다."));
 
         if (increaseView) {
             post.setViews((post.getViews() == null ? 0L : post.getViews()) + 1);
-            boardPostRepository.save(post);
         }
 
-        BoardPost refreshed = boardPostRepository.findWithCommentsById(postId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다."));
-
-        return toResponse(refreshed, refreshed.getId(), currentUserId);
+        return toResponse(post, post.getId(), currentUserId);
     }
 
+    @Transactional
     public BoardPostResponse createPost(Long userId, BoardCreateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."));
@@ -70,6 +69,7 @@ public class BoardService {
         return toResponse(saved, saved.getId(), userId);
     }
 
+    @Transactional
     public BoardPostResponse updatePost(Long userId, Long postId, BoardCreateRequest request) {
         BoardPost post = boardPostRepository.findWithCommentsById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다."));
@@ -92,10 +92,10 @@ public class BoardService {
         post.setImageData(blankToNull(request.getImageData()));
         post.setImageName(blankToNull(request.getImageName()));
 
-        BoardPost saved = boardPostRepository.save(post);
-        return toResponse(saved, saved.getId(), userId);
+        return toResponse(post, post.getId(), userId);
     }
 
+    @Transactional
     public void deletePost(Long userId, Long postId) {
         BoardPost post = boardPostRepository.findById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다."));
@@ -104,9 +104,12 @@ public class BoardService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 글만 삭제할 수 있습니다.");
         }
 
+        boardPostLikeRepository.deleteAllByPostId(postId);
+        boardCommentRepository.deleteAllByPostId(postId);
         boardPostRepository.delete(post);
     }
 
+    @Transactional
     public BoardPostResponse addComment(Long userId, Long postId, BoardCommentCreateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."));
@@ -132,6 +135,7 @@ public class BoardService {
         return toResponse(refreshed, refreshed.getId(), userId);
     }
 
+    @Transactional
     public BoardPostResponse deleteComment(Long userId, Long postId, Long commentId) {
         BoardComment comment = boardCommentRepository.findById(commentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글이 없습니다."));
@@ -152,6 +156,7 @@ public class BoardService {
         return toResponse(refreshed, refreshed.getId(), userId);
     }
 
+    @Transactional
     public BoardPostResponse toggleLike(Long userId, Long postId) {
         BoardPost post = boardPostRepository.findWithCommentsById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다."));
@@ -168,7 +173,6 @@ public class BoardService {
         }
 
         post.setLikes(boardPostLikeRepository.countByPostId(postId));
-        boardPostRepository.save(post);
 
         BoardPost refreshed = boardPostRepository.findWithCommentsById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다."));
