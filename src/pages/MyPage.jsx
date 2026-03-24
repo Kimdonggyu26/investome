@@ -1,300 +1,505 @@
-import { Link } from "react-router-dom";
+import { useMemo, useState } from "react";
 import Header from "../components/Header";
-import TopTickerBar from "../components/TopTickerBar";
-import MyPortfolio from "../components/MyPortfolio";
-import WatchlistPanel from "../components/WatchlistPanel";
-import { useTicker } from "../hooks/useTicker";
 import "../styles/MyPage.css";
-import { isLoggedIn as getIsLoggedIn } from "../utils/auth";
+import {
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  AreaChart,
+  Area,
+  XAxis,
+  Tooltip,
+} from "recharts";
 
-function MyPagePreviewMock() {
+const HOLDINGS = [
+  {
+    id: 1,
+    symbol: "005930",
+    name: "삼성전자보통주",
+    market: "KOSPI",
+    quantity: 50,
+    avgPrice: 120000,
+    currentPrice: 189700,
+    todayChangeRate: -2.17,
+    color: "#38bdf8",
+  },
+  {
+    id: 2,
+    symbol: "005990",
+    name: "매일홀딩스",
+    market: "KOSDAQ",
+    quantity: 150,
+    avgPrice: 50000,
+    currentPrice: 11250,
+    todayChangeRate: 0.09,
+    color: "#5eead4",
+  },
+];
+
+const WATCHLIST = [
+  { symbol: "BTC", name: "Bitcoin", market: "CRYPTO", price: 123224000, change: 2.55 },
+  { symbol: "SOL", name: "Solana", market: "CRYPTO", price: 242100, change: 4.18 },
+  { symbol: "ETH", name: "Ethereum", market: "CRYPTO", price: 3224115, change: 3.87 },
+  { symbol: "SK하이닉스", name: "SK하이닉스", market: "KOSPI", price: 218500, change: -0.92 },
+];
+
+const TREND_7D = [
+  { label: "03/18", value: 12420000 },
+  { label: "03/19", value: 12280000 },
+  { label: "03/20", value: 12160000 },
+  { label: "03/21", value: 11890000 },
+  { label: "03/22", value: 11670000 },
+  { label: "03/23", value: 11390000 },
+  { label: "03/24", value: 11172500 },
+];
+
+const TREND_30D = [
+  { label: "1W", value: 13100000 },
+  { label: "2W", value: 12750000 },
+  { label: "3W", value: 12300000 },
+  { label: "4W", value: 11880000 },
+  { label: "Now", value: 11172500 },
+];
+
+const COLORS = ["#38bdf8", "#5eead4", "#8b5cf6", "#f59e0b", "#f43f5e"];
+
+function formatPrice(value) {
+  return `₩${Math.round(value).toLocaleString("ko-KR")}`;
+}
+
+function formatSignedPrice(value) {
+  const sign = value > 0 ? "+" : value < 0 ? "-" : "";
+  return `${sign}₩${Math.abs(Math.round(value)).toLocaleString("ko-KR")}`;
+}
+
+function formatSignedPercent(value) {
+  const sign = value > 0 ? "+" : value < 0 ? "" : "";
+  return `${sign}${value.toFixed(2)}%`;
+}
+
+function CustomTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+
   return (
-    <div className="mypagePreviewMock">
-      <div className="mypagePreviewMockTop">
-        <div className="mypagePreviewMockCard hero">
-          <div className="mypagePreviewMiniEyebrow">PORTFOLIO OVERVIEW</div>
-          <h4>전체 포트폴리오</h4>
-          <div className="mypagePreviewTotal">₩32,684,000</div>
-          <div className="mypagePreviewProfit">+₩4,281,000 (+15.07%)</div>
-
-          <div className="mypagePreviewSummaryRow">
-            <div className="mypagePreviewMiniStat">
-              <span>매수원금</span>
-              <strong>₩28,403,000</strong>
-            </div>
-            <div className="mypagePreviewMiniStat">
-              <span>평가자산</span>
-              <strong>₩32,684,000</strong>
-            </div>
-            <div className="mypagePreviewMiniStat">
-              <span>보유종목</span>
-              <strong>3개</strong>
-            </div>
-          </div>
-
-          <div className="mypagePreviewAccentBar">
-            <div className="mypagePreviewAccentFill" />
-          </div>
-        </div>
-
-        <div className="mypagePreviewMockCard alloc">
-          <div className="mypagePreviewMiniEyebrow">ALLOCATION</div>
-          <h4>자산 비중</h4>
-
-          <div className="mypagePreviewAllocBody">
-            <div className="mypagePreviewRing">
-              <div className="mypagePreviewRingInner">
-                <span>총 자산</span>
-                <strong>₩32.6M</strong>
-              </div>
-            </div>
-
-            <div className="mypagePreviewLegend">
-              <div className="mypagePreviewLegendItem">
-                <span className="dot btc" />
-                <strong>BTC</strong>
-                <em>41.2%</em>
-              </div>
-              <div className="mypagePreviewLegendItem">
-                <span className="dot ss" />
-                <strong>005930</strong>
-                <em>33.5%</em>
-              </div>
-              <div className="mypagePreviewLegendItem">
-                <span className="dot tsla" />
-                <strong>TSLA</strong>
-                <em>25.3%</em>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mypagePreviewMockBottom">
-        <div className="mypagePreviewMockCard flow">
-          <div className="mypagePreviewFlowHead">
-            <div>
-              <div className="mypagePreviewMiniEyebrow">PERFORMANCE</div>
-              <h4>수익률 추이</h4>
-            </div>
-
-            <div className="mypagePreviewRangeTabs">
-              <button className="active">1M</button>
-              <button>3M</button>
-              <button>1Y</button>
-              <button>ALL</button>
-            </div>
-          </div>
-
-          <div className="mypagePreviewFlowValue">+15.07%</div>
-          <div className="mypagePreviewFlowSub">최근 한 달 기준 포트폴리오 수익률</div>
-
-          <div className="mypagePreviewFlowBox">
-            <svg
-              className="mypagePreviewFlowSvg"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-            >
-              <defs>
-                <linearGradient id="mypage-preview-line" x1="0" x2="1" y1="0" y2="0">
-                  <stop offset="0%" stopColor="#37d5ff" />
-                  <stop offset="100%" stopColor="#7d52ff" />
-                </linearGradient>
-                <linearGradient id="mypage-preview-fill" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="rgba(55,213,255,0.24)" />
-                  <stop offset="100%" stopColor="rgba(55,213,255,0)" />
-                </linearGradient>
-              </defs>
-
-              <polygon
-                points="0,90 8,86 18,84 30,78 42,62 58,52 72,46 85,28 100,22 100,100 0,100"
-                fill="url(#mypage-preview-fill)"
-              />
-              <polyline
-                points="0,90 8,86 18,84 30,78 42,62 58,52 72,46 85,28 100,22"
-                fill="none"
-                stroke="url(#mypage-preview-line)"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-
-          <div className="mypagePreviewFlowMeta compact">
-            <div>
-              <span>최고 수익률</span>
-              <strong>+17.4%</strong>
-            </div>
-            <div>
-              <span>최저 수익률</span>
-              <strong>+2.8%</strong>
-            </div>
-          </div>
-        </div>
-
-        <div className="mypagePreviewMockCard holdings">
-          <div className="mypagePreviewMiniEyebrow">HOLDINGS</div>
-          <h4>보유 종목</h4>
-
-          <div className="mypagePreviewHoldingList">
-            <div className="mypagePreviewHoldingItem">
-              <div className="mypagePreviewHoldingTop">
-                <div>
-                  <strong>비트코인</strong>
-                  <span>BTC · Crypto</span>
-                </div>
-                <b>₩13,470,000</b>
-              </div>
-              <div className="mypagePreviewHoldingMeta">
-                평균단가 ₩118,000,000 · 현재가 ₩134,700,000
-              </div>
-              <div className="mypagePreviewHoldingBottom">
-                <em className="up">+₩1,670,000 (+14.15%)</em>
-                <span>비중 41.2%</span>
-              </div>
-              <div className="mypagePreviewHoldingBar">
-                <div className="fill btc" style={{ width: "41.2%" }} />
-              </div>
-            </div>
-
-            <div className="mypagePreviewHoldingItem">
-              <div className="mypagePreviewHoldingTop">
-                <div>
-                  <strong>삼성전자</strong>
-                  <span>005930 · KOSPI</span>
-                </div>
-                <b>₩10,950,000</b>
-              </div>
-              <div className="mypagePreviewHoldingMeta">
-                평균단가 ₩63,500 · 현재가 ₩72,300
-              </div>
-              <div className="mypagePreviewHoldingBottom">
-                <em className="up">+₩1,420,000 (+14.90%)</em>
-                <span>비중 33.5%</span>
-              </div>
-              <div className="mypagePreviewHoldingBar">
-                <div className="fill ss" style={{ width: "33.5%" }} />
-              </div>
-            </div>
-
-            <div className="mypagePreviewHoldingItem">
-              <div className="mypagePreviewHoldingTop">
-                <div>
-                  <strong>테슬라</strong>
-                  <span>TSLA · NASDAQ</span>
-                </div>
-                <b>₩8,264,000</b>
-              </div>
-              <div className="mypagePreviewHoldingMeta">
-                평균단가 ₩248,000 · 현재가 ₩286,000
-              </div>
-              <div className="mypagePreviewHoldingBottom">
-                <em className="up">+₩1,191,000 (+16.84%)</em>
-                <span>비중 25.3%</span>
-              </div>
-              <div className="mypagePreviewHoldingBar">
-                <div className="fill tsla" style={{ width: "25.3%" }} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="mypageTooltip">
+      <div className="mypageTooltipLabel">{label}</div>
+      <div className="mypageTooltipValue">{formatPrice(payload[0].value)}</div>
     </div>
   );
 }
 
-function MyPageGuestView() {
-  return (
-    <section className="mypageGuestWrap">
-      <div className="mypageGuestCard">
-        <div className="mypageGuestGlow mypageGuestGlow1" />
-        <div className="mypageGuestGlow mypageGuestGlow2" />
-
-        <div className="mypageGuestBadge">MEMBERS ONLY</div>
-
-        <div className="mypageGuestIconWrap">
-          <div className="mypageGuestIcon">◌</div>
-        </div>
-
-        <h1 className="mypageGuestTitle">로그인 후 이용해주세요</h1>
-
-        <div className="mypageGuestFeatureRow">
-          <div className="mypageGuestFeature">
-            <strong>보유 종목 관리</strong>
-            <span>주식·코인 포트폴리오를 한눈에</span>
-          </div>
-
-          <div className="mypageGuestFeature">
-            <strong>자산 비중 분석</strong>
-            <span>원형 차트로 직관적인 확인</span>
-          </div>
-
-          <div className="mypageGuestFeature">
-            <strong>실시간 반영 UI</strong>
-            <span>세련된 흐름으로 자연스럽게</span>
-          </div>
-        </div>
-
-        <div className="mypageGuestPreviewSection">
-          <div className="mypageGuestPreviewTop">
-            <div>
-              <span className="mypageGuestPreviewEyebrow">PREVIEW</span>
-              <h3>마이페이지에서는 이런 게 가능해요 !</h3>
-            </div>
-          </div>
-
-          <div className="mypagePreviewShell">
-            <div className="mypagePreviewOverlay">
-              <div className="mypagePreviewBadge">LOGIN TO UNLOCK</div>
-            </div>
-
-            <div className="mypagePreviewScale">
-              <MyPagePreviewMock />
-            </div>
-          </div>
-        </div>
-
-        <div className="mypageGuestActionRow">
-          <Link to="/login" className="mypageGuestLoginBtn">
-            로그인하러 가기
-          </Link>
-
-          <Link to="/" className="mypageGuestHomeBtn">
-            홈으로
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export default function MyPage() {
-  const { prices, changes, loading, error } = useTicker();
-  const isLoggedIn = getIsLoggedIn();
+  const [period, setPeriod] = useState("7D");
+
+  const trendData = period === "30D" ? TREND_30D : TREND_7D;
+
+  const {
+    totalInvested,
+    totalCurrentValue,
+    totalPnL,
+    totalReturnRate,
+    allocationData,
+    gainers,
+    losers,
+    flatCount,
+    bestPerformer,
+  } = useMemo(() => {
+    const mapped = HOLDINGS.map((item) => {
+      const invested = item.quantity * item.avgPrice;
+      const current = item.quantity * item.currentPrice;
+      const pnl = current - invested;
+      const rate = invested > 0 ? (pnl / invested) * 100 : 0;
+
+      return {
+        ...item,
+        invested,
+        current,
+        pnl,
+        rate,
+      };
+    });
+
+    const investedSum = mapped.reduce((sum, item) => sum + item.invested, 0);
+    const currentSum = mapped.reduce((sum, item) => sum + item.current, 0);
+    const pnlSum = currentSum - investedSum;
+    const returnRate = investedSum > 0 ? (pnlSum / investedSum) * 100 : 0;
+
+    const allocation = mapped.map((item, idx) => ({
+      name: item.name,
+      symbol: item.symbol,
+      value: item.current,
+      ratio: currentSum > 0 ? (item.current / currentSum) * 100 : 0,
+      color: item.color || COLORS[idx % COLORS.length],
+    }));
+
+    const gainers = mapped.filter((item) => item.todayChangeRate > 0).length;
+    const losers = mapped.filter((item) => item.todayChangeRate < 0).length;
+    const flatCount = mapped.filter((item) => item.todayChangeRate === 0).length;
+
+    const bestPerformer = [...mapped].sort(
+      (a, b) => b.todayChangeRate - a.todayChangeRate
+    )[0];
+
+    return {
+      totalInvested: investedSum,
+      totalCurrentValue: currentSum,
+      totalPnL: pnlSum,
+      totalReturnRate: returnRate,
+      allocationData: allocation,
+      gainers,
+      losers,
+      flatCount,
+      bestPerformer,
+    };
+  }, []);
+
+  const todayPnL = useMemo(() => {
+    const sum = HOLDINGS.reduce((acc, item) => {
+      const prevPrice =
+        item.currentPrice / (1 + (item.todayChangeRate || 0) / 100);
+      return acc + (item.currentPrice - prevPrice) * item.quantity;
+    }, 0);
+
+    return sum;
+  }, []);
 
   return (
     <>
-      <TopTickerBar
-        prices={prices}
-        changes={changes}
-        loading={loading}
-        error={error}
-      />
       <Header />
 
-      <main className="myPageMain">
-        {isLoggedIn ? (
-          <div className="myPageFloatingShell">
-            <aside className="myPageFloatingWatch">
-              <WatchlistPanel />
-            </aside>
-
-            <MyPortfolio />
+      <main className="mypageShell">
+        <section className="mypageHero">
+          <div className="mypageHeroLeft">
+            <div className="mypageEyebrow">PORTFOLIO INTELLIGENCE</div>
+            <h1 className="mypageTitle">내 자산 대시보드</h1>
+            <p className="mypageSubtitle">
+              오늘의 손익, 자산 비중, 보유 종목 흐름을 한 화면에서 빠르게 확인해보세요.
+            </p>
           </div>
-        ) : (
-          <MyPageGuestView />
-        )}
+
+          <div className="mypageHeroBadge">
+            <span className="mypageLiveDot" />
+            LIVE SNAPSHOT
+          </div>
+        </section>
+
+        <section className="mypageGrid">
+          <aside className="mypageCard mypageWatchlistCard">
+            <div className="mypageCardHeader">
+              <div>
+                <div className="mypageCardEyebrow">MY WATCHLIST</div>
+                <h2 className="mypageCardTitle">나의 관심종목</h2>
+              </div>
+            </div>
+
+            <div className="mypageWatchlist">
+              {WATCHLIST.map((item) => (
+                <div key={item.symbol} className="mypageWatchItem">
+                  <div className="mypageWatchIcon">
+                    {item.symbol.slice(0, 1)}
+                  </div>
+
+                  <div className="mypageWatchInfo">
+                    <strong>{item.name}</strong>
+                    <span>
+                      {item.symbol} · {item.market}
+                    </span>
+                  </div>
+
+                  <div className="mypageWatchMeta">
+                    <strong>{formatPrice(item.price)}</strong>
+                    <span className={item.change >= 0 ? "up" : "down"}>
+                      {formatSignedPercent(item.change)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </aside>
+
+          <section className="mypageMain">
+            <div className="mypageTopRow">
+              <article className="mypageCard mypageOverviewCard">
+                <div className="mypageCardHeader">
+                  <div>
+                    <div className="mypageCardEyebrow">PORTFOLIO OVERVIEW</div>
+                    <h2 className="mypageCardTitle">전체 포트폴리오</h2>
+                  </div>
+                  <div className="mypageLiveBadge">
+                    <span className="mypageLiveDot" />
+                    LIVE
+                  </div>
+                </div>
+
+                <div className="mypageOverviewValue">
+                  {formatPrice(totalCurrentValue)}
+                </div>
+
+                <div
+                  className={`mypageOverviewPnL ${
+                    totalPnL >= 0 ? "up" : "down"
+                  }`}
+                >
+                  <span className="mypageTrendArrow">
+                    {totalPnL >= 0 ? "▲" : "▼"}
+                  </span>
+                  {formatSignedPrice(totalPnL)} ({formatSignedPercent(totalReturnRate)})
+                </div>
+
+                <div className="mypageOverviewStats">
+                  <div className="mypageMiniStat">
+                    <span>매수원금</span>
+                    <strong>{formatPrice(totalInvested)}</strong>
+                  </div>
+                  <div className="mypageMiniStat">
+                    <span>평가자산</span>
+                    <strong>{formatPrice(totalCurrentValue)}</strong>
+                  </div>
+                  <div className="mypageMiniStat">
+                    <span>보유종목</span>
+                    <strong>{HOLDINGS.length}개</strong>
+                  </div>
+                </div>
+
+                <div className="mypageProgressTrack">
+                  <div
+                    className="mypageProgressFill"
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        Math.max(18, (totalCurrentValue / totalInvested) * 100)
+                      )}%`,
+                    }}
+                  />
+                </div>
+              </article>
+
+              <article className="mypageCard mypageAllocationCard">
+                <div className="mypageCardHeader">
+                  <div>
+                    <div className="mypageCardEyebrow">ALLOCATION</div>
+                    <h2 className="mypageCardTitle">자산 비중</h2>
+                  </div>
+                </div>
+
+                <div className="mypageAllocationInner">
+                  <div className="mypageDonutWrap">
+                    <ResponsiveContainer width="100%" height={220}>
+                      <PieChart>
+                        <Pie
+                          data={allocationData}
+                          dataKey="value"
+                          innerRadius={66}
+                          outerRadius={92}
+                          stroke="none"
+                          paddingAngle={2}
+                        >
+                          {allocationData.map((entry, idx) => (
+                            <Cell
+                              key={`cell-${idx}`}
+                              fill={entry.color || COLORS[idx % COLORS.length]}
+                            />
+                          ))}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+
+                    <div className="mypageDonutCenter">
+                      <span>총 자산</span>
+                      <strong>{formatPrice(totalCurrentValue)}</strong>
+                    </div>
+                  </div>
+
+                  <div className="mypageAllocationLegend">
+                    {allocationData.map((item) => (
+                      <div key={item.symbol} className="mypageLegendItem">
+                        <div className="mypageLegendLeft">
+                          <span
+                            className="mypageLegendDot"
+                            style={{ background: item.color }}
+                          />
+                          <div>
+                            <strong>{item.name}</strong>
+                            <span>{item.symbol}</span>
+                          </div>
+                        </div>
+                        <strong>{item.ratio.toFixed(1)}%</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <div className="mypageBottomRow">
+              <article className="mypageCard mypageTrendCard">
+                <div className="mypageCardHeader">
+                  <div>
+                    <div className="mypageCardEyebrow">ASSET FLOW</div>
+                    <h2 className="mypageCardTitle">자산 흐름</h2>
+                  </div>
+
+                  <div className="mypagePeriodTabs">
+                    {["7D", "30D"].map((item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        className={`mypagePeriodBtn ${period === item ? "active" : ""}`}
+                        onClick={() => setPeriod(item)}
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mypageTodayPnLWrap">
+                  <strong className={todayPnL >= 0 ? "up" : "down"}>
+                    {formatSignedPrice(todayPnL)}
+                  </strong>
+                  <span>today movement</span>
+                </div>
+
+                <div className="mypageChartWrap">
+                  <ResponsiveContainer width="100%" height={250}>
+                    <AreaChart data={trendData}>
+                      <defs>
+                        <linearGradient id="assetFlowGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#38bdf8" stopOpacity={0.45} />
+                          <stop offset="100%" stopColor="#38bdf8" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+
+                      <XAxis
+                        dataKey="label"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: "#7f8aa3", fontSize: 12 }}
+                      />
+
+                      <Tooltip content={<CustomTooltip />} />
+
+                      <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#38bdf8"
+                        strokeWidth={3}
+                        fill="url(#assetFlowGradient)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="mypageMarketSummary">
+                  <div className="mypageMiniStatus">
+                    <span>상승</span>
+                    <strong>{gainers}개</strong>
+                  </div>
+                  <div className="mypageMiniStatus">
+                    <span>하락</span>
+                    <strong>{losers}개</strong>
+                  </div>
+                  <div className="mypageMiniStatus">
+                    <span>보합</span>
+                    <strong>{flatCount}개</strong>
+                  </div>
+                </div>
+
+                {bestPerformer ? (
+                  <div className="mypageTopMover">
+                    <div>
+                      <span className="mypageTopMoverLabel">TOP MOVER</span>
+                      <strong>{bestPerformer.name}</strong>
+                    </div>
+                    <strong className={bestPerformer.todayChangeRate >= 0 ? "up" : "down"}>
+                      {formatSignedPercent(bestPerformer.todayChangeRate)}
+                    </strong>
+                  </div>
+                ) : null}
+              </article>
+
+              <article className="mypageCard mypageHoldingsCard">
+                <div className="mypageCardHeader">
+                  <div>
+                    <div className="mypageCardEyebrow">HOLDINGS</div>
+                    <h2 className="mypageCardTitle">보유 종목</h2>
+                  </div>
+
+                  <button type="button" className="mypageAddBtn">
+                    + 종목 추가
+                  </button>
+                </div>
+
+                <div className="mypageHoldingList">
+                  {HOLDINGS.map((item) => {
+                    const invested = item.quantity * item.avgPrice;
+                    const current = item.quantity * item.currentPrice;
+                    const pnl = current - invested;
+                    const rate = invested > 0 ? (pnl / invested) * 100 : 0;
+                    const ratio =
+                      totalCurrentValue > 0 ? (current / totalCurrentValue) * 100 : 0;
+
+                    return (
+                      <div key={item.id} className="mypageHoldingItem">
+                        <div className="mypageHoldingTop">
+                          <div className="mypageHoldingIdentity">
+                            <div
+                              className="mypageHoldingIcon"
+                              style={{
+                                background: `linear-gradient(135deg, ${item.color}, rgba(255,255,255,0.08))`,
+                              }}
+                            >
+                              {item.name.slice(0, 1)}
+                            </div>
+
+                            <div>
+                              <strong>{item.name}</strong>
+                              <span>
+                                {item.symbol} · {item.market}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="mypageHoldingValue">
+                            <strong>{formatPrice(current)}</strong>
+                            <span className={pnl >= 0 ? "up" : "down"}>
+                              {formatSignedPrice(pnl)} ({formatSignedPercent(rate)})
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="mypageHoldingMeta">
+                          <span>수량 {item.quantity.toLocaleString("ko-KR")}주</span>
+                          <span>평균단가 {formatPrice(item.avgPrice)}</span>
+                          <span>현재가 {formatPrice(item.currentPrice)}</span>
+                        </div>
+
+                        <div className="mypageHoldingBadges">
+                          <span className="badge blue">{item.market}</span>
+                          <span className="badge dark">비중 {ratio.toFixed(1)}%</span>
+                          <span className={`badge ${item.todayChangeRate >= 0 ? "green" : "red"}`}>
+                            오늘 {formatSignedPercent(item.todayChangeRate)}
+                          </span>
+                        </div>
+
+                        <div className="mypageHoldingBar">
+                          <div
+                            className="mypageHoldingBarFill"
+                            style={{
+                              width: `${Math.min(100, Math.max(8, ratio))}%`,
+                              background: `linear-gradient(90deg, ${item.color}, rgba(255,255,255,0.15))`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </article>
+            </div>
+          </section>
+        </section>
       </main>
     </>
   );
