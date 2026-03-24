@@ -12,6 +12,7 @@ export async function fetchBoardPosts() {
   const res = await fetch(apiUrl("/api/board/posts"), {
     headers: getAuthHeaders(),
   });
+
   if (!res.ok) throw new Error("게시글 목록 조회 실패");
   return res.json();
 }
