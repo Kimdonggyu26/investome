@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { SEARCH_ASSETS } from "../data/searchAssets";
-import { getAuthUser } from "../utils/auth";
+import { getAuthHeaders, getAuthUser } from "../utils/auth";
+import { apiUrl } from "../lib/apiClient";
 
-const STORAGE_KEY_PREFIX = "investome-watchlist-v2";
+const STORAGE_KEY_PREFIX = "investome-watchlist-v3";
 
 function getWatchlistStorageKey(userId) {
   return `${STORAGE_KEY_PREFIX}-${userId || "guest"}`;
@@ -23,6 +24,8 @@ function normalizeWatchlistItem(item) {
 
   return {
     ...item,
+    market: String(item.market || "").toUpperCase(),
+    symbol: String(item.symbol || "").toUpperCase(),
     name:
       item.name && item.name !== item.symbol
         ? item.name
@@ -33,6 +36,8 @@ function normalizeWatchlistItem(item) {
       item.displayNameEN !== item.name
         ? item.displayNameEN
         : resolved?.displayNameEN || item.displayNameEN || item.name || item.symbol,
+    iconUrl: item.iconUrl || resolved?.iconUrl || "",
+    coinId: item.coinId || resolved?.coinId || "",
   };
 }
 
@@ -51,25 +56,71 @@ function writeWatchlist(items, userId) {
   window.dispatchEvent(new Event("watchlist:change"));
 }
 
+async function fetchWatchlistFromApi() {
+  const res = await fetch(apiUrl("/api/watchlist"), {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error("관심종목 조회 실패");
+  return res.json();
+}
+
+async function addWatchlistToApi(asset) {
+  const res = await fetch(apiUrl("/api/watchlist"), {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(asset),
+  });
+  if (!res.ok) throw new Error("관심종목 추가 실패");
+  return res.json();
+}
+
+async function removeWatchlistFromApi(asset) {
+  const res = await fetch(apiUrl("/api/watchlist"), {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(asset),
+  });
+  if (!res.ok) throw new Error("관심종목 삭제 실패");
+  return res.json();
+}
+
 export function useWatchlist() {
   const authUser = getAuthUser();
   const userId = authUser?.id || "guest";
+  const isLoggedIn = !!authUser;
 
   const [items, setItems] = useState(() => readWatchlist(userId));
 
   useEffect(() => {
-    setItems(readWatchlist(userId));
-  }, [userId]);
+    let cancelled = false;
 
-  useEffect(() => {
-    const normalized = items.map(normalizeWatchlistItem);
-    const changed = JSON.stringify(normalized) !== JSON.stringify(items);
+    async function load() {
+      if (!isLoggedIn) {
+        setItems(readWatchlist(userId));
+        return;
+      }
 
-    if (changed) {
-      setItems(normalized);
-      writeWatchlist(normalized, userId);
+      try {
+        const serverItems = await fetchWatchlistFromApi();
+        const normalized = Array.isArray(serverItems)
+          ? serverItems.map(normalizeWatchlistItem)
+          : [];
+        if (!cancelled) {
+          setItems(normalized);
+          writeWatchlist(normalized, userId);
+        }
+      } catch {
+        if (!cancelled) {
+          setItems(readWatchlist(userId));
+        }
+      }
     }
-  }, [items, userId]);
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoggedIn, userId]);
 
   useEffect(() => {
     function sync() {
@@ -91,30 +142,38 @@ export function useWatchlist() {
   );
 
   function isWatched(market, symbol) {
-    return keySet.has(`${market}:${symbol}`);
+    return keySet.has(`${String(market).toUpperCase()}:${String(symbol).toUpperCase()}`);
   }
 
-  function toggleWatchlist(asset) {
-    const key = `${asset.market}:${asset.symbol}`;
+  async function toggleWatchlist(asset) {
+    const normalizedAsset = normalizeWatchlistItem(asset);
+    const key = `${normalizedAsset.market}:${normalizedAsset.symbol}`;
     const exists = keySet.has(key);
 
-    const next = exists
-      ? items.filter((item) => `${item.market}:${item.symbol}` !== key)
-      : [
-          normalizeWatchlistItem({
-            market: asset.market,
-            symbol: asset.symbol,
-            name: asset.name || asset.symbol,
-            displayNameEN: asset.displayNameEN || asset.name || asset.symbol,
-            iconUrl: asset.iconUrl || "",
-            coinId: asset.coinId || "",
-            addedAt: new Date().toISOString(),
-          }),
-          ...items,
-        ];
+    if (!isLoggedIn) {
+      const next = exists
+        ? items.filter((item) => `${item.market}:${item.symbol}` !== key)
+        : [{ ...normalizedAsset, addedAt: new Date().toISOString() }, ...items];
 
-    setItems(next);
-    writeWatchlist(next, userId);
+      setItems(next);
+      writeWatchlist(next, userId);
+      return;
+    }
+
+    try {
+      const serverItems = exists
+        ? await removeWatchlistFromApi(normalizedAsset)
+        : await addWatchlistToApi(normalizedAsset);
+
+      const normalized = Array.isArray(serverItems)
+        ? serverItems.map(normalizeWatchlistItem)
+        : [];
+
+      setItems(normalized);
+      writeWatchlist(normalized, userId);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   return {
