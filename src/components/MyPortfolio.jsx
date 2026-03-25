@@ -1081,7 +1081,7 @@ const localSuggestionList = useMemo(() => {
                   </div>
                 )}
               </div>
-            </div>`
+            </div>
 
           <div className={`portfolioCalculatorCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
             <div className="portfolioCardHead">

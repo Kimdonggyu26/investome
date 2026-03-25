@@ -624,8 +624,7 @@
 
 @media (max-width: 1180px){
   .myDashboardGrid,
-  .portfolioTopGrid,
-  .portfolioBottomGrid{
+  .portfolioTopGrid{
     grid-template-columns: 1fr;
   }
 }
