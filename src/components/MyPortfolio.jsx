@@ -122,6 +122,28 @@ function AssetLogo({ iconUrl, name }) {
   );
 }
 
+function useValueMotion(value) {
+  const prevRef = useRef(value);
+  const [motionClass, setMotionClass] = useState("");
+
+  useEffect(() => {
+    if (prevRef.current === value) return;
+
+    if (value > prevRef.current) {
+      setMotionClass("valuePulseUp");
+    } else if (value < prevRef.current) {
+      setMotionClass("valuePulseDown");
+    }
+
+    const timer = setTimeout(() => setMotionClass(""), 720);
+    prevRef.current = value;
+
+    return () => clearTimeout(timer);
+  }, [value]);
+
+  return motionClass;
+}
+
 const initialForm = {
   market: "",
   symbol: "",
@@ -451,7 +473,12 @@ const localSuggestionList = useMemo(() => {
   const calcProfit = calcIsValid ? calcSellAmount - calcBuyAmount : 0;
   const calcProfitRate =
     calcIsValid && calcBuyAmount > 0 ? (calcProfit / calcBuyAmount) * 100 : 0;  
-
+  const totalCostMotion = useValueMotion(totalCost);
+  const totalValueMotion = useValueMotion(totalValue);
+  const totalPnlMotion = useValueMotion(totalPnl);
+  const totalRateMotion = useValueMotion(totalRate);
+  const targetAmountMotion = useValueMotion(targetAmount);
+  const targetProgressMotion = useValueMotion(targetProgress);
   const helperToneClass =
     totalPnl >= 0 ? "isPositive" : totalPnl < 0 ? "isNegative" : "";
 
@@ -643,26 +670,26 @@ const localSuggestionList = useMemo(() => {
             <div className="portfolioSummaryGrid">
               <div className="portfolioSummaryStat">
                 <span className="label">총 투자금액</span>
-                <strong>{formatKRW(totalCost)}</strong>
+                <strong className={totalCostMotion}>{formatKRW(totalCost)}</strong>
               </div>
 
               <div className="portfolioSummaryStat">
                 <span className="label">총 평가금액</span>
-                <strong>{formatKRW(totalValue)}</strong>
+                <strong className={totalValueMotion}>{formatKRW(totalValue)}</strong>
               </div>
             </div>
 
             <div className="portfolioOverviewFooter">
               <div className="portfolioOverviewPnlGroup">
                 <span className="label">총 손익</span>
-                <strong className={totalPnl >= 0 ? "isUp" : "isDown"}>
+                <strong className={`${totalPnl >= 0 ? "isUp" : "isDown"} ${totalPnlMotion}`}>
                   {formatSignedKRW(totalPnl)}
                 </strong>
               </div>
 
               <div className="portfolioOverviewRateGroup">
                 <span className="label">총 수익률</span>
-                <strong className={totalRate >= 0 ? "isUp" : "isDown"}>
+                <strong className={`${totalRate >= 0 ? "isUp" : "isDown"} ${totalRateMotion}`}>
                   {totalRate > 0 ? "+" : ""}
                   {totalRate.toFixed(2)}%
                 </strong>
@@ -759,19 +786,21 @@ const localSuggestionList = useMemo(() => {
                     {targetError ? <div className="portfolioTargetError">{targetError}</div> : null}
                   </div>
                 ) : (
-                  <div className="portfolioTargetMainValue">{formatKRW(targetAmount)}</div>
+                  <div className={`portfolioTargetMainValue ${targetAmountMotion}`}>
+                    {formatKRW(targetAmount)}
+                  </div>
                 )}
 
                 <div className="portfolioTargetProgressHead">
                   <span>현재 달성률</span>
-                  <strong>{targetProgress.toFixed(1)}%</strong>
+                  <strong className={targetProgressMotion}>{targetProgress.toFixed(1)}%</strong>
                 </div>
 
                 <div className="portfolioTargetBar">
-                  <div
-                    className="portfolioTargetFill"
-                    style={{ width: `${Math.min(targetProgress, 100)}%` }}
-                  />
+                <div
+                  className={`portfolioTargetFill ${targetProgressMotion}`}
+                  style={{ width: `${Math.min(targetProgress, 100)}%` }}
+                />
                 </div>
 
                 <div className="portfolioTargetGrid">

@@ -73,7 +73,7 @@ export default function CommunityFeed() {
       <div className="communityFloatList">
         {posts.length === 0 ? (
           <div className="communityFloatEmpty">
-            오늘 작성된 게시글이 아직 없어.
+            오늘 작성된 게시글이 아직 없어요.
           </div>
         ) : (
           posts.map((post) => (

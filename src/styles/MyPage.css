@@ -3121,8 +3121,8 @@
 .portfolioInsightCard{
   display: flex;
   flex-direction: column;
-  height: 635px;
-  max-height: 635px;
+  height: 560px;
+  max-height: 560px;
   overflow: hidden;
 }
 
@@ -3132,6 +3132,7 @@
   overflow-y: auto;
   padding-right: 6px;
   align-content: start;
+  max-height: 100%;
 }
 
 .holdingsEmptyState{
@@ -3413,4 +3414,160 @@
 
 .portfolioRing{
   margin: 0 auto;
+}
+
+/* ===== MyPage clean-up ===== */
+
+.portfolioDashboardThreeRows{
+  gap: 16px;
+}
+
+.portfolioTopGridBalanced,
+.portfolioMiddleGrid,
+.portfolioBottomGridBalanced{
+  gap: 16px;
+}
+
+.portfolioOverviewMiniItem,
+.portfolioTargetStat,
+.portfolioInsightStat,
+.portfolioInsightFocusCard,
+.portfolioCalcStat{
+  background: rgba(255,255,255,0.022);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.portfolioOverviewMiniItem span,
+.portfolioTargetStat .label,
+.portfolioInsightStat .label,
+.portfolioCalcStat span,
+.portfolioCalcField span{
+  color: rgba(255,255,255,0.46);
+}
+
+.portfolioInsightHero.compact{
+  background:
+    linear-gradient(180deg, rgba(14,165,255,0.08), rgba(124,77,255,0.05));
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.portfolioInsightMain.compact strong{
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.portfolioGhostTag{
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.76);
+}
+
+.portfolioHoldingItem{
+  background: rgba(255,255,255,0.022);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.portfolioHoldingValue{
+  font-size: 15px;
+  letter-spacing: -0.2px;
+}
+
+.portfolioHoldingMetaRow{
+  color: rgba(255,255,255,0.56);
+}
+
+.portfolioHoldingBar{
+  height: 7px;
+  background: rgba(255,255,255,0.05);
+}
+
+.portfolioCalculatorCard{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.018));
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 14px 38px rgba(0,0,0,0.20);
+}
+
+.portfolioCalcResultCard{
+  background: rgba(255,255,255,0.022);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.portfolioCalcHint{
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.62);
+}
+
+.portfolioAddBtn,
+.portfolioGhostBtn{
+  box-shadow: none;
+}
+
+.portfolioTargetBar{
+  height: 8px;
+  background: rgba(255,255,255,0.05);
+}
+
+.portfolioTargetFill{
+  transition: width .7s cubic-bezier(.22,.8,.24,1);
+}
+
+/* ===== live value motion ===== */
+
+.valuePulseUp,
+.valuePulseDown{
+  display: inline-block;
+  will-change: transform, opacity, filter, text-shadow;
+}
+
+.valuePulseUp{
+  animation: valuePulseUp 0.72s cubic-bezier(.22,.8,.24,1);
+}
+
+.valuePulseDown{
+  animation: valuePulseDown 0.72s cubic-bezier(.22,.8,.24,1);
+}
+
+@keyframes valuePulseUp{
+  0%{
+    transform: translateY(8px);
+    opacity: .72;
+    filter: brightness(1.02);
+    text-shadow: 0 0 0 rgba(54,213,255,0);
+  }
+  45%{
+    transform: translateY(0);
+    opacity: 1;
+    filter: brightness(1.18);
+    text-shadow: 0 0 14px rgba(54,213,255,0.28);
+  }
+  100%{
+    transform: translateY(0);
+    opacity: 1;
+    filter: brightness(1);
+    text-shadow: 0 0 0 rgba(54,213,255,0);
+  }
+}
+
+@keyframes valuePulseDown{
+  0%{
+    transform: translateY(-6px);
+    opacity: .72;
+    filter: brightness(1.02);
+    text-shadow: 0 0 0 rgba(255,120,170,0);
+  }
+  45%{
+    transform: translateY(0);
+    opacity: 1;
+    filter: brightness(1.12);
+    text-shadow: 0 0 14px rgba(255,120,170,0.22);
+  }
+  100%{
+    transform: translateY(0);
+    opacity: 1;
+    filter: brightness(1);
+    text-shadow: 0 0 0 rgba(255,120,170,0);
+  }
 }
