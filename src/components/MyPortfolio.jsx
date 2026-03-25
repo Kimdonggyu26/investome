@@ -704,7 +704,7 @@ const localSuggestionList = useMemo(() => {
                 <h3 className="portfolioTitleSm">목표 달성</h3>
               </div>
 
-              {!emptyState &&
+              {!showGoalEmpty &&
                 (!isTargetEditing ? (
                   <button type="button" className="portfolioGhostBtn" onClick={startTargetEdit}>
                     목표 설정
