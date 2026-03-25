@@ -3327,21 +3327,22 @@
 .portfolioAllocationBodyEmptyFriendly{
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
   height: 100%;
 }
 
 .portfolioAllocationEmptyPanel{
   width: 100%;
-  margin-top: auto;
+  max-width: 420px;
+  margin: 0 auto;
   padding: 18px 18px 20px;
   border-radius: 22px;
   border: 1px solid rgba(148, 163, 184, 0.14);
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.62), rgba(10, 16, 30, 0.9));
-  box-shadow:   inset 0 1px 0 rgba(255,255,255,0.03),
-                0 10px 30px rgba(0,0,0,0.25);
-
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03),
+              0 10px 30px rgba(0,0,0,0.25);
 }
 
 .portfolioAllocationEmptyText{
@@ -3367,4 +3368,39 @@
   outline: none;
   border: 1px solid rgba(59,130,246,0.6);
   box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+.portfolioGoalEmptyState{
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 14px;
+  padding: 28px 24px;
+}
+
+.portfolioGoalEmptyState > *{
+  max-width: 320px;
+}
+
+.portfolioGoalEmptyState h4{
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.portfolioGoalEmptyState p{
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #a5b4cc;
+}
+
+.portfolioRing{
+  margin: 0 auto;
 }
