@@ -8,6 +8,7 @@ import {
 } from "../api/portfolioApi";
 
 const STORAGE_KEY = "investome-portfolio-v3";
+const TARGET_STORAGE_KEY = "investome-portfolio-target-v1";
 
 function formatKRW(v) {
   if (v === null || v === undefined || Number.isNaN(v)) return "-";
@@ -36,6 +37,21 @@ function persistHoldings(items) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
 }
 
+function readTargetAmount() {
+  try {
+    const raw = localStorage.getItem(TARGET_STORAGE_KEY);
+    if (!raw) return 50000000;
+    const value = Number(raw);
+    return Number.isFinite(value) && value > 0 ? value : 50000000;
+  } catch {
+    return 50000000;
+  }
+}
+
+function persistTargetAmount(value) {
+  localStorage.setItem(TARGET_STORAGE_KEY, String(value));
+}
+
 function marketLabel(market) {
   if (market === "CRYPTO") return "코인";
   if (market === "KOSPI") return "코스피";
@@ -46,68 +62,6 @@ function marketLabel(market) {
 
 function toneClass(idx) {
   return `tone${idx % 5}`;
-}
-
-function makeFlowPoints(totalCost, totalValue) {
-  const safeCost = totalCost || 1;
-  const safeValue = totalValue || safeCost;
-  const start = safeCost * 0.83;
-  const mid = (safeCost + safeValue) / 2;
-
-  return [
-    start,
-    start * 1.03,
-    start * 0.99,
-    mid * 0.94,
-    mid,
-    mid * 1.04,
-    safeValue * 0.97,
-    safeValue,
-  ];
-}
-
-function buildPath(points, width = 100, height = 100) {
-  const min = Math.min(...points);
-  const max = Math.max(...points);
-  const gap = max - min || 1;
-
-  return points
-    .map((value, idx) => {
-      const x = (idx / (points.length - 1)) * width;
-      const y = height - ((value - min) / gap) * height;
-      return `${x},${y}`;
-    })
-    .join(" ");
-}
-
-function buildSvgPath(points, width = 100, height = 100, topPadding = 12) {
-  const min = Math.min(...points);
-  const max = Math.max(...points);
-  const gap = max - min || 1;
-
-  return points
-    .map((value, idx) => {
-      const x = (idx / (points.length - 1)) * width;
-      const y = height - ((value - min) / gap) * (height - topPadding);
-      return `${idx === 0 ? "M" : "L"} ${x},${y}`;
-    })
-    .join(" ");
-}
-
-function buildAreaPath(points, width = 100, height = 100, topPadding = 12) {
-  const min = Math.min(...points);
-  const max = Math.max(...points);
-  const gap = max - min || 1;
-
-  const topLine = points
-    .map((value, idx) => {
-      const x = (idx / (points.length - 1)) * width;
-      const y = height - ((value - min) / gap) * (height - topPadding);
-      return `${x},${y}`;
-    })
-    .join(" ");
-
-  return `M ${topLine} L ${width},${height} L 0,${height} Z`;
 }
 
 function AssetLogo({ iconUrl, name }) {
@@ -154,9 +108,16 @@ export default function MyPortfolio() {
   const [ringReady, setRingReady] = useState(false);
   const [remoteSuggestions, setRemoteSuggestions] = useState([]);
   const [searchingAssets, setSearchingAssets] = useState(false);
+  const [targetAmount, setTargetAmount] = useState(50000000);
+  const [targetInput, setTargetInput] = useState("50000000");
+  const [isTargetEditing, setIsTargetEditing] = useState(false);
+  const [targetError, setTargetError] = useState("");
 
   useEffect(() => {
     setHoldings(readHoldings());
+    const savedTarget = readTargetAmount();
+    setTargetAmount(savedTarget);
+    setTargetInput(String(savedTarget));
   }, []);
 
   useEffect(() => {
@@ -285,7 +246,37 @@ export default function MyPortfolio() {
   const totalAssetsForRatio = totalValue || 1;
   const emptyState = enrichedItems.length === 0;
 
-  const previewFlowPath = buildPath(makeFlowPoints(totalCost, totalValue));
+  const todayUpCount = enrichedItems.filter(
+    (item) => typeof item.changePct === "number" && item.changePct > 0
+  ).length;
+
+  const todayDownCount = enrichedItems.filter(
+    (item) => typeof item.changePct === "number" && item.changePct < 0
+  ).length;
+
+  const todayFlatCount = enrichedItems.filter(
+    (item) => typeof item.changePct === "number" && item.changePct === 0
+  ).length;
+
+  const todayChangeValue = enrichedItems.reduce((sum, item) => {
+    if (item.currentPrice == null || typeof item.changePct !== "number") return sum;
+
+    const prevPrice =
+      item.changePct === -100
+        ? item.currentPrice
+        : item.currentPrice / (1 + item.changePct / 100);
+
+    const todayDiffPerUnit = item.currentPrice - prevPrice;
+    return sum + todayDiffPerUnit * item.amount;
+  }, 0);
+
+  const todayChangeRate =
+    totalValue > 0 ? (todayChangeValue / Math.max(totalValue - todayChangeValue, 1)) * 100 : 0;
+
+  const topGainer =
+    [...enrichedItems]
+      .filter((item) => typeof item.changePct === "number")
+      .sort((a, b) => (b.changePct || 0) - (a.changePct || 0))[0] || null;
 
   const topHolding =
     [...enrichedItems].sort((a, b) => (b.value || 0) - (a.value || 0))[0] || null;
@@ -298,26 +289,29 @@ export default function MyPortfolio() {
 
   const marketCount = new Set(enrichedItems.map((item) => item.market)).size;
   const topHoldingRatio = topHolding ? (topHolding.value / totalAssetsForRatio) * 100 : 0;
-
   const concentrationLabel =
     topHoldingRatio >= 55 ? "집중 높음" : topHoldingRatio >= 35 ? "보통" : "양호";
-
   const diversificationLabel =
     marketCount >= 3 ? "우수" : marketCount === 2 ? "보통" : marketCount === 1 ? "낮음" : "-";
 
   const insightMessage = emptyState
     ? ""
     : topHoldingRatio >= 55 && topHolding
-      ? `${topHolding.name} 비중이 ${topHoldingRatio.toFixed(
-          1
-        )}%야. 한 종목 집중도가 높아서 분산을 고려해보는 게 좋아.`
+      ? `${topHolding.name} 비중 ${topHoldingRatio.toFixed(1)}% · 집중도 높음`
       : marketCount <= 1 && topHolding
-        ? `현재 ${marketLabel(
-            topHolding.market
-          )} 한 시장에 치우쳐 있어. 다른 시장 자산으로 분산하면 안정감이 좋아질 수 있어.`
+        ? `${marketLabel(topHolding.market)} 단일 시장 중심 · 분산 보완 추천`
         : bestPerformer
-          ? `${bestPerformer.name}가 현재 수익률을 가장 잘 끌어주고 있어. 지금 비중 구조는 꽤 안정적인 편이야.`
-          : "포트폴리오 구성을 점검할 준비가 됐어.";
+          ? `${bestPerformer.name} 수익률 선두 · 현재 구조 양호`
+          : "포트폴리오 데이터 분석 중";
+
+  const targetProgress = targetAmount > 0 ? Math.min((totalValue / targetAmount) * 100, 999) : 0;
+  const targetRemaining = Math.max(targetAmount - totalValue, 0);
+  const requiredGrowthFromNow = totalValue > 0 ? (targetRemaining / totalValue) * 100 : 0;
+  const requiredTotalReturnFromCost =
+    totalCost > 0 ? ((targetAmount - totalCost) / totalCost) * 100 : 0;
+
+  const helperToneClass =
+    totalPnl >= 0 ? "isPositive" : totalPnl < 0 ? "isNegative" : "";
 
   const ringGradient = useMemo(() => {
     let current = 0;
@@ -384,6 +378,33 @@ export default function MyPortfolio() {
     setShowSuggestions(false);
   }
 
+  function startTargetEdit() {
+    setTargetInput(String(targetAmount));
+    setTargetError("");
+    setIsTargetEditing(true);
+  }
+
+  function cancelTargetEdit() {
+    setTargetInput(String(targetAmount));
+    setTargetError("");
+    setIsTargetEditing(false);
+  }
+
+  function saveTargetAmount() {
+    const next = Number(String(targetInput).replaceAll(",", "").trim());
+
+    if (!Number.isFinite(next) || next <= 0) {
+      setTargetError("목표 금액은 0보다 큰 숫자로 입력해줘.");
+      return;
+    }
+
+    setTargetAmount(next);
+    persistTargetAmount(next);
+    setTargetInput(String(next));
+    setTargetError("");
+    setIsTargetEditing(false);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -411,7 +432,9 @@ export default function MyPortfolio() {
       );
 
       if (duplicate) {
-        throw new Error("이미 담긴 종목이야. 같은 종목은 중복 추가하지 말고 기존 보유 수량을 관리해줘.");
+        throw new Error(
+          "이미 담긴 종목이야. 같은 종목은 중복 추가하지 말고 기존 보유 수량을 관리해줘."
+        );
       }
 
       const verified = await fetchAssetQuote({
@@ -456,8 +479,8 @@ export default function MyPortfolio() {
 
   return (
     <>
-      <section className="portfolioDashboard">
-        <div className="portfolioTopGrid">
+      <section className="portfolioDashboard portfolioDashboardThreeRows">
+        <div className="portfolioTopGrid portfolioTopGridBalanced">
           <div className={`portfolioHeroCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
             <div className="portfolioHeroAmbient" />
             <div className="portfolioHeroHead">
@@ -472,91 +495,152 @@ export default function MyPortfolio() {
               </div>
             </div>
 
-            <div className="portfolioTotalValue">{formatKRW(totalValue)}</div>
-
-            <div
-              className="portfolioPnl"
-              style={{
-                color:
-                  totalPnl >= 0 ? "rgba(54,213,255,.96)" : "rgba(255,120,170,.96)",
-              }}
-            >
-              {formatSignedKRW(totalPnl)}
-              <span className="portfolioPnlRate"> ({totalRate.toFixed(2)}%)</span>
-            </div>
-
-            <div className="portfolioHeroSubRow">
-              <div className="portfolioMiniGlowCard">
-                <span className="label">매수원금</span>
+            <div className="portfolioSummaryGrid">
+              <div className="portfolioSummaryStat">
+                <span className="label">총 투자금액</span>
                 <strong>{formatKRW(totalCost)}</strong>
               </div>
-              <div className="portfolioMiniGlowCard">
-                <span className="label">평가자산</span>
+
+              <div className="portfolioSummaryStat">
+                <span className="label">총 평가금액</span>
                 <strong>{formatKRW(totalValue)}</strong>
               </div>
-              <div className="portfolioMiniGlowCard">
-                <span className="label">보유종목</span>
+            </div>
+
+            <div className="portfolioOverviewFooter">
+              <div className="portfolioOverviewPnlGroup">
+                <span className="label">총 손익</span>
+                <strong className={totalPnl >= 0 ? "isUp" : "isDown"}>
+                  {formatSignedKRW(totalPnl)}
+                </strong>
+              </div>
+
+              <div className="portfolioOverviewRateGroup">
+                <span className="label">총 수익률</span>
+                <strong className={totalRate >= 0 ? "isUp" : "isDown"}>
+                  {totalRate > 0 ? "+" : ""}
+                  {totalRate.toFixed(2)}%
+                </strong>
+              </div>
+            </div>
+
+            <div className="portfolioOverviewMiniList">
+              <div className="portfolioOverviewMiniItem">
+                <span>수익 합산</span>
+                <strong>
+                  {formatKRW(
+                    enrichedItems
+                      .filter((item) => item.pnl > 0)
+                      .reduce((sum, item) => sum + item.pnl, 0)
+                  )}
+                </strong>
+              </div>
+              <div className="portfolioOverviewMiniItem">
+                <span>손실 합산</span>
+                <strong>
+                  {formatKRW(
+                    enrichedItems
+                      .filter((item) => item.pnl < 0)
+                      .reduce((sum, item) => sum + item.pnl, 0)
+                  )}
+                </strong>
+              </div>
+              <div className="portfolioOverviewMiniItem">
+                <span>보유 종목</span>
                 <strong>{enrichedItems.length}개</strong>
               </div>
             </div>
-
-            <div className="portfolioAccentBar">
-              <div className="portfolioAccentFill" />
-            </div>
           </div>
 
-          <div className={`portfolioAllocationCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
+          <div className={`portfolioGoalCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
             <div className="portfolioCardHead">
               <div>
-                <div className="portfolioEyebrow">ALLOCATION</div>
-                <h3 className="portfolioTitleSm">자산 비중</h3>
+                <div className="portfolioEyebrow">MY TARGET</div>
+                <h3 className="portfolioTitleSm">목표 달성</h3>
               </div>
+
+              {!isTargetEditing ? (
+                <button type="button" className="portfolioGhostBtn" onClick={startTargetEdit}>
+                  목표 설정
+                </button>
+              ) : (
+                <div className="portfolioTargetActionRow">
+                  <button type="button" className="portfolioGhostBtn" onClick={cancelTargetEdit}>
+                    취소
+                  </button>
+                  <button
+                    type="button"
+                    className="portfolioAddBtn portfolioAddBtnCompact"
+                    onClick={saveTargetAmount}
+                  >
+                    저장
+                  </button>
+                </div>
+              )}
             </div>
 
-            <div className="portfolioAllocationBody">
+            {isTargetEditing ? (
+              <div className="portfolioTargetEditor">
+                <span className="label">목표 금액 (KRW)</span>
+                <input
+                  type="number"
+                  step="any"
+                  value={targetInput}
+                  onChange={(e) => setTargetInput(e.target.value)}
+                  placeholder="예: 50000000"
+                />
+                {targetError ? <div className="portfolioTargetError">{targetError}</div> : null}
+              </div>
+            ) : (
+              <div className="portfolioTargetMainValue">{formatKRW(targetAmount)}</div>
+            )}
+
+            <div className="portfolioTargetProgressHead">
+              <span>현재 달성률</span>
+              <strong>{targetProgress.toFixed(1)}%</strong>
+            </div>
+
+            <div className="portfolioTargetBar">
               <div
-                className={`portfolioRing ${ringReady ? "isReady" : ""} ${
-                  isUiRefreshing ? "isRefreshing" : ""
-                }`}
-                style={{ background: ringGradient }}
-              >
-                <div className="portfolioRingInner">
-                  <span>총 자산</span>
-                  <strong>{formatKRW(totalValue)}</strong>
-                </div>
+                className="portfolioTargetFill"
+                style={{ width: `${Math.min(targetProgress, 100)}%` }}
+              />
+            </div>
+
+            <div className="portfolioTargetGrid">
+              <div className="portfolioTargetStat">
+                <span className="label">현재 평가금액</span>
+                <strong>{formatKRW(totalValue)}</strong>
               </div>
 
-              <div className="portfolioLegend luxuryScroll">
-                {emptyState ? (
-                  <div className="portfolioEmptyMiniCard">
-                    <strong>아직 비중 데이터가 없어요</strong>
-                    <span>종목을 추가하면 자산 비중이 원형 차트로 표시돼요.</span>
-                  </div>
-                ) : (
-                  enrichedItems.map((item, idx) => {
-                    const ratio = ((item.value / totalAssetsForRatio) * 100 || 0).toFixed(1);
+              <div className="portfolioTargetStat">
+                <span className="label">남은 금액</span>
+                <strong>{formatKRW(targetRemaining)}</strong>
+              </div>
 
-                    return (
-                      <div className="portfolioLegendItem" key={item.id}>
-                        <div className={`portfolioLegendDot ${toneClass(idx)}`} />
-                        <div className="portfolioLegendText">
-                          <div className="portfolioLegendLabel">
-                            <strong>{item.name}</strong>
-                            <small>{item.symbol}</small>
-                          </div>
-                          <span>{ratio}%</span>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
+              <div className="portfolioTargetStat">
+                <span className="label">현재 자산 기준</span>
+                <strong>
+                  {requiredGrowthFromNow > 0 ? "+" : ""}
+                  {requiredGrowthFromNow.toFixed(2)}%
+                </strong>
+                <small>앞으로 더 필요한 수익률</small>
+              </div>
+
+              <div className="portfolioTargetStat">
+                <span className="label">원금 기준 목표 수익률</span>
+                <strong>
+                  {requiredTotalReturnFromCost > 0 ? "+" : ""}
+                  {requiredTotalReturnFromCost.toFixed(2)}%
+                </strong>
+                <small>총 투자금액 대비 기준</small>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="portfolioBottomGrid">
-          <div className={`portfolioFlowCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
+        <div className="portfolioMiddleGrid">
+          <div className={`portfolioInsightCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
             <div className="portfolioCardHead">
               <div>
                 <div className="portfolioEyebrow">PORTFOLIO INSIGHT</div>
@@ -571,19 +655,21 @@ export default function MyPortfolio() {
                 <div className="portfolioEmptySoftIcon">✦</div>
                 <div>
                   <strong>인사이트 데이터 준비 전</strong>
-                  <p>보유 종목을 추가하면 집중도, 분산도, 최고 수익 종목을 자동으로 보여줄게.</p>
+                  <p>
+                    보유 종목을 추가하면 집중도, 분산도, 최고 수익 종목을 자동으로 보여줄게.
+                  </p>
                 </div>
               </div>
             ) : (
               <>
-                <div className="portfolioInsightHero">
-                  <div className="portfolioInsightMain">
+                <div className="portfolioInsightHero compact">
+                  <div className="portfolioInsightMain compact">
                     <span className="label">현재 포지션 진단</span>
                     <strong>{insightMessage}</strong>
                   </div>
                 </div>
 
-                <div className="portfolioInsightGrid">
+                <div className="portfolioInsightGrid compact">
                   <div className="portfolioInsightStat">
                     <span className="label">최대 비중</span>
                     <strong>{topHoldingRatio.toFixed(1)}%</strong>
@@ -599,7 +685,9 @@ export default function MyPortfolio() {
                   <div className="portfolioInsightStat">
                     <span className="label">최고 수익</span>
                     <strong>
-                      {bestPerformer ? `${bestPerformer.rate > 0 ? "+" : ""}${bestPerformer.rate.toFixed(2)}%` : "-"}
+                      {bestPerformer
+                        ? `${bestPerformer.rate > 0 ? "+" : ""}${bestPerformer.rate.toFixed(2)}%`
+                        : "-"}
                     </strong>
                     <small>{bestPerformer ? bestPerformer.name : "-"}</small>
                   </div>
@@ -607,13 +695,15 @@ export default function MyPortfolio() {
                   <div className="portfolioInsightStat">
                     <span className="label">주의 종목</span>
                     <strong>
-                      {weakestPerformer ? `${weakestPerformer.rate > 0 ? "+" : ""}${weakestPerformer.rate.toFixed(2)}%` : "-"}
+                      {weakestPerformer
+                        ? `${weakestPerformer.rate > 0 ? "+" : ""}${weakestPerformer.rate.toFixed(2)}%`
+                        : "-"}
                     </strong>
                     <small>{weakestPerformer ? weakestPerformer.name : "-"}</small>
                   </div>
                 </div>
 
-                <div className="portfolioInsightPair">
+                <div className="portfolioInsightPair compact">
                   <div className="portfolioInsightFocusCard">
                     <div className="portfolioInsightFocusLabel">TOP WEIGHT</div>
                     {topHolding ? (
@@ -679,7 +769,7 @@ export default function MyPortfolio() {
             </div>
 
             {emptyState ? (
-              <div className="portfolioEmptyState">
+              <div className="portfolioEmptyState holdingsEmptyState">
                 <div className="portfolioEmptyOrb" />
                 <div className="portfolioEmptyIcon">✦</div>
                 <h4>아직 담긴 종목이 없어요</h4>
@@ -695,7 +785,7 @@ export default function MyPortfolio() {
               </div>
             ) : (
               <div
-                className={`portfolioHoldingList luxuryScroll ${
+                className={`portfolioHoldingList portfolioHoldingListTall luxuryScroll ${
                   isUiRefreshing ? "isRefreshing" : ""
                 }`}
               >
@@ -770,6 +860,148 @@ export default function MyPortfolio() {
                   );
                 })}
               </div>
+            )}
+          </div>
+        </div>
+
+        <div className="portfolioBottomGrid portfolioBottomGridBalanced">
+          <div className={`portfolioAllocationCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
+            <div className="portfolioCardHead">
+              <div>
+                <div className="portfolioEyebrow">ALLOCATION</div>
+                <h3 className="portfolioTitleSm">자산 비중</h3>
+              </div>
+            </div>
+
+            <div className="portfolioAllocationBody">
+              <div
+                className={`portfolioRing ${ringReady ? "isReady" : ""} ${
+                  isUiRefreshing ? "isRefreshing" : ""
+                }`}
+                style={{ background: ringGradient }}
+              >
+                <div className="portfolioRingInner">
+                  <span>총 자산</span>
+                  <strong>{formatKRW(totalValue)}</strong>
+                </div>
+              </div>
+
+              <div className="portfolioLegend luxuryScroll">
+                {emptyState ? (
+                  <div className="portfolioEmptyMiniCard">
+                    <strong>아직 비중 데이터가 없어요</strong>
+                    <span>종목을 추가하면 자산 비중이 원형 차트로 표시돼요.</span>
+                  </div>
+                ) : (
+                  enrichedItems.map((item, idx) => {
+                    const ratio = ((item.value / totalAssetsForRatio) * 100 || 0).toFixed(1);
+
+                    return (
+                      <div className="portfolioLegendItem" key={item.id}>
+                        <div className={`portfolioLegendDot ${toneClass(idx)}`} />
+                        <div className="portfolioLegendText">
+                          <div>
+                            <strong>{item.name}</strong>
+                            <span>{marketLabel(item.market)}</span>
+                          </div>
+                          <strong>{ratio}%</strong>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div
+            className={`portfolioHelperCard card ${helperToneClass} ${
+              isUiRefreshing ? "isRefreshing" : ""
+            }`}
+          >
+            <div className="portfolioCardHead">
+              <div>
+                <div className="portfolioEyebrow">HELPER CARD</div>
+                <h3 className="portfolioTitleSm">포지션 체크</h3>
+              </div>
+              <div className="portfolioGhostTag">QUICK VIEW</div>
+            </div>
+
+            {emptyState ? (
+              <div className="portfolioEmptySoft helperEmptySoft">
+                <div className="portfolioEmptySoftIcon">◎</div>
+                <div>
+                  <strong>보조 데이터 준비 전</strong>
+                  <p>
+                    종목을 담으면 오늘 등락, 목표까지 남은 구간, 상위 상승 종목을 같이 보여줄게.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="portfolioHelperHero">
+                  <div>
+                    <span className="label">오늘 포트폴리오 변동</span>
+                    <strong className={todayChangeValue >= 0 ? "isUp" : "isDown"}>
+                      {formatSignedKRW(todayChangeValue)}
+                    </strong>
+                  </div>
+
+                  <div className="portfolioHelperRateBadge">
+                    {todayChangeRate > 0 ? "+" : ""}
+                    {todayChangeRate.toFixed(2)}%
+                  </div>
+                </div>
+
+                <div className="portfolioHelperGrid">
+                  <div className="portfolioHelperStat">
+                    <span className="label">상승</span>
+                    <strong>{todayUpCount}개</strong>
+                  </div>
+
+                  <div className="portfolioHelperStat">
+                    <span className="label">하락</span>
+                    <strong>{todayDownCount}개</strong>
+                  </div>
+
+                  <div className="portfolioHelperStat">
+                    <span className="label">보합</span>
+                    <strong>{todayFlatCount}개</strong>
+                  </div>
+                </div>
+
+                <div className="portfolioTopMoverCard helperMoverCard">
+                  <div className="portfolioTopMoverLabel">TOP GAINER</div>
+
+                  {topGainer ? (
+                    <div className="portfolioTopMoverBody">
+                      <div className="portfolioTopMoverLeft">
+                        <AssetLogo iconUrl={topGainer.iconUrl} name={topGainer.name} />
+                        <div>
+                          <div className="portfolioTopMoverName">{topGainer.name}</div>
+                          <div className="portfolioTopMoverSub">
+                            {topGainer.symbol} · {marketLabel(topGainer.market)}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="portfolioTopMoverRight">
+                        {topGainer.changePct > 0 ? "+" : ""}
+                        {topGainer.changePct.toFixed(2)}%
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="portfolioTopMoverEmpty">
+                      오늘 변동 데이터를 불러오는 중이야.
+                    </div>
+                  )}
+                </div>
+
+                <div className="portfolioHelperNote">
+                  목표까지 <strong>{formatKRW(targetRemaining)}</strong> 남았어. 현재 자산 기준{" "}
+                  <strong>{requiredGrowthFromNow.toFixed(2)}%</strong> 더 필요해.
+                </div>
+              </>
             )}
           </div>
         </div>
