@@ -36,3 +36,12 @@ export function clearAuth() {
   localStorage.removeItem("investome_logged_in");
   localStorage.removeItem("investome_keep_login");
 }
+
+export function getAuthHeaders() {
+  const token = localStorage.getItem("accessToken");
+
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
