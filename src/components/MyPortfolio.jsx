@@ -78,11 +78,10 @@ function persistHoldings(items, userId) {
 function readTargetAmount(userId) {
   try {
     const raw = localStorage.getItem(getTargetStorageKey(userId));
-    if (!raw) return 50000000;
     const value = Number(raw);
-    return Number.isFinite(value) && value > 0 ? value : 50000000;
+    return Number.isFinite(value) && value > 0 ? value : 0;
   } catch {
-    return 50000000;
+    return 0;
   }
 }
 
@@ -150,8 +149,8 @@ export default function MyPortfolio() {
   const [ringReady, setRingReady] = useState(false);
   const [remoteSuggestions, setRemoteSuggestions] = useState([]);
   const [searchingAssets, setSearchingAssets] = useState(false);
-  const [targetAmount, setTargetAmount] = useState(50000000);
-  const [targetInput, setTargetInput] = useState("50000000");
+  const [targetAmount, setTargetAmount] = useState(0);
+  const [targetInput, setTargetInput] = useState("");
   const [isTargetEditing, setIsTargetEditing] = useState(false);
   const [targetError, setTargetError] = useState("");
   const [calcForm, setCalcForm] = useState({
@@ -182,11 +181,11 @@ export default function MyPortfolio() {
 
           const remoteHoldings = Array.isArray(remote.holdings) ? remote.holdings : [];
           const remoteTarget = Number(remote.targetAmount);
-          const nextTarget = Number.isFinite(remoteTarget) && remoteTarget > 0 ? remoteTarget : 50000000;
+          const nextTarget = Number.isFinite(remoteTarget) && remoteTarget > 0 ? remoteTarget : 0;
 
           setHoldings(remoteHoldings);
           setTargetAmount(nextTarget);
-          setTargetInput(String(nextTarget));
+          setTargetInput(nextTarget > 0 ? String(nextTarget) : "");
           persistHoldings(remoteHoldings, userId);
           persistTargetAmount(nextTarget, userId);
         } catch {
@@ -456,6 +455,9 @@ const localSuggestionList = useMemo(() => {
   const helperToneClass =
     totalPnl >= 0 ? "isPositive" : totalPnl < 0 ? "isNegative" : "";
 
+  const hasTarget = Number(targetAmount) > 0;
+  const showGoalEmpty = !hasTarget && !isTargetEditing;
+
   const ringGradient = useMemo(() => {
     let current = 0;
     const segments = [];
@@ -522,13 +524,13 @@ const localSuggestionList = useMemo(() => {
   }
 
   function startTargetEdit() {
-    setTargetInput(String(targetAmount));
+    setTargetInput(targetAmount > 0 ? String(targetAmount) : "");
     setTargetError("");
     setIsTargetEditing(true);
   }
 
   function cancelTargetEdit() {
-    setTargetInput(String(targetAmount));
+    setTargetInput(targetAmount > 0 ? String(targetAmount) : "");
     setTargetError("");
     setIsTargetEditing(false);
   }
@@ -723,7 +725,7 @@ const localSuggestionList = useMemo(() => {
                 ))}
             </div>
 
-            {emptyState ? (
+            {showGoalEmpty ? (
               <div className="portfolioGoalEmptyState">
                 <div className="portfolioEmptyOrb" />
                 <div className="portfolioEmptyIcon">🎯</div>
@@ -747,7 +749,7 @@ const localSuggestionList = useMemo(() => {
                     <input
                       type="text"
                       inputMode="numeric"
-                      value={Number(targetInput || 0).toLocaleString("ko-KR")}
+                      value={targetInput ? Number(targetInput).toLocaleString("ko-KR") : ""}
                       onChange={(e) => {
                         const raw = e.target.value.replaceAll(",", "").replace(/[^\d]/g, "");
                         setTargetInput(raw);
