@@ -1,5 +1,3 @@
-import { apiUrl } from "../lib/apiClient";
-
 function toYmd(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -47,7 +45,11 @@ export async function fetchFx() {
     end: toYmd(end),
   });
 
-  const res = await fetch(apiUrl(`/api/fx-rates?${params.toString()}`));
+  // 중요:
+  // fx-rates는 Vercel 프론트 프로젝트의 api route니까
+  // apiUrl() 타지 말고 같은 오리진으로 직접 호출해야 함
+  const res = await fetch(`/api/fx-rates?${params.toString()}`);
+
   if (!res.ok) {
     throw new Error(`FX failed: ${res.status}`);
   }

@@ -112,6 +112,11 @@ export default function MyPortfolio() {
   const [targetInput, setTargetInput] = useState("50000000");
   const [isTargetEditing, setIsTargetEditing] = useState(false);
   const [targetError, setTargetError] = useState("");
+  const [calcForm, setCalcForm] = useState({
+    buyPrice: "",
+    sellPrice: "",
+    quantity: "",
+  });
 
   useEffect(() => {
     setHoldings(readHoldings());
@@ -197,18 +202,40 @@ export default function MyPortfolio() {
     };
   }, [open, searchText]);
 
-  const localSuggestionList = useMemo(() => {
-    const q = searchText.trim().toLowerCase();
-    if (!q) return [];
+const localSuggestionList = useMemo(() => {
+  const q = searchText.trim().toLowerCase();
+  if (!q) return [];
 
-    return SEARCH_ASSETS.filter((item) =>
-      item.aliases?.some((alias) => alias.includes(q))
-    ).slice(0, 8);
-  }, [searchText]);
+  const scoreItem = (item) => {
+    const symbol = String(item.symbol || "").toLowerCase();
+    const name = String(item.name || "").toLowerCase();
+    const en = String(item.displayNameEN || "").toLowerCase();
+
+    if (name === q || en === q || symbol === q) return 100;
+    if (name.startsWith(q) || en.startsWith(q) || symbol.startsWith(q)) return 80;
+    if (item.aliases?.some((alias) => alias === q)) return 75;
+    if (item.aliases?.some((alias) => alias.startsWith(q))) return 60;
+    if (item.aliases?.some((alias) => alias.includes(q))) return 40;
+    return 0;
+  };
+
+  return [...SEARCH_ASSETS]
+    .filter((item) => item.aliases?.some((alias) => alias.includes(q)))
+    .sort((a, b) => scoreItem(b) - scoreItem(a))
+    .slice(0, 10);
+}, [searchText]);
 
   const suggestionList = useMemo(() => {
     const remote = Array.isArray(remoteSuggestions) ? remoteSuggestions : [];
-    return remote.length > 0 ? remote : localSuggestionList;
+    const merged = [...localSuggestionList, ...remote];
+    const seen = new Set();
+
+    return merged.filter((item) => {
+      const key = `${item.market}-${item.coinId || item.symbol}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0, 12);
   }, [localSuggestionList, remoteSuggestions]);
 
   const enrichedItems = useMemo(() => {
@@ -309,6 +336,23 @@ export default function MyPortfolio() {
   const requiredGrowthFromNow = totalValue > 0 ? (targetRemaining / totalValue) * 100 : 0;
   const requiredTotalReturnFromCost =
     totalCost > 0 ? ((targetAmount - totalCost) / totalCost) * 100 : 0;
+  const calcBuyPrice = Number(calcForm.buyPrice);
+  const calcSellPrice = Number(calcForm.sellPrice);
+  const calcQuantity = Number(calcForm.quantity);
+
+  const calcIsValid =
+    Number.isFinite(calcBuyPrice) &&
+    calcBuyPrice > 0 &&
+    Number.isFinite(calcSellPrice) &&
+    calcSellPrice > 0 &&
+    Number.isFinite(calcQuantity) &&
+    calcQuantity > 0;
+
+  const calcBuyAmount = calcIsValid ? calcBuyPrice * calcQuantity : 0;
+  const calcSellAmount = calcIsValid ? calcSellPrice * calcQuantity : 0;
+  const calcProfit = calcIsValid ? calcSellAmount - calcBuyAmount : 0;
+  const calcProfitRate =
+    calcIsValid && calcBuyAmount > 0 ? (calcProfit / calcBuyAmount) * 100 : 0;  
 
   const helperToneClass =
     totalPnl >= 0 ? "isPositive" : totalPnl < 0 ? "isNegative" : "";
@@ -640,6 +684,112 @@ export default function MyPortfolio() {
         </div>
 
         <div className="portfolioMiddleGrid">
+          <div className={`portfolioHoldingsCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
+            <div className="portfolioCardHead">
+              <div>
+                <div className="portfolioEyebrow">HOLDINGS</div>
+                <h3 className="portfolioTitleSm">보유 종목</h3>
+              </div>
+
+              <button className="portfolioAddBtn" type="button" onClick={openModal}>
+                <span className="portfolioAddBtnIcon">＋</span>
+                종목 추가
+              </button>
+            </div>
+
+            {emptyState ? (
+              <div className="portfolioEmptyState holdingsEmptyState">
+                <div className="portfolioEmptyOrb" />
+                <div className="portfolioEmptyIcon">✦</div>
+                <h4>아직 담긴 종목이 없어요</h4>
+                <p>
+                  관심 있는 코인이나 주식을 추가해서
+                  <br />
+                  나만의 포트폴리오를 관리해보세요.
+                </p>
+                <button className="portfolioAddBtn isLarge" type="button" onClick={openModal}>
+                  <span className="portfolioAddBtnIcon">＋</span>
+                  첫 종목 추가하기
+                </button>
+              </div>
+            ) : (
+              <div
+                className={`portfolioHoldingList portfolioHoldingListTall luxuryScroll ${
+                  isUiRefreshing ? "isRefreshing" : ""
+                }`}
+              >
+                {enrichedItems.map((item, idx) => {
+                  const itemPnlColor =
+                    item.pnl >= 0 ? "rgba(54,213,255,.95)" : "rgba(255,120,170,.95)";
+                  const ratio = ((item.value / totalAssetsForRatio) * 100 || 0).toFixed(1);
+
+                  return (
+                    <div key={item.id} className="portfolioHoldingItem">
+                      <div className="portfolioHoldingTop">
+                        <div className="portfolioHoldingIdentity">
+                          <AssetLogo iconUrl={item.iconUrl} name={item.name} />
+
+                          <div>
+                            <div className="portfolioHoldingName">{item.name}</div>
+                            <div className="portfolioHoldingSub">
+                              {item.symbol}
+                              {item.displayNameEN && item.displayNameEN !== item.name
+                                ? ` · ${item.displayNameEN}`
+                                : ""}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="portfolioHoldingValue">{formatKRW(item.value)}</div>
+                      </div>
+
+                      <div className="portfolioHoldingMetaRow">
+                        <span>
+                          {marketLabel(item.market)} · 평균단가 {formatKRW(item.avgPrice)} · 현재가{" "}
+                          {item.currentPrice == null ? "시세 확인 실패" : formatKRW(item.currentPrice)}
+                        </span>
+
+                        <span style={{ color: itemPnlColor, fontWeight: 800 }}>
+                          {formatSignedKRW(item.pnl)} ({item.rate.toFixed(2)}%)
+                        </span>
+                      </div>
+
+                      <div className="portfolioHoldingBottomRow">
+                        <div className="portfolioHoldingTagWrap">
+                          <span className={`portfolioMarketTag ${toneClass(idx)}`}>
+                            {marketLabel(item.market)}
+                          </span>
+                          <span className="portfolioSoftTag">비중 {ratio}%</span>
+                          {typeof item.changePct === "number" && (
+                            <span className="portfolioSoftTag">
+                              오늘 {item.changePct > 0 ? "+" : ""}
+                              {item.changePct.toFixed(2)}%
+                            </span>
+                          )}
+                        </div>
+
+                        <button
+                          type="button"
+                          className="portfolioDeleteBtn"
+                          onClick={() => removeHolding(item.id)}
+                        >
+                          삭제
+                        </button>
+                      </div>
+
+                      <div className="portfolioHoldingBar">
+                        <div
+                          className={`portfolioHoldingFill ${toneClass(idx)}`}
+                          style={{ width: `${Math.max(8, Number(ratio))}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           <div className={`portfolioInsightCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
             <div className="portfolioCardHead">
               <div>
@@ -655,9 +805,7 @@ export default function MyPortfolio() {
                 <div className="portfolioEmptySoftIcon">✦</div>
                 <div>
                   <strong>인사이트 데이터 준비 전</strong>
-                  <p>
-                    보유 종목을 추가하면 집중도, 분산도, 최고 수익 종목을 자동으로 보여줄게.
-                  </p>
+                  <p>보유 종목을 추가하면 집중도, 분산도, 최고 수익 종목을 자동으로 보여줄게.</p>
                 </div>
               </div>
             ) : (
@@ -754,114 +902,6 @@ export default function MyPortfolio() {
               </>
             )}
           </div>
-
-          <div className={`portfolioHoldingsCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
-            <div className="portfolioCardHead">
-              <div>
-                <div className="portfolioEyebrow">HOLDINGS</div>
-                <h3 className="portfolioTitleSm">보유 종목</h3>
-              </div>
-
-              <button className="portfolioAddBtn" type="button" onClick={openModal}>
-                <span className="portfolioAddBtnIcon">＋</span>
-                종목 추가
-              </button>
-            </div>
-
-            {emptyState ? (
-              <div className="portfolioEmptyState holdingsEmptyState">
-                <div className="portfolioEmptyOrb" />
-                <div className="portfolioEmptyIcon">✦</div>
-                <h4>아직 담긴 종목이 없어요</h4>
-                <p>
-                  관심 있는 코인이나 주식을 추가해서
-                  <br />
-                  나만의 포트폴리오를 관리해보세요.
-                </p>
-                <button className="portfolioAddBtn isLarge" type="button" onClick={openModal}>
-                  <span className="portfolioAddBtnIcon">＋</span>
-                  첫 종목 추가하기
-                </button>
-              </div>
-            ) : (
-              <div
-                className={`portfolioHoldingList portfolioHoldingListTall luxuryScroll ${
-                  isUiRefreshing ? "isRefreshing" : ""
-                }`}
-              >
-                {enrichedItems.map((item, idx) => {
-                  const itemPnlColor =
-                    item.pnl >= 0 ? "rgba(54,213,255,.95)" : "rgba(255,120,170,.95)";
-                  const ratio = ((item.value / totalAssetsForRatio) * 100 || 0).toFixed(1);
-
-                  return (
-                    <div key={item.id} className="portfolioHoldingItem">
-                      <div className="portfolioHoldingTop">
-                        <div className="portfolioHoldingIdentity">
-                          <AssetLogo iconUrl={item.iconUrl} name={item.name} />
-
-                          <div>
-                            <div className="portfolioHoldingName">{item.name}</div>
-                            <div className="portfolioHoldingSub">
-                              {item.symbol}
-                              {item.displayNameEN && item.displayNameEN !== item.name
-                                ? ` · ${item.displayNameEN}`
-                                : ""}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="portfolioHoldingValue">{formatKRW(item.value)}</div>
-                      </div>
-
-                      <div className="portfolioHoldingMetaRow">
-                        <span>
-                          {marketLabel(item.market)} · 평균단가 {formatKRW(item.avgPrice)} · 현재가{" "}
-                          {item.currentPrice == null
-                            ? "시세 확인 실패"
-                            : formatKRW(item.currentPrice)}
-                        </span>
-
-                        <span style={{ color: itemPnlColor, fontWeight: 800 }}>
-                          {formatSignedKRW(item.pnl)} ({item.rate.toFixed(2)}%)
-                        </span>
-                      </div>
-
-                      <div className="portfolioHoldingBottomRow">
-                        <div className="portfolioHoldingTagWrap">
-                          <span className={`portfolioMarketTag ${toneClass(idx)}`}>
-                            {marketLabel(item.market)}
-                          </span>
-                          <span className="portfolioSoftTag">비중 {ratio}%</span>
-                          {typeof item.changePct === "number" && (
-                            <span className="portfolioSoftTag">
-                              오늘 {item.changePct > 0 ? "+" : ""}
-                              {item.changePct.toFixed(2)}%
-                            </span>
-                          )}
-                        </div>
-
-                        <button
-                          type="button"
-                          className="portfolioDeleteBtn"
-                          onClick={() => removeHolding(item.id)}
-                        >
-                          삭제
-                        </button>
-                      </div>
-
-                      <div className="portfolioHoldingBar">
-                        <div
-                          className={`portfolioHoldingFill ${toneClass(idx)}`}
-                          style={{ width: `${Math.max(8, Number(ratio))}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
         </div>
 
         <div className="portfolioBottomGrid portfolioBottomGridBalanced">
@@ -914,95 +954,87 @@ export default function MyPortfolio() {
             </div>
           </div>
 
-          <div
-            className={`portfolioHelperCard card ${helperToneClass} ${
-              isUiRefreshing ? "isRefreshing" : ""
-            }`}
-          >
+          <div className={`portfolioCalculatorCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
             <div className="portfolioCardHead">
               <div>
-                <div className="portfolioEyebrow">HELPER CARD</div>
-                <h3 className="portfolioTitleSm">포지션 체크</h3>
+                <div className="portfolioEyebrow">RETURN CALCULATOR</div>
+                <h3 className="portfolioTitleSm">수익률 계산기</h3>
               </div>
-              <div className="portfolioGhostTag">QUICK VIEW</div>
+              <div className="portfolioGhostTag">TRADE CHECK</div>
             </div>
 
-            {emptyState ? (
-              <div className="portfolioEmptySoft helperEmptySoft">
-                <div className="portfolioEmptySoftIcon">◎</div>
-                <div>
-                  <strong>보조 데이터 준비 전</strong>
-                  <p>
-                    종목을 담으면 오늘 등락, 목표까지 남은 구간, 상위 상승 종목을 같이 보여줄게.
-                  </p>
+            <div className="portfolioCalcGrid">
+              <label className="portfolioCalcField">
+                <span>매수가</span>
+                <input
+                  type="number"
+                  step="any"
+                  value={calcForm.buyPrice}
+                  onChange={(e) =>
+                    setCalcForm((prev) => ({ ...prev, buyPrice: e.target.value }))
+                  }
+                  placeholder="예: 105000"
+                />
+              </label>
+
+              <label className="portfolioCalcField">
+                <span>매도가</span>
+                <input
+                  type="number"
+                  step="any"
+                  value={calcForm.sellPrice}
+                  onChange={(e) =>
+                    setCalcForm((prev) => ({ ...prev, sellPrice: e.target.value }))
+                  }
+                  placeholder="예: 112000"
+                />
+              </label>
+
+              <label className="portfolioCalcField">
+                <span>수량</span>
+                <input
+                  type="number"
+                  step="any"
+                  value={calcForm.quantity}
+                  onChange={(e) =>
+                    setCalcForm((prev) => ({ ...prev, quantity: e.target.value }))
+                  }
+                  placeholder="예: 10"
+                />
+              </label>
+            </div>
+
+            <div className="portfolioCalcResultCard">
+              <div className="portfolioCalcResultHead">
+                <span>예상 손익</span>
+                <strong className={calcProfit >= 0 ? "isUp" : "isDown"}>
+                  {calcIsValid ? formatSignedKRW(calcProfit) : "-"}
+                </strong>
+              </div>
+
+              <div className="portfolioCalcResultGrid">
+                <div className="portfolioCalcStat">
+                  <span>매수 금액</span>
+                  <strong>{calcIsValid ? formatKRW(calcBuyAmount) : "-"}</strong>
+                </div>
+
+                <div className="portfolioCalcStat">
+                  <span>매도 금액</span>
+                  <strong>{calcIsValid ? formatKRW(calcSellAmount) : "-"}</strong>
+                </div>
+
+                <div className="portfolioCalcStat">
+                  <span>수익률</span>
+                  <strong className={calcProfitRate >= 0 ? "isUp" : "isDown"}>
+                    {calcIsValid ? `${calcProfitRate > 0 ? "+" : ""}${calcProfitRate.toFixed(2)}%` : "-"}
+                  </strong>
                 </div>
               </div>
-            ) : (
-              <>
-                <div className="portfolioHelperHero">
-                  <div>
-                    <span className="label">오늘 포트폴리오 변동</span>
-                    <strong className={todayChangeValue >= 0 ? "isUp" : "isDown"}>
-                      {formatSignedKRW(todayChangeValue)}
-                    </strong>
-                  </div>
+            </div>
 
-                  <div className="portfolioHelperRateBadge">
-                    {todayChangeRate > 0 ? "+" : ""}
-                    {todayChangeRate.toFixed(2)}%
-                  </div>
-                </div>
-
-                <div className="portfolioHelperGrid">
-                  <div className="portfolioHelperStat">
-                    <span className="label">상승</span>
-                    <strong>{todayUpCount}개</strong>
-                  </div>
-
-                  <div className="portfolioHelperStat">
-                    <span className="label">하락</span>
-                    <strong>{todayDownCount}개</strong>
-                  </div>
-
-                  <div className="portfolioHelperStat">
-                    <span className="label">보합</span>
-                    <strong>{todayFlatCount}개</strong>
-                  </div>
-                </div>
-
-                <div className="portfolioTopMoverCard helperMoverCard">
-                  <div className="portfolioTopMoverLabel">TOP GAINER</div>
-
-                  {topGainer ? (
-                    <div className="portfolioTopMoverBody">
-                      <div className="portfolioTopMoverLeft">
-                        <AssetLogo iconUrl={topGainer.iconUrl} name={topGainer.name} />
-                        <div>
-                          <div className="portfolioTopMoverName">{topGainer.name}</div>
-                          <div className="portfolioTopMoverSub">
-                            {topGainer.symbol} · {marketLabel(topGainer.market)}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="portfolioTopMoverRight">
-                        {topGainer.changePct > 0 ? "+" : ""}
-                        {topGainer.changePct.toFixed(2)}%
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="portfolioTopMoverEmpty">
-                      오늘 변동 데이터를 불러오는 중이야.
-                    </div>
-                  )}
-                </div>
-
-                <div className="portfolioHelperNote">
-                  목표까지 <strong>{formatKRW(targetRemaining)}</strong> 남았어. 현재 자산 기준{" "}
-                  <strong>{requiredGrowthFromNow.toFixed(2)}%</strong> 더 필요해.
-                </div>
-              </>
-            )}
+            <div className="portfolioCalcHint">
+              단타든 스윙이든 진입가 / 목표가 / 수량만 넣으면 손익을 바로 확인할 수 있어.
+            </div>
           </div>
         </div>
       </section>

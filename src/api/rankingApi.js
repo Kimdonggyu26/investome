@@ -1,5 +1,11 @@
 import { SEARCH_ASSETS } from "../data/searchAssets";
 
+const STOCK_META_BY_SYMBOL = Object.fromEntries(
+  SEARCH_ASSETS.filter(
+    (item) => item.market === "KOSPI" || item.market === "NASDAQ"
+  ).map((item) => [String(item.symbol || "").toUpperCase(), item])
+);
+
 function toNumber(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
@@ -115,13 +121,14 @@ function buildCommodityIcon(symbol) {
 
 function normalizeRow(row, index) {
   const symbol = (row.symbol || "-").toUpperCase();
+  const meta = STOCK_META_BY_SYMBOL[symbol] || null;
   const commodityIcon = buildCommodityIcon(symbol);
   const stockIcon = buildLogo(pickStockDomain(symbol));
 
   return {
     rank: row.rank ?? index + 1,
-    name: row.name ?? "-",
-    displayNameEN: row.displayNameEN ?? "",
+    name: meta?.name || row.name || "-",
+    displayNameEN: row.displayNameEN ?? meta?.displayNameEN ?? "",
     symbol,
     iconUrl: row.iconUrl || commodityIcon || stockIcon,
     coinId: row.coinId ?? "",
