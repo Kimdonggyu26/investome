@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { SEARCH_ASSETS } from "../data/searchAssets";
+import { getAuthUser } from "../utils/auth";
 
-const STORAGE_KEY = "investome-watchlist-v1";
+const STORAGE_KEY_PREFIX = "investome-watchlist-v2";
+
+function getWatchlistStorageKey(userId) {
+  return `${STORAGE_KEY_PREFIX}-${userId || "guest"}`;
+}
 
 function resolveWatchlistAsset(market, symbol) {
   const found = SEARCH_ASSETS.find(
@@ -31,9 +36,9 @@ function normalizeWatchlistItem(item) {
   };
 }
 
-function readWatchlist() {
+function readWatchlist(userId) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(getWatchlistStorageKey(userId));
     const parsed = raw ? JSON.parse(raw) : [];
     return Array.isArray(parsed) ? parsed.map(normalizeWatchlistItem) : [];
   } catch {
@@ -41,28 +46,34 @@ function readWatchlist() {
   }
 }
 
-function writeWatchlist(items) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+function writeWatchlist(items, userId) {
+  localStorage.setItem(getWatchlistStorageKey(userId), JSON.stringify(items));
   window.dispatchEvent(new Event("watchlist:change"));
 }
 
 export function useWatchlist() {
-  const [items, setItems] = useState(() => readWatchlist());
+  const authUser = getAuthUser();
+  const userId = authUser?.id || "guest";
+
+  const [items, setItems] = useState(() => readWatchlist(userId));
+
+  useEffect(() => {
+    setItems(readWatchlist(userId));
+  }, [userId]);
 
   useEffect(() => {
     const normalized = items.map(normalizeWatchlistItem);
-
     const changed = JSON.stringify(normalized) !== JSON.stringify(items);
 
     if (changed) {
       setItems(normalized);
-      writeWatchlist(normalized);
+      writeWatchlist(normalized, userId);
     }
-  }, []);
+  }, [items, userId]);
 
   useEffect(() => {
     function sync() {
-      setItems(readWatchlist());
+      setItems(readWatchlist(userId));
     }
 
     window.addEventListener("storage", sync);
@@ -72,7 +83,7 @@ export function useWatchlist() {
       window.removeEventListener("storage", sync);
       window.removeEventListener("watchlist:change", sync);
     };
-  }, []);
+  }, [userId]);
 
   const keySet = useMemo(
     () => new Set(items.map((item) => `${item.market}:${item.symbol}`)),
@@ -103,7 +114,7 @@ export function useWatchlist() {
         ];
 
     setItems(next);
-    writeWatchlist(next);
+    writeWatchlist(next, userId);
   }
 
   return {

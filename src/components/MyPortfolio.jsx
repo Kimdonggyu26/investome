@@ -1028,54 +1028,60 @@ const localSuggestionList = useMemo(() => {
         </div>
 
         <div className="portfolioBottomGrid portfolioBottomGridBalanced">
-          <div className={`portfolioAllocationCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
-            <div className="portfolioCardHead">
-              <div>
-                <div className="portfolioEyebrow">ALLOCATION</div>
-                <h3 className="portfolioTitleSm">자산 비중</h3>
-              </div>
-            </div>
-
-            <div className="portfolioAllocationBody">
-              <div
-                className={`portfolioRing ${ringReady ? "isReady" : ""} ${
-                  isUiRefreshing ? "isRefreshing" : ""
-                }`}
-                style={{ background: ringGradient }}
-              >
-                <div className="portfolioRingInner">
-                  <span>총 자산</span>
-                  <strong>{formatKRW(totalValue)}</strong>
+            <div className={`portfolioAllocationCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
+              <div className="portfolioCardHead">
+                <div>
+                  <div className="portfolioEyebrow">ALLOCATION</div>
+                  <h3 className="portfolioTitleSm">자산 비중</h3>
                 </div>
               </div>
 
-              <div className="portfolioLegend luxuryScroll">
+              <div className="portfolioAllocationBody portfolioAllocationBodyEmptyFriendly">
+                <div
+                  className={`portfolioRing ${ringReady ? "isReady" : ""} ${
+                    isUiRefreshing ? "isRefreshing" : ""
+                  }`}
+                  style={{ background: ringGradient }}
+                >
+                  <div className="portfolioRingInner">
+                    <span>총 자산</span>
+                    <strong>{formatKRW(totalValue)}</strong>
+                  </div>
+                </div>
+
                 {emptyState ? (
-                  <div className="portfolioEmptyMiniCard">
-                    <strong>아직 비중 데이터가 없어요</strong>
-                    <span>종목을 추가하면 자산 비중이 원형 차트로 표시돼요.</span>
+                  <div className="portfolioAllocationEmptyPanel">
+                    <div className="portfolioAllocationEmptyText">
+                      <strong>아직 비중 데이터가 없어요</strong>
+                      <span>
+                        종목을 추가하면 자산 비중이 자동으로 계산되고
+                        <br />
+                        원형 차트로 한눈에 볼 수 있어요.
+                      </span>
+                    </div>
                   </div>
                 ) : (
-                  enrichedItems.map((item, idx) => {
-                    const ratio = ((item.value / totalAssetsForRatio) * 100 || 0).toFixed(1);
+                  <div className="portfolioLegend luxuryScroll">
+                    {enrichedItems.map((item, idx) => {
+                      const ratio = ((item.value / totalAssetsForRatio) * 100 || 0).toFixed(1);
 
-                    return (
-                      <div className="portfolioLegendItem" key={item.id}>
-                        <div className={`portfolioLegendDot ${toneClass(idx)}`} />
-                        <div className="portfolioLegendText">
-                          <div>
-                            <strong>{item.name}</strong>
-                            <span>{marketLabel(item.market)}</span>
+                      return (
+                        <div className="portfolioLegendItem" key={item.id}>
+                          <div className={`portfolioLegendDot ${toneClass(idx)}`} />
+                          <div className="portfolioLegendText">
+                            <div>
+                              <strong>{item.name}</strong>
+                              <span>{marketLabel(item.market)}</span>
+                            </div>
+                            <strong>{ratio}%</strong>
                           </div>
-                          <strong>{ratio}%</strong>
                         </div>
-                      </div>
-                    );
-                  })
+                      );
+                    })}
+                  </div>
                 )}
               </div>
-            </div>
-          </div>
+            </div>`
 
           <div className={`portfolioCalculatorCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
             <div className="portfolioCardHead">
