@@ -1973,7 +1973,7 @@
   margin-top:18px;
   display:grid;
   gap:12px;
-  max-height:570px;
+  max-height:400px;
   overflow:auto;
   padding-right:6px;
 }
