@@ -1,3 +1,5 @@
+import { apiUrl } from "../lib/apiClient";
+
 function toYmd(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -38,12 +40,17 @@ export async function fetchFx() {
   const start = new Date();
   start.setDate(end.getDate() - 7);
 
-  const url =
-    `https://api.frankfurter.app/${toYmd(start)}..${toYmd(end)}` +
-    `?from=USD&to=KRW,JPY,CNY,EUR,AUD`;
+  const params = new URLSearchParams({
+    from: "USD",
+    to: "KRW,JPY,CNY,EUR,AUD",
+    start: toYmd(start),
+    end: toYmd(end),
+  });
 
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`FX failed: ${res.status}`);
+  const res = await fetch(apiUrl(`/api/fx-rates?${params.toString()}`));
+  if (!res.ok) {
+    throw new Error(`FX failed: ${res.status}`);
+  }
 
   const json = await res.json();
   const rates = json?.rates || {};
