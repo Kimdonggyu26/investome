@@ -3076,8 +3076,7 @@
 
 @media (max-width: 1180px){
   .portfolioTopGridBalanced,
-  .portfolioMiddleGrid,
-  .portfolioBottomGridBalanced{
+  .portfolioMiddleGrid{
     grid-template-columns: 1fr;
   }
 
