@@ -1,14 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
-import { portfolio as defaultPortfolio } from "../data/portfolio";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SEARCH_ASSETS } from "../data/searchAssets";
 import {
   fetchAssetQuote,
+  fetchMyPagePortfolio,
   fetchPortfolioQuotes,
+  saveMyPagePortfolio,
   searchAssetCatalog,
 } from "../api/portfolioApi";
+import { getAuthUser } from "../utils/auth";
 
-const STORAGE_KEY = "investome-portfolio-v3";
-const TARGET_STORAGE_KEY = "investome-portfolio-target-v1";
+const STORAGE_KEY_PREFIX = "investome-portfolio-v4";
+const TARGET_STORAGE_KEY_PREFIX = "investome-portfolio-target-v2";
 
 function formatKRW(v) {
   if (v === null || v === undefined || Number.isNaN(v)) return "-";
@@ -21,25 +23,61 @@ function formatSignedKRW(v) {
   return `${sign}${formatKRW(v).replace("₩-", "-₩")}`;
 }
 
-function readHoldings() {
+function getScopedKey(prefix, userId) {
+  return `${prefix}-${userId || "guest"}`;
+}
+
+function sanitizeNumericInput(value, { allowDecimal = false } = {}) {
+  const raw = String(value ?? "").replace(/,/g, "").trim();
+  if (!raw) return "";
+
+  let cleaned = raw.replace(allowDecimal ? /[^\d.]/g : /[^\d]/g, "");
+  if (!allowDecimal) return cleaned;
+
+  const [integerPart = "", ...decimalParts] = cleaned.split(".");
+  const decimalPart = decimalParts.join("");
+  return decimalParts.length ? `${integerPart}.${decimalPart}` : integerPart;
+}
+
+function formatNumericInput(value, { allowDecimal = false } = {}) {
+  const cleaned = sanitizeNumericInput(value, { allowDecimal });
+  if (!cleaned) return "";
+
+  const [integerPart = "", decimalPart] = cleaned.split(".");
+  const formattedInteger = integerPart ? Number(integerPart).toLocaleString("ko-KR") : "0";
+
+  if (!allowDecimal) return formattedInteger;
+  if (cleaned.endsWith(".")) return `${formattedInteger}.`;
+  return decimalPart !== undefined ? `${formattedInteger}.${decimalPart}` : formattedInteger;
+}
+
+function getHoldingsStorageKey(userId) {
+  return getScopedKey(STORAGE_KEY_PREFIX, userId);
+}
+
+function getTargetStorageKey(userId) {
+  return getScopedKey(TARGET_STORAGE_KEY_PREFIX, userId);
+}
+
+function readHoldings(userId) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultPortfolio;
+    const raw = localStorage.getItem(getHoldingsStorageKey(userId));
+    if (!raw) return [];
 
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : defaultPortfolio;
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
-    return defaultPortfolio;
+    return [];
   }
 }
 
-function persistHoldings(items) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+function persistHoldings(items, userId) {
+  localStorage.setItem(getHoldingsStorageKey(userId), JSON.stringify(items));
 }
 
-function readTargetAmount() {
+function readTargetAmount(userId) {
   try {
-    const raw = localStorage.getItem(TARGET_STORAGE_KEY);
+    const raw = localStorage.getItem(getTargetStorageKey(userId));
     if (!raw) return 50000000;
     const value = Number(raw);
     return Number.isFinite(value) && value > 0 ? value : 50000000;
@@ -48,8 +86,8 @@ function readTargetAmount() {
   }
 }
 
-function persistTargetAmount(value) {
-  localStorage.setItem(TARGET_STORAGE_KEY, String(value));
+function persistTargetAmount(value, userId) {
+  localStorage.setItem(getTargetStorageKey(userId), String(value));
 }
 
 function marketLabel(market) {
@@ -95,6 +133,10 @@ const initialForm = {
 };
 
 export default function MyPortfolio() {
+  const authUser = getAuthUser();
+  const userId = authUser?.id || "guest";
+  const saveTimerRef = useRef(null);
+  const [hasHydrated, setHasHydrated] = useState(false);
   const [holdings, setHoldings] = useState([]);
   const [quotes, setQuotes] = useState({});
   const [open, setOpen] = useState(false);
@@ -119,11 +161,48 @@ export default function MyPortfolio() {
   });
 
   useEffect(() => {
-    setHoldings(readHoldings());
-    const savedTarget = readTargetAmount();
-    setTargetAmount(savedTarget);
-    setTargetInput(String(savedTarget));
-  }, []);
+    let alive = true;
+
+    async function hydrate() {
+      const localHoldings = readHoldings(userId);
+      const localTarget = readTargetAmount(userId);
+
+      if (!alive) return;
+      setHoldings(localHoldings);
+      setTargetAmount(localTarget);
+      setTargetInput(String(localTarget));
+
+      if (authUser?.id) {
+        try {
+          const remote = await fetchMyPagePortfolio();
+          if (!alive || !remote) {
+            setHasHydrated(true);
+            return;
+          }
+
+          const remoteHoldings = Array.isArray(remote.holdings) ? remote.holdings : [];
+          const remoteTarget = Number(remote.targetAmount);
+          const nextTarget = Number.isFinite(remoteTarget) && remoteTarget > 0 ? remoteTarget : 50000000;
+
+          setHoldings(remoteHoldings);
+          setTargetAmount(nextTarget);
+          setTargetInput(String(nextTarget));
+          persistHoldings(remoteHoldings, userId);
+          persistTargetAmount(nextTarget, userId);
+        } catch {
+          // 백엔드 저장본이 없어도 로컬 상태로 계속 사용
+        }
+      }
+
+      if (alive) setHasHydrated(true);
+    }
+
+    hydrate();
+
+    return () => {
+      alive = false;
+    };
+  }, [authUser?.id, userId]);
 
   useEffect(() => {
     const t = setTimeout(() => setRingReady(true), 60);
@@ -134,11 +213,8 @@ export default function MyPortfolio() {
     if (holdings.length === 0) {
       setQuotes({});
       setLoadingQuotes(false);
-      persistHoldings([]);
       return;
     }
-
-    persistHoldings(holdings);
 
     let alive = true;
 
@@ -166,6 +242,29 @@ export default function MyPortfolio() {
       clearInterval(t);
     };
   }, [holdings]);
+
+  useEffect(() => {
+    if (!hasHydrated) return;
+
+    persistHoldings(holdings, userId);
+    persistTargetAmount(targetAmount, userId);
+
+    if (!authUser?.id) return;
+
+    window.clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = window.setTimeout(() => {
+      saveMyPagePortfolio({
+        holdings,
+        targetAmount,
+      }).catch(() => {
+        // 저장 실패 시에도 로컬 저장본 유지
+      });
+    }, 250);
+
+    return () => {
+      window.clearTimeout(saveTimerRef.current);
+    };
+  }, [authUser?.id, hasHydrated, holdings, targetAmount, userId]);
 
   useEffect(() => {
     const q = searchText.trim();
@@ -435,7 +534,7 @@ const localSuggestionList = useMemo(() => {
   }
 
   function saveTargetAmount() {
-    const next = Number(String(targetInput).replaceAll(",", "").trim());
+    const next = Number(sanitizeNumericInput(targetInput));
 
     if (!Number.isFinite(next) || next <= 0) {
       setTargetError("목표 금액은 0보다 큰 숫자로 입력해줘.");
@@ -443,7 +542,7 @@ const localSuggestionList = useMemo(() => {
     }
 
     setTargetAmount(next);
-    persistTargetAmount(next);
+    persistTargetAmount(next, userId);
     setTargetInput(String(next));
     setTargetError("");
     setIsTargetEditing(false);
@@ -627,10 +726,10 @@ const localSuggestionList = useMemo(() => {
               <div className="portfolioTargetEditor">
                 <span className="label">목표 금액 (KRW)</span>
                 <input
-                  type="number"
-                  step="any"
-                  value={targetInput}
-                  onChange={(e) => setTargetInput(e.target.value)}
+                  type="text"
+                  inputMode="numeric"
+                  value={formatNumericInput(targetInput)}
+                  onChange={(e) => setTargetInput(sanitizeNumericInput(e.target.value))}
                   placeholder="예: 50000000"
                 />
                 {targetError ? <div className="portfolioTargetError">{targetError}</div> : null}
@@ -967,11 +1066,11 @@ const localSuggestionList = useMemo(() => {
               <label className="portfolioCalcField">
                 <span>매수가</span>
                 <input
-                  type="number"
-                  step="any"
-                  value={calcForm.buyPrice}
+                  type="text"
+                  inputMode="decimal"
+                  value={formatNumericInput(calcForm.buyPrice, { allowDecimal: true })}
                   onChange={(e) =>
-                    setCalcForm((prev) => ({ ...prev, buyPrice: e.target.value }))
+                    setCalcForm((prev) => ({ ...prev, buyPrice: sanitizeNumericInput(e.target.value, { allowDecimal: true }) }))
                   }
                   placeholder="예: 105000"
                 />
@@ -980,11 +1079,11 @@ const localSuggestionList = useMemo(() => {
               <label className="portfolioCalcField">
                 <span>매도가</span>
                 <input
-                  type="number"
-                  step="any"
-                  value={calcForm.sellPrice}
+                  type="text"
+                  inputMode="decimal"
+                  value={formatNumericInput(calcForm.sellPrice, { allowDecimal: true })}
                   onChange={(e) =>
-                    setCalcForm((prev) => ({ ...prev, sellPrice: e.target.value }))
+                    setCalcForm((prev) => ({ ...prev, sellPrice: sanitizeNumericInput(e.target.value, { allowDecimal: true }) }))
                   }
                   placeholder="예: 112000"
                 />
@@ -993,11 +1092,11 @@ const localSuggestionList = useMemo(() => {
               <label className="portfolioCalcField">
                 <span>수량</span>
                 <input
-                  type="number"
-                  step="any"
-                  value={calcForm.quantity}
+                  type="text"
+                  inputMode="decimal"
+                  value={formatNumericInput(calcForm.quantity, { allowDecimal: true })}
                   onChange={(e) =>
-                    setCalcForm((prev) => ({ ...prev, quantity: e.target.value }))
+                    setCalcForm((prev) => ({ ...prev, quantity: sanitizeNumericInput(e.target.value, { allowDecimal: true }) }))
                   }
                   placeholder="예: 10"
                 />
@@ -1140,12 +1239,12 @@ const localSuggestionList = useMemo(() => {
               <label>
                 <span>보유수량</span>
                 <input
-                  type="number"
-                  step="any"
-                  value={form.amount}
+                  type="text"
+                  inputMode="decimal"
+                  value={formatNumericInput(form.amount, { allowDecimal: true })}
                   placeholder="0.25 / 10 / 120"
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, amount: e.target.value }))
+                    setForm((prev) => ({ ...prev, amount: sanitizeNumericInput(e.target.value, { allowDecimal: true }) }))
                   }
                 />
               </label>
@@ -1153,12 +1252,12 @@ const localSuggestionList = useMemo(() => {
               <label>
                 <span>평균단가 (KRW)</span>
                 <input
-                  type="number"
-                  step="any"
-                  value={form.avgPrice}
+                  type="text"
+                  inputMode="decimal"
+                  value={formatNumericInput(form.avgPrice, { allowDecimal: true })}
                   placeholder="매수 평균단가"
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, avgPrice: e.target.value }))
+                    setForm((prev) => ({ ...prev, avgPrice: sanitizeNumericInput(e.target.value, { allowDecimal: true }) }))
                   }
                 />
               </label>

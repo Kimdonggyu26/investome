@@ -1,3 +1,5 @@
+import { apiUrl } from "../lib/apiClient";
+
 function buildQuery(params) {
   const sp = new URLSearchParams();
 
@@ -58,4 +60,35 @@ export async function fetchPortfolioQuotes(items) {
   });
 
   return map;
+}
+
+function getAuthHeaders() {
+  const token = localStorage.getItem("accessToken");
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
+export async function fetchMyPagePortfolio() {
+  const res = await fetch(apiUrl("/api/mypage/portfolio"), {
+    headers: getAuthHeaders(),
+  });
+
+  if (res.status === 404) {
+    return null;
+  }
+
+  const json = await readJsonOrThrow(res, "mypage portfolio");
+  return json || null;
+}
+
+export async function saveMyPagePortfolio({ holdings, targetAmount }) {
+  const res = await fetch(apiUrl("/api/mypage/portfolio"), {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ holdings, targetAmount }),
+  });
+
+  return readJsonOrThrow(res, "mypage portfolio save");
 }
