@@ -3117,13 +3117,20 @@
   align-items: stretch;
 }
 
-.portfolioHoldingsCard,
-.portfolioInsightCard{
+.portfolioHoldingsCard{
   display: flex;
   flex-direction: column;
   height: 560px;
   max-height: 560px;
   overflow: hidden;
+}
+
+.portfolioInsightCard{
+  display: flex;
+  flex-direction: column;
+  min-height: 560px;
+  height: auto;
+  overflow: visible;
 }
 
 .portfolioHoldingListTall{
