@@ -3269,3 +3269,55 @@
     grid-template-columns: 1fr;
   }
 }
+
+.targetEmptyCard {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 28px 20px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.72), rgba(10, 16, 30, 0.92));
+  border: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.targetEmptyIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin-bottom: 18px;
+  background: radial-gradient(circle at top, rgba(59, 130, 246, 0.28), rgba(99, 102, 241, 0.18));
+  border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.targetEmptyTitle {
+  font-size: 28px;
+  font-weight: 800;
+  color: #f8fafc;
+  margin-bottom: 10px;
+}
+
+.targetEmptyDesc {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #94a3b8;
+  margin-bottom: 20px;
+}
+
+.targetEmptyButton {
+  height: 46px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.22);
+}

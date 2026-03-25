@@ -702,83 +702,107 @@ const localSuggestionList = useMemo(() => {
                 <h3 className="portfolioTitleSm">목표 달성</h3>
               </div>
 
-              {!isTargetEditing ? (
-                <button type="button" className="portfolioGhostBtn" onClick={startTargetEdit}>
-                  목표 설정
-                </button>
-              ) : (
-                <div className="portfolioTargetActionRow">
-                  <button type="button" className="portfolioGhostBtn" onClick={cancelTargetEdit}>
-                    취소
+              {!emptyState &&
+                (!isTargetEditing ? (
+                  <button type="button" className="portfolioGhostBtn" onClick={startTargetEdit}>
+                    목표 설정
                   </button>
-                  <button
-                    type="button"
-                    className="portfolioAddBtn portfolioAddBtnCompact"
-                    onClick={saveTargetAmount}
-                  >
-                    저장
-                  </button>
-                </div>
-              )}
+                ) : (
+                  <div className="portfolioTargetActionRow">
+                    <button type="button" className="portfolioGhostBtn" onClick={cancelTargetEdit}>
+                      취소
+                    </button>
+                    <button
+                      type="button"
+                      className="portfolioAddBtn portfolioAddBtnCompact"
+                      onClick={saveTargetAmount}
+                    >
+                      저장
+                    </button>
+                  </div>
+                ))}
             </div>
 
-            {isTargetEditing ? (
-              <div className="portfolioTargetEditor">
-                <span className="label">목표 금액 (KRW)</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={formatNumericInput(targetInput)}
-                  onChange={(e) => setTargetInput(sanitizeNumericInput(e.target.value))}
-                  placeholder="예: 50000000"
-                />
-                {targetError ? <div className="portfolioTargetError">{targetError}</div> : null}
+            {emptyState ? (
+              <div className="portfolioGoalEmptyState">
+                <div className="portfolioEmptyOrb" />
+                <div className="portfolioEmptyIcon">🎯</div>
+                <h4>목표를 설정해보세요</h4>
+                <p>
+                  목표 금액을 정하면 현재 달성률과
+                  <br />
+                  남은 금액을 한눈에 볼 수 있어요.
+                  <br />
+                  목표 달성을 응원합니다 🚀
+                </p>
+                <button type="button" className="portfolioAddBtn isLarge" onClick={startTargetEdit}>
+                  목표 설정하기
+                </button>
               </div>
             ) : (
-              <div className="portfolioTargetMainValue">{formatKRW(targetAmount)}</div>
+              <>
+                {isTargetEditing ? (
+                  <div className="portfolioTargetEditor">
+                    <span className="label">목표 금액 (KRW)</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={Number(targetInput || 0).toLocaleString("ko-KR")}
+                      onChange={(e) => {
+                        const raw = e.target.value.replaceAll(",", "").replace(/[^\d]/g, "");
+                        setTargetInput(raw);
+                      }}
+                      placeholder="예: 50,000,000"
+                    />
+                    {targetError ? <div className="portfolioTargetError">{targetError}</div> : null}
+                  </div>
+                ) : (
+                  <div className="portfolioTargetMainValue">{formatKRW(targetAmount)}</div>
+                )}
+
+                <div className="portfolioTargetProgressHead">
+                  <span>현재 달성률</span>
+                  <strong>{targetProgress.toFixed(1)}%</strong>
+                </div>
+
+                <div className="portfolioTargetBar">
+                  <div
+                    className="portfolioTargetFill"
+                    style={{ width: `${Math.min(targetProgress, 100)}%` }}
+                  />
+                </div>
+
+                <div className="portfolioTargetGrid">
+                  <div className="portfolioTargetStat">
+                    <span className="label">현재 평가금액</span>
+                    <strong>{formatKRW(totalValue)}</strong>
+                  </div>
+
+                  <div className="portfolioTargetStat">
+                    <span className="label">남은 금액</span>
+                    <strong>{formatKRW(targetRemaining)}</strong>
+                  </div>
+
+                  <div className="portfolioTargetStat">
+                    <span className="label">현재 자산 기준</span>
+                    <strong>
+                      {requiredGrowthFromNow > 0 ? "+" : ""}
+                      {requiredGrowthFromNow.toFixed(2)}%
+                    </strong>
+                    <small>앞으로 더 필요한 수익률</small>
+                  </div>
+
+                  <div className="portfolioTargetStat">
+                    <span className="label">원금 기준 목표 수익률</span>
+                    <strong>
+                      {requiredTotalReturnFromCost > 0 ? "+" : ""}
+                      {requiredTotalReturnFromCost.toFixed(2)}%
+                    </strong>
+                    <small>총 투자금액 대비 기준</small>
+                  </div>
+                </div>
+              </>
             )}
-
-            <div className="portfolioTargetProgressHead">
-              <span>현재 달성률</span>
-              <strong>{targetProgress.toFixed(1)}%</strong>
-            </div>
-
-            <div className="portfolioTargetBar">
-              <div
-                className="portfolioTargetFill"
-                style={{ width: `${Math.min(targetProgress, 100)}%` }}
-              />
-            </div>
-
-            <div className="portfolioTargetGrid">
-              <div className="portfolioTargetStat">
-                <span className="label">현재 평가금액</span>
-                <strong>{formatKRW(totalValue)}</strong>
-              </div>
-
-              <div className="portfolioTargetStat">
-                <span className="label">남은 금액</span>
-                <strong>{formatKRW(targetRemaining)}</strong>
-              </div>
-
-              <div className="portfolioTargetStat">
-                <span className="label">현재 자산 기준</span>
-                <strong>
-                  {requiredGrowthFromNow > 0 ? "+" : ""}
-                  {requiredGrowthFromNow.toFixed(2)}%
-                </strong>
-                <small>앞으로 더 필요한 수익률</small>
-              </div>
-
-              <div className="portfolioTargetStat">
-                <span className="label">원금 기준 목표 수익률</span>
-                <strong>
-                  {requiredTotalReturnFromCost > 0 ? "+" : ""}
-                  {requiredTotalReturnFromCost.toFixed(2)}%
-                </strong>
-                <small>총 투자금액 대비 기준</small>
-              </div>
-            </div>
           </div>
         </div>
 
