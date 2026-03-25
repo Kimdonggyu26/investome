@@ -2425,3 +2425,122 @@
   font-weight: 800;
   color: rgba(255,255,255,0.52);
 }
+
+.portfolioInsightHero{
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(14,165,255,0.10), rgba(124,77,255,0.08));
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.portfolioInsightMain{
+  display: grid;
+  gap: 8px;
+}
+
+.portfolioInsightMain .label{
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .8px;
+  color: rgba(255,255,255,0.52);
+}
+
+.portfolioInsightMain strong{
+  font-size: 16px;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.95);
+}
+
+.portfolioInsightGrid{
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.portfolioInsightStat{
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: grid;
+  gap: 6px;
+}
+
+.portfolioInsightStat .label{
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .8px;
+  color: rgba(255,255,255,0.48);
+}
+
+.portfolioInsightStat strong{
+  font-size: 18px;
+  color: rgba(255,255,255,0.95);
+}
+
+.portfolioInsightStat small{
+  font-size: 12px;
+  color: rgba(255,255,255,0.58);
+}
+
+.portfolioInsightPair{
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.portfolioInsightFocusCard{
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.portfolioInsightFocusLabel{
+  margin-bottom: 12px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .9px;
+  color: rgba(255,255,255,0.50);
+}
+
+.portfolioInsightFocusBody{
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.portfolioInsightFocusLeft{
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.portfolioInsightFocusName{
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.portfolioInsightFocusSub{
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.58);
+}
+
+.portfolioInsightFocusRight{
+  font-size: 15px;
+  font-weight: 900;
+  color: rgba(54,213,255,.96);
+}
+
+@media (max-width: 860px){
+  .portfolioInsightGrid{
+    grid-template-columns: 1fr;
+  }
+}

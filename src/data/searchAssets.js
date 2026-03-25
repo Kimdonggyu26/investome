@@ -1,15 +1,18 @@
-function asset(market, symbol, name, displayNameEN, aliases = []) {
+function asset(
+  market,
+  symbol,
+  name,
+  displayNameEN,
+  aliases = [],
+  options = {}
+) {
   return {
     market,
     symbol,
     name,
     displayNameEN,
-    aliases: [
-      symbol,
-      name,
-      displayNameEN,
-      ...aliases,
-    ]
+    coinId: options.coinId || "",
+    aliases: [symbol, name, displayNameEN, ...aliases]
       .filter(Boolean)
       .map((v) => String(v).toLowerCase()),
   };
@@ -17,16 +20,36 @@ function asset(market, symbol, name, displayNameEN, aliases = []) {
 
 export const SEARCH_ASSETS = [
   // CRYPTO
-  asset("CRYPTO", "BTC", "비트코인", "Bitcoin", ["btc", "bitcoin", "비트"]),
-  asset("CRYPTO", "ETH", "이더리움", "Ethereum", ["eth", "ethereum", "이더"]),
-  asset("CRYPTO", "XRP", "리플", "Ripple", ["xrp"]),
-  asset("CRYPTO", "SOL", "솔라나", "Solana", ["sol", "solana"]),
-  asset("CRYPTO", "BNB", "비앤비", "BNB", ["bnb", "binance coin", "바이낸스코인"]),
-  asset("CRYPTO", "DOGE", "도지코인", "Dogecoin", ["doge", "dogecoin", "도지"]),
-  asset("CRYPTO", "ADA", "에이다", "Cardano", ["ada", "cardano"]),
-  asset("CRYPTO", "TRX", "트론", "TRON", ["trx", "tron"]),
-  asset("CRYPTO", "AVAX", "아발란체", "Avalanche", ["avax", "avalanche"]),
-  asset("CRYPTO", "LINK", "체인링크", "Chainlink", ["link", "chainlink"]),
+  asset("CRYPTO", "BTC", "비트코인", "Bitcoin", ["btc", "bitcoin", "비트"], {
+    coinId: "bitcoin",
+  }),
+  asset("CRYPTO", "ETH", "이더리움", "Ethereum", ["eth", "ethereum", "이더"], {
+    coinId: "ethereum",
+  }),
+  asset("CRYPTO", "XRP", "리플", "Ripple", ["xrp"], {
+    coinId: "ripple",
+  }),
+  asset("CRYPTO", "SOL", "솔라나", "Solana", ["sol", "solana"], {
+    coinId: "solana",
+  }),
+  asset("CRYPTO", "BNB", "비앤비", "BNB", ["bnb", "binance coin", "바이낸스코인"], {
+    coinId: "binancecoin",
+  }),
+  asset("CRYPTO", "DOGE", "도지코인", "Dogecoin", ["doge", "dogecoin", "도지"], {
+    coinId: "dogecoin",
+  }),
+  asset("CRYPTO", "ADA", "에이다", "Cardano", ["ada", "cardano"], {
+    coinId: "cardano",
+  }),
+  asset("CRYPTO", "TRX", "트론", "TRON", ["trx", "tron"], {
+    coinId: "tron",
+  }),
+  asset("CRYPTO", "AVAX", "아발란체", "Avalanche", ["avax", "avalanche"], {
+    coinId: "avalanche-2",
+  }),
+  asset("CRYPTO", "LINK", "체인링크", "Chainlink", ["link", "chainlink"], {
+    coinId: "chainlink",
+  }),
 
   // KOSPI
   asset("KOSPI", "005930", "삼성전자", "Samsung Electronics", ["삼성", "samsung"]),

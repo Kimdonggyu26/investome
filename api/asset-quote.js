@@ -1,5 +1,74 @@
 const quoteCache = new Map();
 
+const KNOWN_STOCK_META = {
+  "005930": { name: "삼성전자", displayNameEN: "Samsung Electronics", domain: "samsung.com" },
+  "000660": { name: "SK하이닉스", displayNameEN: "SK hynix", domain: "skhynix.com" },
+  "373220": { name: "LG에너지솔루션", displayNameEN: "LG Energy Solution", domain: "lgensol.com" },
+  "207940": { name: "삼성바이오로직스", displayNameEN: "Samsung Biologics", domain: "samsungbiologics.com" },
+  "005380": { name: "현대차", displayNameEN: "Hyundai Motor", domain: "hyundai.com" },
+  "068270": { name: "셀트리온", displayNameEN: "Celltrion", domain: "celltrion.com" },
+  "000270": { name: "기아", displayNameEN: "Kia", domain: "kia.com" },
+  "105560": { name: "KB금융", displayNameEN: "KB Financial Group", domain: "kbfg.com" },
+  "035420": { name: "NAVER", displayNameEN: "NAVER", domain: "navercorp.com" },
+  "055550": { name: "신한지주", displayNameEN: "Shinhan Financial Group", domain: "shinhan.com" },
+  AAPL: { name: "애플", displayNameEN: "Apple", domain: "apple.com" },
+  MSFT: { name: "마이크로소프트", displayNameEN: "Microsoft", domain: "microsoft.com" },
+  NVDA: { name: "엔비디아", displayNameEN: "NVIDIA", domain: "nvidia.com" },
+  AMZN: { name: "아마존", displayNameEN: "Amazon", domain: "amazon.com" },
+  GOOGL: { name: "알파벳 A", displayNameEN: "Alphabet A", domain: "google.com" },
+  GOOG: { name: "알파벳 C", displayNameEN: "Alphabet C", domain: "google.com" },
+  META: { name: "메타", displayNameEN: "Meta", domain: "meta.com" },
+  AVGO: { name: "브로드컴", displayNameEN: "Broadcom", domain: "broadcom.com" },
+  TSLA: { name: "테슬라", displayNameEN: "Tesla", domain: "tesla.com" },
+  COST: { name: "코스트코", displayNameEN: "Costco", domain: "costco.com" },
+  NFLX: { name: "넷플릭스", displayNameEN: "Netflix", domain: "netflix.com" },
+  ADBE: { name: "어도비", displayNameEN: "Adobe", domain: "adobe.com" },
+  PEP: { name: "펩시코", displayNameEN: "PepsiCo", domain: "pepsico.com" },
+  QCOM: { name: "퀄컴", displayNameEN: "Qualcomm", domain: "qualcomm.com" },
+  CSCO: { name: "시스코", displayNameEN: "Cisco", domain: "cisco.com" },
+  AMD: { name: "AMD", displayNameEN: "AMD", domain: "amd.com" },
+  INTU: { name: "인튜이트", displayNameEN: "Intuit", domain: "intuit.com" },
+  TXN: { name: "텍사스인스트루먼트", displayNameEN: "Texas Instruments", domain: "ti.com" },
+  ISRG: { name: "인튜이티브서지컬", displayNameEN: "Intuitive Surgical", domain: "intuitive.com" },
+  AZN: { name: "아스트라제네카", displayNameEN: "AstraZeneca", domain: "astrazeneca.com" },
+  PLTR: { name: "팔란티어", displayNameEN: "Palantir", domain: "palantir.com" },
+  ADI: { name: "아날로그디바이스", displayNameEN: "Analog Devices", domain: "analog.com" },
+  MRVL: { name: "마벨", displayNameEN: "Marvell", domain: "marvell.com" },
+  MU: { name: "마이크론", displayNameEN: "Micron", domain: "micron.com" },
+  FI: { name: "파이서브", displayNameEN: "Fiserv", domain: "fiserv.com" },
+  AMGN: { name: "암젠", displayNameEN: "Amgen", domain: "amgen.com" },
+  GILD: { name: "길리어드", displayNameEN: "Gilead", domain: "gilead.com" },
+  INTC: { name: "인텔", displayNameEN: "Intel", domain: "intel.com" },
+  ABNB: { name: "에어비앤비", displayNameEN: "Airbnb", domain: "airbnb.com" },
+  BKNG: { name: "부킹홀딩스", displayNameEN: "Booking Holdings", domain: "bookingholdings.com" },
+  SBUX: { name: "스타벅스", displayNameEN: "Starbucks", domain: "starbucks.com" },
+};
+
+const KNOWN_COIN_META = {
+  BTC: { coinId: "bitcoin", name: "비트코인", displayNameEN: "Bitcoin" },
+  ETH: { coinId: "ethereum", name: "이더리움", displayNameEN: "Ethereum" },
+  XRP: { coinId: "ripple", name: "리플", displayNameEN: "Ripple" },
+  SOL: { coinId: "solana", name: "솔라나", displayNameEN: "Solana" },
+  BNB: { coinId: "binancecoin", name: "비앤비", displayNameEN: "BNB" },
+  DOGE: { coinId: "dogecoin", name: "도지코인", displayNameEN: "Dogecoin" },
+  ADA: { coinId: "cardano", name: "에이다", displayNameEN: "Cardano" },
+  TRX: { coinId: "tron", name: "트론", displayNameEN: "TRON" },
+  AVAX: { coinId: "avalanche-2", name: "아발란체", displayNameEN: "Avalanche" },
+  LINK: { coinId: "chainlink", name: "체인링크", displayNameEN: "Chainlink" },
+};
+
+const UPBIT_MARKET_BY_SYMBOL = {
+  BTC: "KRW-BTC",
+  ETH: "KRW-ETH",
+  XRP: "KRW-XRP",
+  SOL: "KRW-SOL",
+  DOGE: "KRW-DOGE",
+  ADA: "KRW-ADA",
+  TRX: "KRW-TRX",
+  AVAX: "KRW-AVAX",
+  LINK: "KRW-LINK",
+};
+
 const COMMODITY_INFO_MAP = {
   "GC=F": { name: "Gold", displayNameEN: "Gold Futures", iconType: "gold" },
   "SI=F": { name: "Silver", displayNameEN: "Silver Futures", iconType: "silver" },
@@ -142,26 +211,12 @@ async function fetchYahooChartMeta(symbol) {
   };
 }
 
-function pickKnownStockDomain(symbol) {
-  const map = {
-    "005930": "samsung.com",
-    "000660": "skhynix.com",
-    "035420": "navercorp.com",
-    "035720": "kakaocorp.com",
-    "373220": "lgensol.com",
-    "091990": "celltrionhealthcare.com",
-    AAPL: "apple.com",
-    MSFT: "microsoft.com",
-    NVDA: "nvidia.com",
-    TSLA: "tesla.com",
-    AMZN: "amazon.com",
-    META: "meta.com",
-    AMD: "amd.com",
-    PLTR: "palantir.com",
-    NFLX: "netflix.com",
-  };
+function pickKnownStockMeta(symbol) {
+  return KNOWN_STOCK_META[String(symbol || "").trim().toUpperCase()] || null;
+}
 
-  return map[String(symbol || "").toUpperCase()] || "";
+function pickKnownStockDomain(symbol) {
+  return pickKnownStockMeta(symbol)?.domain || "";
 }
 
 async function fetchStockItem({ market, symbol, name }) {
@@ -201,13 +256,16 @@ async function fetchStockItem({ market, symbol, name }) {
   }
 
   const rawSymbol = String(symbol || "").trim().toUpperCase();
-  const displayNameEN = info?.shortName || name || rawSymbol;
-  const domain = pickKnownStockDomain(rawSymbol);
+  const knownMeta = pickKnownStockMeta(rawSymbol);
+  const displayNameEN =
+    knownMeta?.displayNameEN || info?.shortName || name || rawSymbol;
+  const displayNameKR = knownMeta?.name || name || displayNameEN;
+  const domain = knownMeta?.domain || pickKnownStockDomain(rawSymbol);
 
   return {
     market,
     symbol: rawSymbol,
-    name: name || displayNameEN,
+    name: displayNameKR,
     displayNameEN,
     iconUrl: domain ? buildLogo(domain) : "",
     coinId: "",
@@ -296,16 +354,41 @@ async function fetchCommodityItem({ symbol, name }) {
   };
 }
 
+async function fetchUpbitTicker(symbol) {
+  const market = UPBIT_MARKET_BY_SYMBOL[String(symbol || "").trim().toUpperCase()];
+  if (!market) return null;
+
+  const rows = await fetchJson(
+    `https://api.upbit.com/v1/ticker?markets=${encodeURIComponent(market)}`
+  );
+
+  const row = Array.isArray(rows) ? rows[0] : null;
+  if (!row) return null;
+
+  return {
+    priceKRW: toNumber(row.trade_price),
+    changePct:
+      toNumber(row.signed_change_rate) != null
+        ? Number((toNumber(row.signed_change_rate) * 100).toFixed(2))
+        : null,
+  };
+}
+
 async function fetchCryptoItem({ symbol, name, coinId }) {
-  let resolvedId = String(coinId || "").trim().toLowerCase();
+  const rawSymbol = String(symbol || "").trim().toUpperCase();
+  const knownMeta = KNOWN_COIN_META[rawSymbol] || null;
+
+  let resolvedId =
+    String(coinId || "").trim().toLowerCase() ||
+    String(knownMeta?.coinId || "").trim().toLowerCase();
 
   if (!resolvedId) {
-    const query = name || symbol;
+    const query = name || rawSymbol;
     const searchJson = await fetchJson(
       `https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(query)}`
     );
 
-    const candidate = pickCoinCandidate(searchJson, symbol, name, coinId);
+    const candidate = pickCoinCandidate(searchJson, rawSymbol, name, coinId);
 
     if (!candidate?.id) {
       throw new Error("CoinGecko coin id not found");
@@ -314,29 +397,70 @@ async function fetchCryptoItem({ symbol, name, coinId }) {
     resolvedId = candidate.id;
   }
 
-  const markets = await fetchJson(
-    "https://api.coingecko.com/api/v3/coins/markets" +
-      `?vs_currency=krw&ids=${encodeURIComponent(resolvedId)}` +
-      "&sparkline=false&price_change_percentage=24h"
-  );
+  try {
+    const markets = await fetchJson(
+      "https://api.coingecko.com/api/v3/coins/markets" +
+        `?vs_currency=krw&ids=${encodeURIComponent(resolvedId)}` +
+        "&sparkline=false&price_change_percentage=24h"
+    );
 
-  const row = Array.isArray(markets) ? markets[0] : null;
+    const row = Array.isArray(markets) ? markets[0] : null;
 
-  if (!row) {
-    throw new Error("CoinGecko market row missing");
+    if (row) {
+      return {
+        market: "CRYPTO",
+        symbol: String(row.symbol || rawSymbol || "").toUpperCase(),
+        name: knownMeta?.name || row.name || name || rawSymbol,
+        displayNameEN: knownMeta?.displayNameEN || row.name || name || rawSymbol,
+        iconUrl: row.image || "",
+        coinId: row.id || resolvedId,
+        capKRW: toNumber(row.market_cap),
+        priceKRW: toNumber(row.current_price),
+        changePct: toNumber(row.price_change_percentage_24h),
+      };
+    }
+  } catch {}
+
+  try {
+    const simple = await fetchJson(
+      "https://api.coingecko.com/api/v3/simple/price" +
+        `?ids=${encodeURIComponent(resolvedId)}` +
+        "&vs_currencies=krw&include_24hr_change=true&include_market_cap=true"
+    );
+
+    const row = simple?.[resolvedId];
+    if (row?.krw != null) {
+      return {
+        market: "CRYPTO",
+        symbol: rawSymbol,
+        name: knownMeta?.name || name || rawSymbol,
+        displayNameEN: knownMeta?.displayNameEN || name || rawSymbol,
+        iconUrl: "",
+        coinId: resolvedId,
+        capKRW: toNumber(row.krw_market_cap),
+        priceKRW: toNumber(row.krw),
+        changePct: toNumber(row.krw_24h_change),
+      };
+    }
+  } catch {}
+
+  const upbit = await fetchUpbitTicker(rawSymbol);
+
+  if (upbit?.priceKRW != null) {
+    return {
+      market: "CRYPTO",
+      symbol: rawSymbol,
+      name: knownMeta?.name || name || rawSymbol,
+      displayNameEN: knownMeta?.displayNameEN || name || rawSymbol,
+      iconUrl: "",
+      coinId: resolvedId,
+      capKRW: null,
+      priceKRW: upbit.priceKRW,
+      changePct: upbit.changePct,
+    };
   }
 
-  return {
-    market: "CRYPTO",
-    symbol: String(row.symbol || symbol || "").toUpperCase(),
-    name: row.name || name || symbol,
-    displayNameEN: row.name || name || symbol,
-    iconUrl: row.image || "",
-    coinId: row.id || resolvedId,
-    capKRW: toNumber(row.market_cap),
-    priceKRW: toNumber(row.current_price),
-    changePct: toNumber(row.price_change_percentage_24h),
-  };
+  throw new Error(`Crypto price not found for ${rawSymbol}`);
 }
 
 export default async function handler(req, res) {

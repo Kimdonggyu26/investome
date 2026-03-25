@@ -5,6 +5,53 @@ const koreaStocks = JSON.parse(
   fs.readFileSync(path.join(process.cwd(), "src", "data", "koreaStocks.json"), "utf8")
 );
 
+const KNOWN_US_STOCKS = {
+  AAPL: { name: "애플", displayNameEN: "Apple" },
+  MSFT: { name: "마이크로소프트", displayNameEN: "Microsoft" },
+  NVDA: { name: "엔비디아", displayNameEN: "NVIDIA" },
+  AMZN: { name: "아마존", displayNameEN: "Amazon" },
+  GOOGL: { name: "알파벳 A", displayNameEN: "Alphabet A" },
+  GOOG: { name: "알파벳 C", displayNameEN: "Alphabet C" },
+  META: { name: "메타", displayNameEN: "Meta" },
+  AVGO: { name: "브로드컴", displayNameEN: "Broadcom" },
+  TSLA: { name: "테슬라", displayNameEN: "Tesla" },
+  COST: { name: "코스트코", displayNameEN: "Costco" },
+  NFLX: { name: "넷플릭스", displayNameEN: "Netflix" },
+  ADBE: { name: "어도비", displayNameEN: "Adobe" },
+  PEP: { name: "펩시코", displayNameEN: "PepsiCo" },
+  QCOM: { name: "퀄컴", displayNameEN: "Qualcomm" },
+  CSCO: { name: "시스코", displayNameEN: "Cisco" },
+  AMD: { name: "AMD", displayNameEN: "AMD" },
+  INTU: { name: "인튜이트", displayNameEN: "Intuit" },
+  TXN: { name: "텍사스인스트루먼트", displayNameEN: "Texas Instruments" },
+  ISRG: { name: "인튜이티브서지컬", displayNameEN: "Intuitive Surgical" },
+  AZN: { name: "아스트라제네카", displayNameEN: "AstraZeneca" },
+  PLTR: { name: "팔란티어", displayNameEN: "Palantir" },
+  ADI: { name: "아날로그디바이스", displayNameEN: "Analog Devices" },
+  MRVL: { name: "마벨", displayNameEN: "Marvell" },
+  MU: { name: "마이크론", displayNameEN: "Micron" },
+  FI: { name: "파이서브", displayNameEN: "Fiserv" },
+  AMGN: { name: "암젠", displayNameEN: "Amgen" },
+  GILD: { name: "길리어드", displayNameEN: "Gilead" },
+  INTC: { name: "인텔", displayNameEN: "Intel" },
+  ABNB: { name: "에어비앤비", displayNameEN: "Airbnb" },
+  BKNG: { name: "부킹홀딩스", displayNameEN: "Booking Holdings" },
+  SBUX: { name: "스타벅스", displayNameEN: "Starbucks" },
+};
+
+const KNOWN_COIN_META = {
+  BTC: { coinId: "bitcoin", name: "비트코인", displayNameEN: "Bitcoin" },
+  ETH: { coinId: "ethereum", name: "이더리움", displayNameEN: "Ethereum" },
+  XRP: { coinId: "ripple", name: "리플", displayNameEN: "Ripple" },
+  SOL: { coinId: "solana", name: "솔라나", displayNameEN: "Solana" },
+  BNB: { coinId: "binancecoin", name: "비앤비", displayNameEN: "BNB" },
+  DOGE: { coinId: "dogecoin", name: "도지코인", displayNameEN: "Dogecoin" },
+  ADA: { coinId: "cardano", name: "에이다", displayNameEN: "Cardano" },
+  TRX: { coinId: "tron", name: "트론", displayNameEN: "TRON" },
+  AVAX: { coinId: "avalanche-2", name: "아발란체", displayNameEN: "Avalanche" },
+  LINK: { coinId: "chainlink", name: "체인링크", displayNameEN: "Chainlink" },
+};
+
 function toArray(v) {
   return Array.isArray(v) ? v : [];
 }
@@ -84,11 +131,7 @@ function searchKoreaStocks(q, requestedMarket = "ALL") {
     .filter((item) => item._score >= 0)
     .sort((a, b) => {
       if (b._score !== a._score) return b._score - a._score;
-
-      if (a.name.length !== b.name.length) {
-        return a.name.length - b.name.length;
-      }
-
+      if (a.name.length !== b.name.length) return a.name.length - b.name.length;
       return a.name.localeCompare(b.name, "ko");
     })
     .slice(0, 50)
@@ -99,7 +142,10 @@ function buildUsStockItem(row) {
   const rawSymbol = String(row?.symbol || "").trim().toUpperCase();
   const exchange = String(row?.exchange || row?.exchDisp || "").toUpperCase();
   const quoteType = String(row?.quoteType || "").toUpperCase();
-  const name = row?.shortname || row?.longname || row?.name || rawSymbol;
+  const known = KNOWN_US_STOCKS[rawSymbol] || null;
+  const name = known?.name || row?.shortname || row?.longname || row?.name || rawSymbol;
+  const displayNameEN =
+    known?.displayNameEN || row?.longname || row?.shortname || row?.name || rawSymbol;
 
   if (!rawSymbol || quoteType !== "EQUITY") return null;
 
@@ -114,7 +160,7 @@ function buildUsStockItem(row) {
       market: "NASDAQ",
       symbol: rawSymbol,
       name,
-      displayNameEN: name,
+      displayNameEN,
       coinId: "",
     };
   }
@@ -146,14 +192,19 @@ async function searchCoins(q) {
   );
 
   return uniqBy(
-    toArray(json?.coins).map((coin) => ({
-      market: "CRYPTO",
-      symbol: String(coin?.symbol || "").toUpperCase(),
-      name: coin?.name || String(coin?.symbol || "").toUpperCase(),
-      displayNameEN: coin?.name || String(coin?.symbol || "").toUpperCase(),
-      coinId: coin?.id || "",
-      thumb: coin?.thumb || "",
-    })),
+    toArray(json?.coins).map((coin) => {
+      const rawSymbol = String(coin?.symbol || "").toUpperCase();
+      const known = KNOWN_COIN_META[rawSymbol] || null;
+
+      return {
+        market: "CRYPTO",
+        symbol: rawSymbol,
+        name: known?.name || coin?.name || rawSymbol,
+        displayNameEN: known?.displayNameEN || coin?.name || rawSymbol,
+        coinId: coin?.id || known?.coinId || "",
+        thumb: coin?.thumb || "",
+      };
+    }),
     (item) => `${item.market}-${item.coinId || item.symbol}`
   ).slice(0, 15);
 }
@@ -170,13 +221,10 @@ export default async function handler(req, res) {
   try {
     let items = [];
 
-    // 1) 국내주식은 항상 먼저, 무조건 내부 데이터로 검색
     if (market === "ALL" || market === "KOSPI" || market === "KOSDAQ") {
       items.push(...searchKoreaStocks(q, market));
     }
 
-    // 2) 외부 API는 실패해도 전체 실패시키지 않음
-    //    그리고 한 글자 검색에서는 굳이 안 때림
     if (q.length >= 2) {
       if (market === "ALL" || market === "NASDAQ") {
         try {
@@ -197,10 +245,7 @@ export default async function handler(req, res) {
       }
     }
 
-    items = uniqBy(
-      items,
-      (item) => `${item.market}-${item.coinId || item.symbol}`
-    ).slice(0, 50);
+    items = uniqBy(items, (item) => `${item.market}-${item.coinId || item.symbol}`).slice(0, 50);
 
     res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=120");
     res.status(200).json({ items });

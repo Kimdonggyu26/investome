@@ -287,66 +287,37 @@ export default function MyPortfolio() {
 
   const previewFlowPath = buildPath(makeFlowPoints(totalCost, totalValue));
 
-  const performanceSeries = useMemo(() => {
-    if (emptyState) return [];
+  const topHolding =
+    [...enrichedItems].sort((a, b) => (b.value || 0) - (a.value || 0))[0] || null;
 
-    const safeRate = Number.isFinite(totalRate) ? totalRate : 0;
-    const base = safeRate >= 0 ? Math.max(safeRate * 0.18, 1.2) : safeRate - 8;
+  const bestPerformer =
+    [...enrichedItems].sort((a, b) => (b.rate || 0) - (a.rate || 0))[0] || null;
 
-    return [
-      base,
-      base * 1.06,
-      base * 1.02,
-      base * 1.34,
-      base * 1.52,
-      base * 1.66,
-      base * 1.78,
-      safeRate * 0.94,
-      safeRate,
-    ];
-  }, [emptyState, totalRate]);
+  const weakestPerformer =
+    [...enrichedItems].sort((a, b) => (a.rate || 0) - (b.rate || 0))[0] || null;
 
-  const performancePath = performanceSeries.length
-    ? buildSvgPath(performanceSeries, 100, 100, 18)
-    : "";
+  const marketCount = new Set(enrichedItems.map((item) => item.market)).size;
+  const topHoldingRatio = topHolding ? (topHolding.value / totalAssetsForRatio) * 100 : 0;
 
-  const performanceAreaPath = performanceSeries.length
-    ? buildAreaPath(performanceSeries, 100, 100, 18)
-    : "";
+  const concentrationLabel =
+    topHoldingRatio >= 55 ? "집중 높음" : topHoldingRatio >= 35 ? "보통" : "양호";
 
-  const maxRate = performanceSeries.length ? Math.max(...performanceSeries) : 0;
-  const minRate = performanceSeries.length ? Math.min(...performanceSeries) : 0;
+  const diversificationLabel =
+    marketCount >= 3 ? "우수" : marketCount === 2 ? "보통" : marketCount === 1 ? "낮음" : "-";
 
-  const todayUpCount = enrichedItems.filter(
-  (item) => typeof item.changePct === "number" && item.changePct > 0
-).length;
-
-const todayDownCount = enrichedItems.filter(
-  (item) => typeof item.changePct === "number" && item.changePct < 0
-).length;
-
-const todayFlatCount = enrichedItems.filter(
-  (item) => typeof item.changePct === "number" && item.changePct === 0
-).length;
-
-const todayChangeValue = enrichedItems.reduce((sum, item) => {
-  if (item.currentPrice == null || typeof item.changePct !== "number") return sum;
-
-  const prevPrice =
-    item.changePct === -100
-      ? item.currentPrice
-      : item.currentPrice / (1 + item.changePct / 100);
-
-  const todayDiffPerUnit = item.currentPrice - prevPrice;
-  return sum + todayDiffPerUnit * item.amount;
-}, 0);
-
-const todayChangeRate =
-  totalValue > 0 ? (todayChangeValue / Math.max(totalValue - todayChangeValue, 1)) * 100 : 0;
-
-const topGainer = [...enrichedItems]
-  .filter((item) => typeof item.changePct === "number")
-  .sort((a, b) => (b.changePct || 0) - (a.changePct || 0))[0] || null;
+  const insightMessage = emptyState
+    ? ""
+    : topHoldingRatio >= 55 && topHolding
+      ? `${topHolding.name} 비중이 ${topHoldingRatio.toFixed(
+          1
+        )}%야. 한 종목 집중도가 높아서 분산을 고려해보는 게 좋아.`
+      : marketCount <= 1 && topHolding
+        ? `현재 ${marketLabel(
+            topHolding.market
+          )} 한 시장에 치우쳐 있어. 다른 시장 자산으로 분산하면 안정감이 좋아질 수 있어.`
+        : bestPerformer
+          ? `${bestPerformer.name}가 현재 수익률을 가장 잘 끌어주고 있어. 지금 비중 구조는 꽤 안정적인 편이야.`
+          : "포트폴리오 구성을 점검할 준비가 됐어.";
 
   const ringGradient = useMemo(() => {
     let current = 0;
@@ -433,6 +404,14 @@ const topGainer = [...enrichedItems]
 
       if (!Number.isFinite(avgPrice) || avgPrice <= 0) {
         throw new Error("평균단가는 0보다 큰 숫자로 입력해줘.");
+      }
+
+      const duplicate = holdings.find(
+        (item) => item.market === form.market && item.symbol === form.symbol
+      );
+
+      if (duplicate) {
+        throw new Error("이미 담긴 종목이야. 같은 종목은 중복 추가하지 말고 기존 보유 수량을 관리해줘.");
       }
 
       const verified = await fetchAssetQuote({
@@ -580,90 +559,107 @@ const topGainer = [...enrichedItems]
           <div className={`portfolioFlowCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
             <div className="portfolioCardHead">
               <div>
-                <div className="portfolioEyebrow">TODAY PERFORMANCE</div>
-                <h3 className="portfolioTitleSm">오늘의 포트폴리오 변동</h3>
+                <div className="portfolioEyebrow">PORTFOLIO INSIGHT</div>
+                <h3 className="portfolioTitleSm">포트폴리오 인사이트</h3>
               </div>
 
-              <div className="portfolioGhostTag">Live Snapshot</div>
+              <div className="portfolioGhostTag">{concentrationLabel}</div>
             </div>
 
             {emptyState ? (
               <div className="portfolioEmptySoft">
-                <div className="portfolioEmptySoftIcon">↗</div>
+                <div className="portfolioEmptySoftIcon">✦</div>
                 <div>
-                  <strong>오늘 변동 데이터 준비 전</strong>
-                  <p>보유 종목을 추가하면 오늘의 성과가 자동으로 표시돼요.</p>
+                  <strong>인사이트 데이터 준비 전</strong>
+                  <p>보유 종목을 추가하면 집중도, 분산도, 최고 수익 종목을 자동으로 보여줄게.</p>
                 </div>
               </div>
             ) : (
               <>
-                <div
-                  className="portfolioFlowValue"
-                  style={{
-                    color:
-                      todayChangeValue >= 0
-                        ? "rgba(54,213,255,.96)"
-                        : "rgba(255,120,170,.96)",
-                  }}
-                >
-                  {formatSignedKRW(todayChangeValue)}
-                </div>
-
-                <div
-                  className="portfolioFlowCaption"
-                  style={{
-                    color:
-                      todayChangeRate >= 0
-                        ? "rgba(54,213,255,.78)"
-                        : "rgba(255,120,170,.78)",
-                  }}
-                >
-                  {todayChangeRate > 0 ? "+" : ""}
-                  {todayChangeRate.toFixed(2)}% today
-                </div>
-
-                <div className="portfolioTodayGrid">
-                  <div className="portfolioTodayGrid">
-                    <div className="portfolioTodayStat">
-                      <span className="label">상승</span>
-                      <strong>{todayUpCount}<em>개</em></strong>
-                    </div>
-
-                    <div className="portfolioTodayStat">
-                      <span className="label">하락</span>
-                      <strong>{todayDownCount}<em>개</em></strong>
-                    </div>
-
-                    <div className="portfolioTodayStat">
-                      <span className="label">보합</span>
-                      <strong>{todayFlatCount}<em>개</em></strong>
-                    </div>
+                <div className="portfolioInsightHero">
+                  <div className="portfolioInsightMain">
+                    <span className="label">현재 포지션 진단</span>
+                    <strong>{insightMessage}</strong>
                   </div>
                 </div>
 
-                <div className="portfolioTopMoverCard">
-                  <div className="portfolioTopMoverLabel">TOP GAINER</div>
+                <div className="portfolioInsightGrid">
+                  <div className="portfolioInsightStat">
+                    <span className="label">최대 비중</span>
+                    <strong>{topHoldingRatio.toFixed(1)}%</strong>
+                    <small>{topHolding ? topHolding.name : "-"}</small>
+                  </div>
 
-                  {topGainer ? (
-                    <div className="portfolioTopMoverBody">
-                      <div className="portfolioTopMoverLeft">
-                        <AssetLogo iconUrl={topGainer.iconUrl} name={topGainer.name} />
-                        <div>
-                          <div className="portfolioTopMoverName">{topGainer.name}</div>
-                          <div className="portfolioTopMoverSub">
-                            {topGainer.symbol} · {marketLabel(topGainer.market)}
+                  <div className="portfolioInsightStat">
+                    <span className="label">시장 분산</span>
+                    <strong>{diversificationLabel}</strong>
+                    <small>{marketCount}개 시장 보유</small>
+                  </div>
+
+                  <div className="portfolioInsightStat">
+                    <span className="label">최고 수익</span>
+                    <strong>
+                      {bestPerformer ? `${bestPerformer.rate > 0 ? "+" : ""}${bestPerformer.rate.toFixed(2)}%` : "-"}
+                    </strong>
+                    <small>{bestPerformer ? bestPerformer.name : "-"}</small>
+                  </div>
+
+                  <div className="portfolioInsightStat">
+                    <span className="label">주의 종목</span>
+                    <strong>
+                      {weakestPerformer ? `${weakestPerformer.rate > 0 ? "+" : ""}${weakestPerformer.rate.toFixed(2)}%` : "-"}
+                    </strong>
+                    <small>{weakestPerformer ? weakestPerformer.name : "-"}</small>
+                  </div>
+                </div>
+
+                <div className="portfolioInsightPair">
+                  <div className="portfolioInsightFocusCard">
+                    <div className="portfolioInsightFocusLabel">TOP WEIGHT</div>
+                    {topHolding ? (
+                      <div className="portfolioInsightFocusBody">
+                        <div className="portfolioInsightFocusLeft">
+                          <AssetLogo iconUrl={topHolding.iconUrl} name={topHolding.name} />
+                          <div>
+                            <div className="portfolioInsightFocusName">{topHolding.name}</div>
+                            <div className="portfolioInsightFocusSub">
+                              {topHolding.symbol} · {marketLabel(topHolding.market)}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="portfolioTopMoverRight">
-                        {topGainer.changePct > 0 ? "+" : ""}
-                        {topGainer.changePct.toFixed(2)}%
+                        <div className="portfolioInsightFocusRight">
+                          비중 {topHoldingRatio.toFixed(1)}%
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="portfolioTopMoverEmpty">오늘 변동 데이터를 불러오는 중이에요.</div>
-                  )}
+                    ) : (
+                      <div className="portfolioTopMoverEmpty">데이터를 불러오는 중이야.</div>
+                    )}
+                  </div>
+
+                  <div className="portfolioInsightFocusCard">
+                    <div className="portfolioInsightFocusLabel">BEST PERFORMER</div>
+                    {bestPerformer ? (
+                      <div className="portfolioInsightFocusBody">
+                        <div className="portfolioInsightFocusLeft">
+                          <AssetLogo iconUrl={bestPerformer.iconUrl} name={bestPerformer.name} />
+                          <div>
+                            <div className="portfolioInsightFocusName">{bestPerformer.name}</div>
+                            <div className="portfolioInsightFocusSub">
+                              {bestPerformer.symbol} · {marketLabel(bestPerformer.market)}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="portfolioInsightFocusRight">
+                          {bestPerformer.rate > 0 ? "+" : ""}
+                          {bestPerformer.rate.toFixed(2)}%
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="portfolioTopMoverEmpty">데이터를 불러오는 중이야.</div>
+                    )}
+                  </div>
                 </div>
               </>
             )}
