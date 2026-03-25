@@ -1036,20 +1036,20 @@ const localSuggestionList = useMemo(() => {
                 </div>
               </div>
 
-              <div className="portfolioAllocationBody portfolioAllocationBodyEmptyFriendly">
-                <div
-                  className={`portfolioRing ${ringReady ? "isReady" : ""} ${
-                    isUiRefreshing ? "isRefreshing" : ""
-                  }`}
-                  style={{ background: ringGradient }}
-                >
-                  <div className="portfolioRingInner">
-                    <span>총 자산</span>
-                    <strong>{formatKRW(totalValue)}</strong>
+              {emptyState ? (
+                <div className="portfolioAllocationEmptyLayout">
+                  <div
+                    className={`portfolioRing ${ringReady ? "isReady" : ""} ${
+                      isUiRefreshing ? "isRefreshing" : ""
+                    }`}
+                    style={{ background: ringGradient }}
+                  >
+                    <div className="portfolioRingInner">
+                      <span>총 자산</span>
+                      <strong>{formatKRW(totalValue)}</strong>
+                    </div>
                   </div>
-                </div>
 
-                {emptyState ? (
                   <div className="portfolioAllocationEmptyPanel">
                     <div className="portfolioAllocationEmptyText">
                       <strong>아직 비중 데이터가 없어요</strong>
@@ -1060,7 +1060,21 @@ const localSuggestionList = useMemo(() => {
                       </span>
                     </div>
                   </div>
-                ) : (
+                </div>
+              ) : (
+                <div className="portfolioAllocationBody">
+                  <div
+                    className={`portfolioRing ${ringReady ? "isReady" : ""} ${
+                      isUiRefreshing ? "isRefreshing" : ""
+                    }`}
+                    style={{ background: ringGradient }}
+                  >
+                    <div className="portfolioRingInner">
+                      <span>총 자산</span>
+                      <strong>{formatKRW(totalValue)}</strong>
+                    </div>
+                  </div>
+
                   <div className="portfolioLegend luxuryScroll">
                     {enrichedItems.map((item, idx) => {
                       const ratio = ((item.value / totalAssetsForRatio) * 100 || 0).toFixed(1);
@@ -1071,7 +1085,7 @@ const localSuggestionList = useMemo(() => {
                           <div className="portfolioLegendText">
                             <div>
                               <strong>{item.name}</strong>
-                              <span>{marketLabel(item.market)}</span>
+                              <span>{item.symbol}</span>
                             </div>
                             <strong>{ratio}%</strong>
                           </div>
@@ -1079,8 +1093,8 @@ const localSuggestionList = useMemo(() => {
                       );
                     })}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
           <div className={`portfolioCalculatorCard card ${isUiRefreshing ? "isRefreshing" : ""}`}>
