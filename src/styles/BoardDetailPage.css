@@ -205,6 +205,31 @@
   margin-top: 18px;
   display: grid;
   gap: 12px;
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.boardCommentList.luxuryScroll{
+  scrollbar-color: rgba(14,165,255,0.55) rgba(255,255,255,0.06);
+  scrollbar-width: thin;
+}
+
+.boardCommentList.luxuryScroll::-webkit-scrollbar{
+  width: 12px;
+}
+
+.boardCommentList.luxuryScroll::-webkit-scrollbar-track{
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  border-left: 1px solid rgba(255,255,255,0.06);
+  border-radius: 999px;
+}
+
+.boardCommentList.luxuryScroll::-webkit-scrollbar-thumb{
+  background: linear-gradient(180deg, rgba(14,165,255,0.85), rgba(14,165,255,0.25));
+  border: 3px solid rgba(10,12,18,0.9);
+  border-radius: 999px;
+  box-shadow: 0 0 16px rgba(14,165,255,0.35);
 }
 
 .boardCommentItem{

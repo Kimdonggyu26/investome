@@ -171,8 +171,6 @@ export default function AssetNewsList({
             >
               <div className="assetNewsTitle">{item.title}</div>
               <div className="assetNewsMeta">
-                <span>{item.source || "Google News"}</span>
-                <span className="assetNewsDot">•</span>
                 <span>{formatDate(item.pubDate)}</span>
               </div>
             </a>

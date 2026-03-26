@@ -300,7 +300,7 @@ export default function BoardDetailPage() {
               </div>
             </form>
 
-            <div className="boardCommentList">
+            <div className="boardCommentList luxuryScroll">
               {post.comments && post.comments.length > 0 ? (
                 post.comments.map((comment) => (
                   <div key={comment.id} className="boardCommentItem">

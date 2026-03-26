@@ -216,8 +216,6 @@ export default function NewsList({
                 <div className="newsFeaturedBadge">FEATURED</div>
                 <div className="newsFeaturedTitle">{featured.title}</div>
                 <div className="newsFeaturedMeta">
-                  <span>{featured.source || "Google News"}</span>
-                  <span className="newsDot">•</span>
                   <span>{ymdhm(featured.pubDate)}</span>
                 </div>
               </div>
@@ -237,8 +235,6 @@ export default function NewsList({
                   <div className="newsItemMain">
                     <div className="newsItemTitle">{item.title}</div>
                     <div className="newsItemMeta">
-                      <span>{item.source || "Google News"}</span>
-                      <span className="newsDot">•</span>
                       <span>{ymdhm(item.pubDate)}</span>
                     </div>
                   </div>
