@@ -566,7 +566,7 @@ const localSuggestionList = useMemo(() => {
     const next = Number(sanitizeNumericInput(targetInput));
 
     if (!Number.isFinite(next) || next <= 0) {
-      setTargetError("목표 금액은 0보다 큰 숫자로 입력해줘.");
+      setTargetError("목표 금액은 0보다 큰 숫자를 입력해주세요.");
       return;
     }
 
@@ -585,18 +585,18 @@ const localSuggestionList = useMemo(() => {
       setSubmitError("");
 
       if (!form.market || !form.symbol || !form.name || !form.amount || !form.avgPrice) {
-        throw new Error("종목을 검색해서 선택한 뒤 수량과 평균단가를 입력해줘.");
+        throw new Error("종목을 검색해서 선택한 뒤 수량과 평균단가를 입력해주세요.");
       }
 
       const amount = Number(form.amount);
       const avgPrice = Number(form.avgPrice);
 
       if (!Number.isFinite(amount) || amount <= 0) {
-        throw new Error("수량은 0보다 큰 숫자로 입력해줘.");
+        throw new Error("수량은 0보다 큰 숫자로 입력해주세요.");
       }
 
       if (!Number.isFinite(avgPrice) || avgPrice <= 0) {
-        throw new Error("평균단가는 0보다 큰 숫자로 입력해줘.");
+        throw new Error("평균단가는 0보다 큰 숫자로 입력해주세요.");
       }
 
       const duplicate = holdings.find(
@@ -605,7 +605,7 @@ const localSuggestionList = useMemo(() => {
 
       if (duplicate) {
         throw new Error(
-          "이미 담긴 종목이야. 같은 종목은 중복 추가하지 말고 기존 보유 수량을 관리해줘."
+          "이미 담긴 종목입니다."
         );
       }
 
@@ -618,7 +618,7 @@ const localSuggestionList = useMemo(() => {
 
       if (!verified?.symbol || verified?.priceKRW == null) {
         throw new Error(
-          "현재 시세를 확인할 수 없는 종목이야. 검색 결과에서 다시 선택해줘."
+          "현재 시세를 확인할 수 없는 종목입니다. 검색 결과에서 다시 선택해주세요."
         );
       }
 
@@ -638,7 +638,7 @@ const localSuggestionList = useMemo(() => {
       triggerUiRefresh();
       closeModal();
     } catch (err) {
-      setSubmitError(err.message || "종목 추가 중 오류가 발생했어.");
+      setSubmitError(err.message || "종목 추가 중 오류가 발생했습니다.");
     } finally {
       setSaving(false);
     }
@@ -959,7 +959,7 @@ const localSuggestionList = useMemo(() => {
                 <div className="portfolioEmptySoftIcon">✦</div>
                 <div>
                   <strong>인사이트 데이터 준비 전</strong>
-                  <p>보유 종목을 추가하면 집중도, 분산도, 최고 수익 종목을 자동으로 보여줄게.</p>
+                  <p>보유 종목을 추가하면 집중도, 분산도, 최고 수익 종목을 자동으로 보여줄게요.</p>
                 </div>
               </div>
             ) : (
@@ -1025,7 +1025,7 @@ const localSuggestionList = useMemo(() => {
                         </div>
                       </div>
                     ) : (
-                      <div className="portfolioTopMoverEmpty">데이터를 불러오는 중이야.</div>
+                      <div className="portfolioTopMoverEmpty">데이터를 불러오는 중입니다.</div>
                     )}
                   </div>
 
@@ -1049,7 +1049,7 @@ const localSuggestionList = useMemo(() => {
                         </div>
                       </div>
                     ) : (
-                      <div className="portfolioTopMoverEmpty">데이터를 불러오는 중이야.</div>
+                      <div className="portfolioTopMoverEmpty">데이터를 불러오는 중입니다.</div>
                     )}
                   </div>
                 </div>
@@ -1207,7 +1207,7 @@ const localSuggestionList = useMemo(() => {
             </div>
 
             <div className="portfolioCalcHint">
-              단타든 스윙이든 진입가 / 목표가 / 수량만 넣으면 손익을 바로 확인할 수 있어.
+              진입가 / 목표가 / 수량만 넣고 손익을 미리 확인해보세요.
             </div>
           </div>
         </div>
@@ -1229,7 +1229,7 @@ const localSuggestionList = useMemo(() => {
 
             <div className="portfolioModalNotice">
               종목명 또는 심볼로 검색하면
-              <strong> 코인, 나스닥, 코스피, 코스닥이 한 번에 검색돼.</strong>
+              <strong> 코인, 나스닥, 코스피, 코스닥이 한 번에 검색돼요.</strong>
             </div>
 
             <div className="portfolioSearchBox">
@@ -1258,7 +1258,7 @@ const localSuggestionList = useMemo(() => {
                   {!searchingAssets && suggestionList.length === 0 && searchText.trim() && (
                     <div className="portfolioSuggestItem isMuted">
                       <span>검색 결과가 없어요</span>
-                      <small>종목명 또는 심볼을 다시 확인해줘</small>
+                      <small>종목명 또는 심볼을 다시 확인해주세요.</small>
                     </div>
                   )}
 
@@ -1338,7 +1338,7 @@ const localSuggestionList = useMemo(() => {
               </label>
 
               <div className="portfolioFormHint">
-                먼저 위 검색창에서 종목을 선택한 다음 수량과 평균단가를 입력해줘.
+                먼저 위 검색창에서 종목을 선택한 다음 수량과 평균단가를 입력해주세요.
               </div>
 
               {submitError ? <div className="portfolioFormError">{submitError}</div> : null}

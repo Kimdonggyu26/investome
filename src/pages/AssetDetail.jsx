@@ -455,7 +455,7 @@ export default function AssetDetail() {
                     <div>
                       <div className="assetPanelTitle">차트 서비스 준비중</div>
                       <div className="assetPanelSub">
-                        코스피 종목은 외부 차트 페이지에서 확인할 수 있습니다.
+                        코스피 종목은 외부 차트 페이지에서 확인할 수 있어요.
                       </div>
                     </div>
                   </div>
@@ -481,7 +481,7 @@ export default function AssetDetail() {
                     </a>
 
                     <div className="kospiChartNoticeFoot">
-                      추후 사이트 내 차트 지원 예정
+                      추후 사이트 내 차트 지원 예정 🚧
                     </div>
                   </div>
                 </section>
