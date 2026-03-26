@@ -220,7 +220,7 @@ useEffect(() => {
               ))}
 
               {pagePosts.length === 0 && (
-                <div className="boardEmpty">검색 결과가 없어.</div>
+                <div className="boardEmpty">검색 결과가 없습니다.</div>
               )}
             </div>
           </section>
