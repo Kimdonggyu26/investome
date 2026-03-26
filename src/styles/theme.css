@@ -1,50 +1,94 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
+
 :root{
-  --bg: #0B0F17;
-  --panel: #101826;
-  --panel2: #0E1522;
-  --border: rgba(255,255,255,.08);
+  --bg: #070b12;
+  --bg-elevated: #0c111b;
+  --panel: rgba(255,255,255,0.028);
+  --panel-strong: rgba(255,255,255,0.042);
+  --panel-soft: rgba(255,255,255,0.018);
+  --border: rgba(255,255,255,.065);
+  --border-strong: rgba(90, 160, 255, .20);
 
-  --text: rgba(255,255,255,.92);
-  --muted: rgba(255,255,255,.62);
+  --text: rgba(255,255,255,.94);
+  --text-strong: #f7fbff;
+  --muted: rgba(255,255,255,.56);
+  --muted-strong: rgba(255,255,255,.72);
 
-  --accent: #36D5FF;
-  --accent2:#4C7DFF;
-  --glow: 0 0 18px rgba(54,213,255,.20);
+  --accent: #4aa8ff;
+  --accent-strong: #6cc6ff;
+  --accent-soft: rgba(74,168,255,.14);
 
-  --radius: 14px;
-  --shadow: 0 10px 30px rgba(0,0,0,.35);
+  --up: #00f5a0;
+  --up-soft: rgba(0,245,160,.14);
+  --down: #ff5b61;
+  --down-soft: rgba(255,91,97,.12);
+
+  --radius: 18px;
+  --radius-sm: 14px;
+  --shadow: 0 18px 48px rgba(0,0,0,.28);
+  --shadow-soft: 0 10px 28px rgba(0,0,0,.18);
+  --glow: 0 0 26px rgba(74,168,255,.14);
 }
 
 *{ box-sizing:border-box; }
 html, body, #root{ min-height:100%; }
 html{
-  background: var(--bg);
+  background:
+    radial-gradient(circle at top, rgba(74,168,255,0.07), transparent 34%),
+    linear-gradient(180deg, #08101b 0%, #070b12 18%, #070b12 100%);
 }
 body{
   margin:0;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
-  background: var(--bg);
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+  background: transparent;
   color: var(--text);
+  letter-spacing: -0.02em;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root{
   width: 100%;
-  background: var(--bg);
+  background: transparent;
 }
 
 a{ color: inherit; text-decoration:none; }
 
+button,
+input,
+textarea,
+select{
+  font: inherit;
+}
+
+input,
+textarea,
+select{
+  color: var(--text);
+}
+
 .input{
   width: 100%;
   padding: 11px 12px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.03);
-  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.028);
+  color: var(--text);
   outline: none;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
 }
 
 .input:focus{
-  border-color: rgba(14,165,255,0.55);
-  box-shadow: 0 0 0 3px rgba(14,165,255,0.12);
+  border-color: rgba(74,168,255,0.42);
+  box-shadow: 0 0 0 3px rgba(74,168,255,0.10);
+  background: rgba(255,255,255,0.04);
+}
+
+.up{
+  color: var(--up) !important;
+}
+
+.down{
+  color: var(--down) !important;
 }

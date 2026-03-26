@@ -1,35 +1,40 @@
 .container{
-  width: min(1160px, calc(100% - 32px));
+  width: min(1200px, calc(100% - 36px));
   margin: 0 auto;
 }
 
 .card{
-  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+  background: linear-gradient(180deg, var(--panel), var(--panel-soft));
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .btn{
   display:inline-flex;
   align-items:center;
+  justify-content:center;
   gap:10px;
-  padding: 10px 14px;
-  border-radius: 12px;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
   border: 1px solid var(--border);
-  background: rgba(255,255,255,.02);
-  color: var(--text);
+  background: rgba(255,255,255,.024);
+  color: var(--text-strong);
   cursor:pointer;
-  transition: 160ms ease;
+  transition: background .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s ease;
 }
 .btn:hover{
-  border-color: rgba(54,213,255,.35);
+  border-color: rgba(74,168,255,.32);
+  background: rgba(255,255,255,.04);
   box-shadow: var(--glow);
   transform: translateY(-1px);
 }
 .btn.primary{
-  background: linear-gradient(90deg, rgba(54,213,255,.16), rgba(76,125,255,.12));
-  border-color: rgba(54,213,255,.30);
+  background: linear-gradient(135deg, rgba(74,168,255,.18), rgba(74,168,255,.08));
+  border-color: rgba(74,168,255,.28);
 }
 
 .muted{ color: var(--muted); }
@@ -54,20 +59,16 @@ select{
     calc(100% - 14px) calc(50% - 2px);
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
-  transition:
-    border-color .18s ease,
-    box-shadow .18s ease,
-    background .18s ease,
-    transform .18s ease;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease, transform .18s ease;
 }
 
 select:hover{
-  border-color: rgba(14,165,255,0.24) !important;
-  background-color: rgba(255,255,255,0.055) !important;
+  border-color: rgba(74,168,255,0.26) !important;
+  background-color: rgba(255,255,255,0.05) !important;
 }
 
 select:focus{
-  border-color: rgba(14,165,255,0.40) !important;
-  box-shadow: 0 0 0 4px rgba(14,165,255,0.10) !important;
+  border-color: rgba(74,168,255,0.40) !important;
+  box-shadow: 0 0 0 4px rgba(74,168,255,0.10) !important;
   outline: none;
 }
