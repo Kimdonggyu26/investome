@@ -430,7 +430,7 @@ export default function RankingTable() {
                     <div className="priceHeadCell">
                       <span>현재가</span>
                       {shouldShowCurrencyToggle(market) && (
-                        <div className="currencyToggle currencyToggleInline" role="tablist" aria-label="통화 전환">
+                        <div className="currencyToggle currencyToggleInline currencyToggleMini" role="tablist" aria-label="통화 전환">
                           <button
                             type="button"
                             className={currency === "KRW" ? "active" : ""}
@@ -521,7 +521,9 @@ export default function RankingTable() {
                       </td>
 
                       <td className={`valueUpdate ${valueFlashClass}`}>
-                        {formatPriceByCurrency(row.priceKRW, currency, usdKrw)}
+                        <span key={`${market}-${currency}-${row.symbol}`} className="priceMorph">
+                          {formatPriceByCurrency(row.priceKRW, currency, usdKrw)}
+                        </span>
                       </td>
 
                       <td
