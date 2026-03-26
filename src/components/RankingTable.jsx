@@ -7,13 +7,45 @@ import {
   fetchKospiTop30KRW,
   fetchNasdaqTop30KRW,
 } from "../api/rankingApi";
+import { fetchFx } from "../api/fxApi";
 
 const MARKETS = ["KOSPI", "NASDAQ", "CRYPTO", "COMMODITIES"];
 const REFRESH_MS = 20_000;
+const FX_REFRESH_MS = 30_000;
 
 function formatKRW(n) {
   if (typeof n !== "number" || !Number.isFinite(n)) return "-";
   return "₩" + Math.round(n).toLocaleString("ko-KR");
+}
+
+function formatUSDFromKRW(priceKRW, usdKrw) {
+  if (
+    typeof priceKRW !== "number" ||
+    !Number.isFinite(priceKRW) ||
+    typeof usdKrw !== "number" ||
+    !Number.isFinite(usdKrw) ||
+    usdKrw <= 0
+  ) {
+    return "-";
+  }
+
+  const usd = priceKRW / usdKrw;
+
+  return "$" + usd.toLocaleString("en-US", {
+    minimumFractionDigits: usd >= 1000 ? 0 : 2,
+    maximumFractionDigits: usd >= 1000 ? 0 : usd >= 1 ? 2 : 4,
+  });
+}
+
+function formatPriceByCurrency(priceKRW, currency, usdKrw) {
+  if (currency === "USD") {
+    return formatUSDFromKRW(priceKRW, usdKrw);
+  }
+  return formatKRW(priceKRW);
+}
+
+function shouldShowCurrencyToggle(market) {
+  return market === "NASDAQ" || market === "CRYPTO" || market === "COMMODITIES";
 }
 
 function colorByChange(pct) {
@@ -130,6 +162,12 @@ export default function RankingTable() {
   const navigate = useNavigate();
 
   const [market, setMarket] = useState("KOSPI");
+  const [currencyByMarket, setCurrencyByMarket] = useState({
+    NASDAQ: "KRW",
+    CRYPTO: "KRW",
+    COMMODITIES: "KRW",
+  });
+  const [usdKrw, setUsdKrw] = useState(null);
   const [rows, setRows] = useState([]);
   const [err, setErr] = useState(null);
   const [flashMap, setFlashMap] = useState({});
@@ -144,6 +182,8 @@ export default function RankingTable() {
   const countdownIntervalRef = useRef(null);
   const nextRefreshAtRef = useRef(null);
   const mountedRef = useRef(false);
+
+  const currency = currencyByMarket[market] || "KRW";
 
   const clearScheduledRefresh = useCallback(() => {
     if (refreshTimeoutRef.current) {
@@ -274,6 +314,28 @@ export default function RankingTable() {
   );
 
   useEffect(() => {
+    let cancelled = false;
+
+    const loadFx = async () => {
+      try {
+        const data = await fetchFx();
+        if (cancelled) return;
+        setUsdKrw(data?.USDKRW ?? null);
+      } catch {
+        if (cancelled) return;
+      }
+    };
+
+    loadFx();
+    const timer = setInterval(loadFx, FX_REFRESH_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, []);
+
+  useEffect(() => {
     mountedRef.current = true;
     prevRowsRef.current = [];
     setRows([]);
@@ -338,6 +400,47 @@ export default function RankingTable() {
               </button>
             ))}
           </div>
+
+          {shouldShowCurrencyToggle(market) && (
+            <div className="rankingUtilityRow">
+              <div className="currencyToggle" role="tablist" aria-label="통화 전환">
+                <button
+                  type="button"
+                  className={currency === "KRW" ? "active" : ""}
+                  onClick={() =>
+                    setCurrencyByMarket((prev) => ({
+                      ...prev,
+                      [market]: "KRW",
+                    }))
+                  }
+                >
+                  KRW
+                </button>
+                <button
+                  type="button"
+                  className={currency === "USD" ? "active" : ""}
+                  onClick={() =>
+                    setCurrencyByMarket((prev) => ({
+                      ...prev,
+                      [market]: "USD",
+                    }))
+                  }
+                  disabled={!usdKrw}
+                  title={!usdKrw ? "환율 데이터 로딩 중" : ""}
+                >
+                  USD
+                </button>
+              </div>
+
+              <div className="currencyMeta">
+                {usdKrw
+                  ? `실시간 환율 적용 · 1 USD = ${usdKrw.toLocaleString("ko-KR", {
+                      maximumFractionDigits: 2,
+                    })} KRW`
+                  : "환율 불러오는 중..."}
+              </div>
+            </div>
+          )}
 
           <div className={`rankingRefreshBadge ${isRefreshingNow ? "isRefreshing" : ""}`}>
             <span className="rankingRefreshDot" />
@@ -424,7 +527,7 @@ export default function RankingTable() {
                       </td>
 
                       <td className={`valueUpdate ${valueFlashClass}`}>
-                        {formatKRW(row.priceKRW)}
+                        {formatPriceByCurrency(row.priceKRW, currency, usdKrw)}
                       </td>
 
                       <td
