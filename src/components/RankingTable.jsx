@@ -401,46 +401,6 @@ export default function RankingTable() {
             ))}
           </div>
 
-          {shouldShowCurrencyToggle(market) && (
-            <div className="rankingUtilityRow">
-              <div className="currencyToggle" role="tablist" aria-label="통화 전환">
-                <button
-                  type="button"
-                  className={currency === "KRW" ? "active" : ""}
-                  onClick={() =>
-                    setCurrencyByMarket((prev) => ({
-                      ...prev,
-                      [market]: "KRW",
-                    }))
-                  }
-                >
-                  KRW
-                </button>
-                <button
-                  type="button"
-                  className={currency === "USD" ? "active" : ""}
-                  onClick={() =>
-                    setCurrencyByMarket((prev) => ({
-                      ...prev,
-                      [market]: "USD",
-                    }))
-                  }
-                  disabled={!usdKrw}
-                  title={!usdKrw ? "환율 데이터 로딩 중" : ""}
-                >
-                  USD
-                </button>
-              </div>
-
-              <div className="currencyMeta">
-                {usdKrw
-                  ? `실시간 환율 적용 · 1 USD = ${usdKrw.toLocaleString("ko-KR", {
-                      maximumFractionDigits: 2,
-                    })} KRW`
-                  : "환율 불러오는 중..."}
-              </div>
-            </div>
-          )}
 
           <div className={`rankingRefreshBadge ${isRefreshingNow ? "isRefreshing" : ""}`}>
             <span className="rankingRefreshDot" />
@@ -466,7 +426,41 @@ export default function RankingTable() {
                   <th>#</th>
                   <th>종목</th>
                   <th>추세</th>
-                  <th>현재가</th>
+                  <th>
+                    <div className="priceHeadCell">
+                      <span>현재가</span>
+                      {shouldShowCurrencyToggle(market) && (
+                        <div className="currencyToggle currencyToggleInline" role="tablist" aria-label="통화 전환">
+                          <button
+                            type="button"
+                            className={currency === "KRW" ? "active" : ""}
+                            onClick={() =>
+                              setCurrencyByMarket((prev) => ({
+                                ...prev,
+                                [market]: "KRW",
+                              }))
+                            }
+                          >
+                            KRW
+                          </button>
+                          <button
+                            type="button"
+                            className={currency === "USD" ? "active" : ""}
+                            onClick={() =>
+                              setCurrencyByMarket((prev) => ({
+                                ...prev,
+                                [market]: "USD",
+                              }))
+                            }
+                            disabled={!usdKrw}
+                            title={!usdKrw ? "환율 데이터 로딩 중" : ""}
+                          >
+                            USD
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </th>
                   <th>등락률</th>
                 </tr>
               </thead>
