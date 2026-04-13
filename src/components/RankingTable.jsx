@@ -15,7 +15,7 @@ const FX_REFRESH_MS = 30_000;
 
 function formatKRW(n) {
   if (typeof n !== "number" || !Number.isFinite(n)) return "-";
-  return "₩" + Math.round(n).toLocaleString("ko-KR");
+  return `KRW ${Math.round(n).toLocaleString("ko-KR")}`;
 }
 
 function formatUSDFromKRW(priceKRW, usdKrw) {
@@ -154,8 +154,19 @@ function TableSkeleton() {
 }
 
 function getCountdownLabel(secondsLeft, isRefreshingNow) {
-  if (isRefreshingNow) return "데이터 갱신 중...";
-  return `데이터 갱신까지 ${secondsLeft}초`;
+  if (isRefreshingNow) return "Refreshing data...";
+  return `Next refresh in ${secondsLeft}s`;
+}
+
+function getDisplayName(row) {
+  return row.displayNameEN || row.name || row.symbol || "-";
+}
+
+function getSecondaryLabel(row, market) {
+  if (market === "COMMODITIES") {
+    return row.symbol || row.displayNameEN || "";
+  }
+  return row.symbol || "";
 }
 
 export default function RankingTable() {
@@ -254,6 +265,7 @@ export default function RankingTable() {
         } else if (market === "COMMODITIES") {
           nextRows = await fetchCommoditiesTopKRW();
         }
+
         const elapsed = Date.now() - startAt;
         const minimumOverlay = 220;
 
@@ -381,9 +393,11 @@ export default function RankingTable() {
             <span>LIVE</span>
           </div>
 
-          <h3>{market === "COMMODITIES" ? "원자재 시세" : "TOP30 랭킹"}</h3>
+          <h3>{market === "COMMODITIES" ? "Commodities" : "Top 30"}</h3>
           <div className="rankingSub">
-            {market === "COMMODITIES" ? "Major Commodities Live Prices" : "Top 30 Market Movers"}
+            {market === "COMMODITIES"
+              ? "Major commodities with live price updates"
+              : "Live market ranking and price changes"}
           </div>
         </div>
 
@@ -401,7 +415,6 @@ export default function RankingTable() {
             ))}
           </div>
 
-
           <div className={`rankingRefreshBadge ${isRefreshingNow ? "isRefreshing" : ""}`}>
             <span className="rankingRefreshDot" />
             <span>{getCountdownLabel(secondsLeft, isRefreshingNow)}</span>
@@ -411,7 +424,7 @@ export default function RankingTable() {
 
       {err && (
         <div className="rankingHint" style={{ marginBottom: 12 }}>
-          데이터를 불러오지 못했어요. 다음 주기에 다시 시도할게요.
+          Live ranking data is temporarily unavailable. We will try again on the next cycle.
         </div>
       )}
 
@@ -424,13 +437,17 @@ export default function RankingTable() {
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>종목</th>
-                  <th>추세</th>
+                  <th>Asset</th>
+                  <th>Trend</th>
                   <th>
                     <div className="priceHeadCell">
-                      <span>현재가</span>
+                      <span>Price</span>
                       {shouldShowCurrencyToggle(market) && (
-                        <div className="currencyToggle currencyToggleInline currencyToggleMini" role="tablist" aria-label="통화 전환">
+                        <div
+                          className="currencyToggle currencyToggleInline currencyToggleMini"
+                          role="tablist"
+                          aria-label="Currency toggle"
+                        >
                           <button
                             type="button"
                             className={currency === "KRW" ? "active" : ""}
@@ -453,7 +470,7 @@ export default function RankingTable() {
                               }))
                             }
                             disabled={!usdKrw}
-                            title={!usdKrw ? "환율 데이터 로딩 중" : ""}
+                            title={!usdKrw ? "FX data is loading" : ""}
                           >
                             USD
                           </button>
@@ -461,13 +478,15 @@ export default function RankingTable() {
                       )}
                     </div>
                   </th>
-                  <th>등락률</th>
+                  <th>24H</th>
                 </tr>
               </thead>
 
               <tbody>
                 {rows.map((row) => {
                   const flash = flashMap[row.symbol];
+                  const displayName = getDisplayName(row);
+                  const secondaryLabel = getSecondaryLabel(row, market);
 
                   const rowFlashClass =
                     flash === "up"
@@ -493,25 +512,11 @@ export default function RankingTable() {
 
                       <td>
                         <div className="nameCell">
-                          <Avatar iconUrl={row.iconUrl} name={row.name} />
+                          <Avatar iconUrl={row.iconUrl} name={displayName} />
 
                           <div className="nameText">
-                            <div className="nameMain">
-                              {market === "COMMODITIES" ? row.name.split(" ")[0] : row.name}
-                            </div>
-
-                            <div className="nameSub">
-                              {market === "COMMODITIES"
-                                ? (() => {
-                                    const parts = row.name.split(" ");
-                                    const ko = parts[0] || row.name;
-                                    const en = parts.slice(1).join(" ");
-                                    return en
-                                      ? `${en}${row.displayNameEN ? ` · ${row.displayNameEN}` : ""}`
-                                      : row.displayNameEN || "";
-                                  })()
-                                : `${row.symbol}${row.displayNameEN ? ` · ${row.displayNameEN}` : ""}`}
-                            </div>
+                            <div className="nameMain">{displayName}</div>
+                            <div className="nameSub">{secondaryLabel}</div>
                           </div>
                         </div>
                       </td>
@@ -543,9 +548,7 @@ export default function RankingTable() {
         </div>
       )}
 
-      <div className="rankingHint">
-        각 종목을 클릭하여 상세페이지로 이동해 보세요.
-      </div>
+      <div className="rankingHint">Select any row to open the asset detail page.</div>
     </div>
   );
 }

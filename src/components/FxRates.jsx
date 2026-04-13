@@ -3,15 +3,15 @@ import { fetchFx } from "../api/fxApi";
 import "./FxRates.css";
 
 const FX = [
-  { key: "USDKRW", label: "미국 / USD", flag: "https://flagcdn.com/w40/us.png" },
-  { key: "JPYKRW", label: "일본 / JPY", flag: "https://flagcdn.com/w40/jp.png" },
-  { key: "CNYKRW", label: "중국 / CNY", flag: "https://flagcdn.com/w40/cn.png" },
-  { key: "EURKRW", label: "유럽 / EUR", flag: "https://flagcdn.com/w40/eu.png" },
-  { key: "AUDKRW", label: "호주 / AUD", flag: "https://flagcdn.com/w40/au.png" },
+  { key: "USDKRW", label: "United States / USD", flag: "https://flagcdn.com/w40/us.png" },
+  { key: "JPYKRW", label: "Japan / JPY", flag: "https://flagcdn.com/w40/jp.png" },
+  { key: "CNYKRW", label: "China / CNY", flag: "https://flagcdn.com/w40/cn.png" },
+  { key: "EURKRW", label: "Euro Area / EUR", flag: "https://flagcdn.com/w40/eu.png" },
+  { key: "AUDKRW", label: "Australia / AUD", flag: "https://flagcdn.com/w40/au.png" },
 ];
 
 function fmt(n) {
-  if (typeof n !== "number" || !isFinite(n)) return "-";
+  if (typeof n !== "number" || !Number.isFinite(n)) return "-";
   return n.toLocaleString("ko-KR", { maximumFractionDigits: 2 });
 }
 
@@ -19,8 +19,8 @@ function diffValue(now, base) {
   if (
     typeof now !== "number" ||
     typeof base !== "number" ||
-    !isFinite(now) ||
-    !isFinite(base)
+    !Number.isFinite(now) ||
+    !Number.isFinite(base)
   ) {
     return null;
   }
@@ -31,8 +31,8 @@ function changePct(now, base) {
   if (
     typeof now !== "number" ||
     typeof base !== "number" ||
-    !isFinite(now) ||
-    !isFinite(base) ||
+    !Number.isFinite(now) ||
+    !Number.isFinite(base) ||
     base === 0
   ) {
     return null;
@@ -48,7 +48,7 @@ function color(v) {
 }
 
 function formatPct(p) {
-  if (typeof p !== "number" || !isFinite(p)) return "-";
+  if (typeof p !== "number" || !Number.isFinite(p)) return "-";
   const sign = p > 0 ? "+" : p < 0 ? "-" : "";
   const abs = Math.abs(p);
 
@@ -58,20 +58,23 @@ function formatPct(p) {
 }
 
 function formatDiff(v) {
-  if (typeof v !== "number" || !isFinite(v)) return "-";
+  if (typeof v !== "number" || !Number.isFinite(v)) return "-";
   const sign = v > 0 ? "+" : v < 0 ? "-" : "";
   return `${sign}${Math.abs(v).toLocaleString("ko-KR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })}원`;
+  })} KRW`;
 }
 
-function formatToday() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${y}.${m}.${d}`;
+function formatDateLabel(dateValue) {
+  if (!dateValue) return "";
+  const d = new Date(dateValue);
+  if (Number.isNaN(d.getTime())) return String(dateValue);
+
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}.${m}.${day}`;
 }
 
 export default function FxRates() {
@@ -111,16 +114,16 @@ export default function FxRates() {
             <span>LIVE</span>
           </div>
 
-          <div className="fxTitle">오늘의 환율</div>
-          <div className="fxSub">Today's Exchange Rate</div>
+          <div className="fxTitle">Exchange Rates</div>
+          <div className="fxSub">Daily FX snapshot against KRW</div>
         </div>
 
-        <div className="fxUpdated">{formatToday()}</div>
+        <div className="fxUpdated">{formatDateLabel(fx?.updatedDate) || "Loading..."}</div>
       </div>
 
       {err && (
         <div className="muted" style={{ marginTop: 10 }}>
-          환율을 불러오지 못했어요.
+          Failed to load FX data.
         </div>
       )}
 
@@ -153,7 +156,7 @@ export default function FxRates() {
                 <div className="fxMeta">
                   <div className="fxValue">
                     {valueText}
-                    {valueText !== "-" && <span className="fxUnit">원</span>}
+                    {valueText !== "-" && <span className="fxUnit"> KRW</span>}
                   </div>
                   <div className="fxLabel">{c.label}</div>
                 </div>
@@ -176,7 +179,7 @@ export default function FxRates() {
         })}
       </div>
 
-      <div className="fxSource">Data Source : Frankfurter</div>
+      <div className="fxSource">Data source: Frankfurter</div>
     </div>
   );
 }

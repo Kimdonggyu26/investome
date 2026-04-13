@@ -4,10 +4,10 @@ import { fetchNews } from "../api/newsApi";
 import "../styles/NewsList.css";
 
 const CATEGORIES = [
-  { key: "all", label: "전체" },
-  { key: "crypto", label: "코인(암호화폐)" },
-  { key: "domestic", label: "국내증시" },
-  { key: "global", label: "해외증시" },
+  { key: "all", label: "All" },
+  { key: "crypto", label: "Crypto" },
+  { key: "domestic", label: "Korea" },
+  { key: "global", label: "Global" },
 ];
 
 function ymdhm(dateStr) {
@@ -28,21 +28,20 @@ function popularScore(item) {
   let s = 0;
 
   [
-    "속보",
-    "급등",
-    "급락",
-    "금리",
-    "환율",
-    "물가",
-    "반도체",
-    "미국",
-    "연준",
-    "코스피",
-    "나스닥",
-    "비트코인",
-    "이더리움",
-    "테슬라",
-    "엔비디아",
+    "breaking",
+    "surge",
+    "drop",
+    "inflation",
+    "fed",
+    "oil",
+    "semiconductor",
+    "nasdaq",
+    "kospi",
+    "bitcoin",
+    "ethereum",
+    "tesla",
+    "nvidia",
+    "ai",
   ].forEach((k) => {
     if (t.includes(k)) s += 3;
   });
@@ -72,7 +71,7 @@ function NewsSkeleton() {
 }
 
 export default function NewsList({
-  title = "글로벌 경제 주요 소식",
+  title = "Market News",
   limit = 12,
   pageMode = false,
   moreLink,
@@ -151,7 +150,7 @@ export default function NewsList({
           </div>
 
           <h2 className="newsHeading">{title}</h2>
-          <div className="newsSub">Real-Time Market Headlines</div>
+          <div className="newsSub">Real-time market headlines from Google News RSS</div>
         </div>
 
         <div className="newsHeaderRight">
@@ -161,14 +160,14 @@ export default function NewsList({
               className={mode === "latest" ? "active" : ""}
               onClick={() => setMode("latest")}
             >
-              최신순
+              Latest
             </button>
             <button
               type="button"
               className={mode === "popular" ? "active" : ""}
               onClick={() => setMode("popular")}
             >
-              인기순
+              Popular
             </button>
           </div>
         </div>
@@ -191,14 +190,13 @@ export default function NewsList({
         {!pageMode && moreLink && (
           <div className="newsCategoryRowRight">
             <Link to={moreLink} className="newsMoreBtn">
-              실시간 뉴스 더보기
+              Open full news page
             </Link>
           </div>
         )}
       </div>
 
-
-      {err && <div className="muted">뉴스를 불러오지 못했어요.</div>}
+      {err && <div className="muted">Failed to load market news.</div>}
 
       {isLoading && items.length === 0 ? (
         <NewsSkeleton />
@@ -210,7 +208,7 @@ export default function NewsList({
               target="_blank"
               rel="noreferrer"
               className="newsFeatured"
-              title="클릭해서 기사로 이동"
+              title="Open article in a new tab"
             >
               <div className="newsFeaturedBody">
                 <div className="newsFeaturedBadge">FEATURED</div>
@@ -251,11 +249,10 @@ export default function NewsList({
       )}
 
       <br />
-      
-      <div className="newsDesc newsDescBottom">
-        카테고리별 최신 뉴스와 많이 보는 이슈를 빠르게 확인해보세요.
-      </div>
 
+      <div className="newsDesc newsDescBottom">
+        Switch categories and sorting modes to scan the market faster.
+      </div>
     </div>
   );
 }

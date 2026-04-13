@@ -124,10 +124,17 @@ function normalizeRow(row, index) {
   const meta = STOCK_META_BY_SYMBOL[symbol] || null;
   const commodityIcon = buildCommodityIcon(symbol);
   const stockIcon = buildLogo(pickStockDomain(symbol));
+  const primaryName =
+    row.displayNameEN ||
+    row.name ||
+    meta?.displayNameEN ||
+    meta?.name ||
+    symbol ||
+    "-";
 
   return {
     rank: row.rank ?? index + 1,
-    name: meta?.name || row.name || "-",
+    name: primaryName,
     displayNameEN: row.displayNameEN ?? meta?.displayNameEN ?? "",
     symbol,
     iconUrl: row.iconUrl || commodityIcon || stockIcon,

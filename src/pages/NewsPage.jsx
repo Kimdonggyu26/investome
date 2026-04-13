@@ -67,7 +67,7 @@ export default function NewsPage() {
                     letterSpacing: "-1px",
                   }}
                 >
-                  경제 · 증시 · 코인 뉴스룸
+                  Economy, stocks, crypto, and macro headlines
                 </h1>
 
                 <p
@@ -79,19 +79,19 @@ export default function NewsPage() {
                     maxWidth: 760,
                   }}
                 >
-                  오늘의 최신 뉴스를 카테고리별로 빠르게 훑고, 클릭하여 원문 기사까지 확인해 보세요!
+                  Browse the latest market news by category and open full articles in one click.
                 </p>
               </div>
 
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <Link className="btn" to="/">
-                  ← 홈으로
+                  Back to home
                 </Link>
               </div>
             </div>
           </section>
 
-          <NewsList title="실시간 뉴스 피드" limit={60} pageMode />
+          <NewsList title="Live News Feed" limit={60} pageMode />
         </div>
       </main>
     </>

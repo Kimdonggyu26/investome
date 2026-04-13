@@ -18,29 +18,29 @@ import { useWatchlist } from "../hooks/useWatchlist";
 import { fetchAssetQuote } from "../api/portfolioApi";
 
 function formatKRW(n) {
-  if (typeof n !== "number" || !isFinite(n)) return "-";
-  return `₩${Math.round(n).toLocaleString("ko-KR")}`;
+  if (typeof n !== "number" || !Number.isFinite(n)) return "-";
+  return `KRW ${Math.round(n).toLocaleString("ko-KR")}`;
 }
 
 function formatSignedKRW(n) {
-  if (typeof n !== "number" || !isFinite(n)) return "-";
-  const sign = n > 0 ? "+" : "";
-  return `${sign}₩${Math.round(n).toLocaleString("ko-KR")}`;
+  if (typeof n !== "number" || !Number.isFinite(n)) return "-";
+  const sign = n > 0 ? "+" : n < 0 ? "-" : "";
+  return `${sign}KRW ${Math.abs(Math.round(n)).toLocaleString("ko-KR")}`;
 }
 
 function calcChangeAmount(price, pct) {
-  if (typeof price !== "number" || !isFinite(price)) return null;
-  if (typeof pct !== "number" || !isFinite(pct)) return null;
+  if (typeof price !== "number" || !Number.isFinite(price)) return null;
+  if (typeof pct !== "number" || !Number.isFinite(pct)) return null;
   return price * (pct / 100);
 }
 
 function calcRange(price, pct) {
-  if (typeof price !== "number" || !isFinite(price)) {
+  if (typeof price !== "number" || !Number.isFinite(price)) {
     return { high: null, low: null };
   }
 
   const volatility =
-    typeof pct === "number" && isFinite(pct)
+    typeof pct === "number" && Number.isFinite(pct)
       ? Math.max(1.2, Math.min(6, Math.abs(pct) * 1.8))
       : 2.2;
 
@@ -51,27 +51,26 @@ function calcRange(price, pct) {
 }
 
 function formatCapKRW(n) {
-  if (typeof n !== "number" || !isFinite(n)) return "-";
-  const JO = 1_000_000_000_000;
-  const EOK = 100_000_000;
-  if (n >= JO) return `${(n / JO).toFixed(1)}조`;
-  if (n >= EOK) return `${Math.round(n / EOK).toLocaleString("ko-KR")}억`;
-  return Math.round(n).toLocaleString("ko-KR");
+  if (typeof n !== "number" || !Number.isFinite(n)) return "-";
+  return `KRW ${new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    compactDisplay: "short",
+    maximumFractionDigits: 1,
+  }).format(n)}`;
 }
 
 function formatChange(n) {
-  if (typeof n !== "number" || !isFinite(n)) return "-";
+  if (typeof n !== "number" || !Number.isFinite(n)) return "-";
   return `${n > 0 ? "+" : ""}${n.toFixed(2)}%`;
 }
 
 function getChangeClass(n) {
-  if (typeof n !== "number" || !isFinite(n)) return "flat";
+  if (typeof n !== "number" || !Number.isFinite(n)) return "flat";
   if (n > 0) return "up";
   if (n < 0) return "down";
   return "flat";
 }
 
-/* ⭐ TradingView 심볼 변환 */
 function getTradingViewSymbol(market, symbol) {
   const normalized = String(symbol || "").trim().toUpperCase();
 
@@ -109,7 +108,6 @@ function getTradingViewSymbol(market, symbol) {
   return normalized;
 }
 
-/* ⭐ 외부 TradingView 페이지 URL */
 function getTradingViewPageUrl(market, symbol) {
   const normalized = String(symbol || "").trim().toUpperCase();
 
@@ -147,36 +145,34 @@ function getTradingViewPageUrl(market, symbol) {
   return "";
 }
 
-/* ⭐ 뉴스 검색어 */
 function getNewsQuery({ market, symbol, name, displayNameEN }) {
   const upper = String(symbol || "").toUpperCase();
 
   if (market === "CRYPTO") {
-    if (upper === "BTC") return `"비트코인" OR "Bitcoin" OR "BTC"`;
-    if (upper === "ETH") return `"이더리움" OR "Ethereum" OR "ETH"`;
-    if (upper === "XRP") return `"리플" OR "XRP"`;
-    return `"${name || symbol}" OR "${displayNameEN || symbol}" OR "${symbol}"`;
+    if (upper === "BTC") return '"Bitcoin" OR "BTC"';
+    if (upper === "ETH") return '"Ethereum" OR "ETH"';
+    if (upper === "XRP") return '"XRP" OR "Ripple"';
+    return `"${displayNameEN || name || symbol}" OR "${symbol}"`;
   }
 
   if (market === "COMMODITIES") {
     const map = {
-      "GC=F": `"국제 금값" OR "금 선물" OR "gold futures" OR "gold price" OR "XAUUSD"`,
-      "SI=F": `"국제 은값" OR "은 선물" OR "silver futures" OR "silver price" OR "XAGUSD"`,
-      "CL=F": `"WTI" OR "서부텍사스원유" OR "국제유가" OR "crude oil"`,
-      "BZ=F": `"브렌트유" OR "Brent oil" OR "Brent crude"`,
-      "NG=F": `"천연가스" OR "natural gas" OR "Henry Hub gas"`,
-      "PL=F": `"백금" OR "platinum price" OR "platinum futures"`,
-      "PA=F": `"팔라듐" OR "palladium price" OR "palladium futures"`,
+      "GC=F": '"gold futures" OR "gold price" OR XAUUSD',
+      "SI=F": '"silver futures" OR "silver price" OR XAGUSD',
+      "CL=F": '"WTI crude oil" OR "crude oil futures" OR oil',
+      "BZ=F": '"Brent crude" OR "Brent oil"',
+      "NG=F": '"natural gas" OR "Henry Hub gas"',
+      "PL=F": '"platinum futures" OR "platinum price"',
+      "PA=F": '"palladium futures" OR "palladium price"',
     };
 
-    return map[upper] || `"${name || symbol}"`;
+    return map[upper] || `"${displayNameEN || name || symbol}"`;
   }
 
-  const names = [name, displayNameEN, symbol]
+  return [displayNameEN, name, symbol]
     .filter(Boolean)
-    .map((v) => `"${v}"`);
-
-  return names.join(" OR ");
+    .map((value) => `"${value}"`)
+    .join(" OR ");
 }
 
 function getFallbackAsset(market, symbol) {
@@ -209,6 +205,10 @@ function AssetLogo({ iconUrl, name }) {
 
   const initial = (name || "?").trim().slice(0, 1);
   return <div className="assetLogo assetLogoFallback">{initial}</div>;
+}
+
+function getPreferredName(asset, symbol) {
+  return asset.displayNameEN || asset.name || symbol;
 }
 
 export default function AssetDetail() {
@@ -261,17 +261,20 @@ export default function AssetDetail() {
         if (!alive) return;
 
         const resolvedName =
+          liveQuote?.displayNameEN ||
+          found?.displayNameEN ||
+          watchedItem?.displayNameEN ||
           found?.name ||
           watchedItem?.name ||
-          liveQuote?.displayNameEN ||
           liveQuote?.name ||
           symbol;
 
         const resolvedDisplayName =
+          liveQuote?.displayNameEN ||
           found?.displayNameEN ||
           watchedItem?.displayNameEN ||
-          liveQuote?.displayNameEN ||
           liveQuote?.name ||
+          found?.name ||
           resolvedName;
 
         const resolvedIcon =
@@ -344,6 +347,7 @@ export default function AssetDetail() {
   const changeAmount = calcChangeAmount(asset.priceKRW, asset.changePct);
   const { high, low } = calcRange(asset.priceKRW, asset.changePct);
   const watched = isWatched(market, symbol);
+  const preferredName = getPreferredName(asset, symbol);
 
   return (
     <>
@@ -360,16 +364,16 @@ export default function AssetDetail() {
             <section className="card assetTopCard assetHeroGlow">
               <div className="assetTopHead">
                 <div className="assetIdentity">
-                  <AssetLogo iconUrl={asset.iconUrl} name={asset.name} />
+                  <AssetLogo iconUrl={asset.iconUrl} name={preferredName} />
 
                   <div>
                     <div className="assetMarketBadge">{marketLabel}</div>
-                    <h1 className="assetName">{asset.name}</h1>
+                    <h1 className="assetName">{preferredName}</h1>
                     <div className="assetSymbolRow">
                       <span>{symbol}</span>
-                      {asset.displayNameEN && asset.displayNameEN !== asset.name ? (
+                      {asset.displayNameEN && asset.displayNameEN !== symbol ? (
                         <>
-                          <span>•</span>
+                          <span>·</span>
                           <span>{asset.displayNameEN}</span>
                         </>
                       ) : null}
@@ -385,37 +389,37 @@ export default function AssetDetail() {
                       toggleWatchlist({
                         market,
                         symbol,
-                        name: asset.name,
+                        name: preferredName,
                         displayNameEN: asset.displayNameEN,
                         iconUrl: asset.iconUrl,
                         coinId: asset.coinId,
                       })
                     }
                   >
-                    {watched ? "★ 관심종목 제거" : "☆ 관심종목 추가"}
+                    {watched ? "Remove from watchlist" : "Add to watchlist"}
                   </button>
 
                   <Link className="btn" to="/">
-                    ← 홈으로
+                    Back to home
                   </Link>
                 </div>
               </div>
 
               <div className="assetStatRow">
                 <div className="assetStatCard primary">
-                  <div className="assetStatLabel">현재가</div>
+                  <div className="assetStatLabel">Price</div>
                   <div className="assetPrice">
-                    {assetLoading ? "불러오는중" : formatKRW(asset.priceKRW)}
+                    {assetLoading ? "Loading..." : formatKRW(asset.priceKRW)}
                   </div>
                   <div className="assetStatHint">
-                    {assetLoading ? "-" : `${marketLabel} 실시간 반영`}
+                    {assetLoading ? "-" : `${marketLabel} live quote`}
                   </div>
                 </div>
 
                 <div className={`assetStatCard ${getChangeClass(asset.changePct)}`}>
-                  <div className="assetStatLabel">등락률</div>
+                  <div className="assetStatLabel">Change</div>
                   <div className={`assetChange ${getChangeClass(asset.changePct)}`}>
-                    {assetLoading ? "불러오는중" : formatChange(asset.changePct)}
+                    {assetLoading ? "Loading..." : formatChange(asset.changePct)}
                   </div>
                   <div className="assetStatHint">
                     {assetLoading ? "-" : formatSignedKRW(changeAmount)}
@@ -425,25 +429,25 @@ export default function AssetDetail() {
 
               <div className="assetMetaGrid">
                 <div className="assetMetaCard blue">
-                  <div className="assetMetaLabel">시장</div>
+                  <div className="assetMetaLabel">Market</div>
                   <div className="assetMetaValue">{marketLabel}</div>
                 </div>
 
                 <div className="assetMetaCard purple">
-                  <div className="assetMetaLabel">심볼</div>
+                  <div className="assetMetaLabel">Symbol</div>
                   <div className="assetMetaValue">{symbol}</div>
                 </div>
 
                 <div className="assetMetaCard green">
-                  <div className="assetMetaLabel">시가총액</div>
+                  <div className="assetMetaLabel">Market Cap</div>
                   <div className="assetMetaValue">
                     {showCap ? formatCapKRW(asset.capKRW) : "-"}
                   </div>
                 </div>
 
                 <div className="assetMetaCard orange">
-                  <div className="assetMetaLabel">뉴스 검색어</div>
-                  <div className="assetMetaValue">{asset.name}</div>
+                  <div className="assetMetaLabel">News Query</div>
+                  <div className="assetMetaValue">{preferredName}</div>
                 </div>
               </div>
             </section>
@@ -453,22 +457,22 @@ export default function AssetDetail() {
                 <section className="assetPanel kospiChartNotice">
                   <div className="assetPanelHead">
                     <div>
-                      <div className="assetPanelTitle">차트 서비스 준비중</div>
+                      <div className="assetPanelTitle">Chart notice</div>
                       <div className="assetPanelSub">
-                        코스피 종목은 외부 차트 페이지에서 확인할 수 있어요.
+                        Korean market charts open through the TradingView symbol page.
                       </div>
                     </div>
                   </div>
 
                   <div className="kospiChartNoticeBody">
                     <div className="kospiChartBadge">KOSPI CHART</div>
-                    <div className="kospiChartIcon">📈</div>
-                    <h3 className="kospiChartHeadline">사이트 내 차트 지원 준비중</h3>
+                    <div className="kospiChartIcon">↗</div>
+                    <h3 className="kospiChartHeadline">Open the external TradingView chart</h3>
 
                     <p className="kospiChartNoticeText">
-                      현재 코스피 종목 차트는 사이트 내 제공이 제한됩니다.
+                      An embedded chart is not enabled for this market yet.
                       <br />
-                      아래 버튼을 눌러 TradingView 차트 페이지로 이동해주세요.
+                      Use the button below to view the full TradingView page.
                     </p>
 
                     <a
@@ -477,11 +481,11 @@ export default function AssetDetail() {
                       rel="noopener noreferrer"
                       className="chartMoveBtn"
                     >
-                      TradingView 차트 보러가기 →
+                      Open TradingView
                     </a>
 
                     <div className="kospiChartNoticeFoot">
-                      추후 사이트 내 차트 지원 예정 🚧
+                      More integrated chart support can be added later.
                     </div>
                   </div>
                 </section>
@@ -489,68 +493,68 @@ export default function AssetDetail() {
                 <TradingViewChart
                   key={tradingViewSymbol}
                   symbol={tradingViewSymbol}
-                  title={`${asset.name} · ${symbol}`}
+                  title={`${preferredName} · ${symbol}`}
                 />
               )}
 
               <div className="assetPanel">
                 <div className="assetPanelHead">
                   <div>
-                    <div className="assetPanelTitle">현재 정보</div>
-                    <div className="assetPanelSub">핵심 정보 요약</div>
+                    <div className="assetPanelTitle">Snapshot</div>
+                    <div className="assetPanelSub">Quick summary for this asset</div>
                   </div>
                 </div>
 
                 <div className="assetInfoList">
                   <div className="assetInfoItem emphasis">
-                    <div className="assetInfoItemLabel">종목명</div>
-                    <div className="assetInfoItemValue">{asset.name}</div>
+                    <div className="assetInfoItemLabel">Name</div>
+                    <div className="assetInfoItemValue">{preferredName}</div>
                   </div>
 
                   <div className="assetInfoMiniGrid">
                     <div className="assetMiniCard high">
-                      <div className="assetMiniLabel">예상 High</div>
+                      <div className="assetMiniLabel">Estimated High</div>
                       <div className="assetMiniValue">
-                        {assetLoading ? "불러오는중" : formatKRW(high)}
+                        {assetLoading ? "Loading..." : formatKRW(high)}
                       </div>
                     </div>
 
                     <div className="assetMiniCard low">
-                      <div className="assetMiniLabel">예상 Low</div>
+                      <div className="assetMiniLabel">Estimated Low</div>
                       <div className="assetMiniValue">
-                        {assetLoading ? "불러오는중" : formatKRW(low)}
+                        {assetLoading ? "Loading..." : formatKRW(low)}
                       </div>
                     </div>
                   </div>
 
                   <div className="assetInfoItem">
-                    <div className="assetInfoItemLabel">심볼</div>
+                    <div className="assetInfoItemLabel">Symbol</div>
                     <div className="assetInfoItemValue">{symbol}</div>
                   </div>
 
                   <div className="assetInfoItem">
-                    <div className="assetInfoItemLabel">현재가</div>
+                    <div className="assetInfoItemLabel">Price</div>
                     <div className="assetInfoItemValue">
-                      {assetLoading ? "불러오는중" : formatKRW(asset.priceKRW)}
+                      {assetLoading ? "Loading..." : formatKRW(asset.priceKRW)}
                     </div>
                   </div>
 
                   <div className="assetInfoItem">
-                    <div className="assetInfoItemLabel">등락률</div>
+                    <div className="assetInfoItemLabel">Change</div>
                     <div className={`assetInfoItemValue ${getChangeClass(asset.changePct)}`}>
-                      {assetLoading ? "불러오는중" : formatChange(asset.changePct)}
+                      {assetLoading ? "Loading..." : formatChange(asset.changePct)}
                     </div>
                   </div>
 
                   <div className="assetInfoItem">
-                    <div className="assetInfoItemLabel">변동 금액</div>
+                    <div className="assetInfoItemLabel">Change Amount</div>
                     <div className="assetInfoItemValue">
-                      {assetLoading ? "불러오는중" : formatSignedKRW(changeAmount)}
+                      {assetLoading ? "Loading..." : formatSignedKRW(changeAmount)}
                     </div>
                   </div>
 
                   <div className="assetInfoItem">
-                    <div className="assetInfoItemLabel">시가총액</div>
+                    <div className="assetInfoItemLabel">Market Cap</div>
                     <div className="assetInfoItemValue">
                       {showCap ? formatCapKRW(asset.capKRW) : "-"}
                     </div>
@@ -561,7 +565,7 @@ export default function AssetDetail() {
 
             <section className="assetBottomGrid">
               <AssetNewsList
-                assetName={asset.name}
+                assetName={preferredName}
                 market={market}
                 symbol={symbol}
                 query={newsQuery}
@@ -571,7 +575,7 @@ export default function AssetDetail() {
               <AssetCommunity
                 market={market}
                 symbol={symbol}
-                assetName={asset.name}
+                assetName={preferredName}
               />
             </section>
           </div>
