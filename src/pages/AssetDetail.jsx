@@ -19,13 +19,13 @@ import { fetchAssetQuote } from "../api/portfolioApi";
 
 function formatKRW(n) {
   if (typeof n !== "number" || !Number.isFinite(n)) return "-";
-  return `KRW ${Math.round(n).toLocaleString("ko-KR")}`;
+  return `${Math.round(n).toLocaleString("ko-KR")}원`;
 }
 
 function formatSignedKRW(n) {
   if (typeof n !== "number" || !Number.isFinite(n)) return "-";
   const sign = n > 0 ? "+" : n < 0 ? "-" : "";
-  return `${sign}KRW ${Math.abs(Math.round(n)).toLocaleString("ko-KR")}`;
+  return `${sign}${Math.abs(Math.round(n)).toLocaleString("ko-KR")}원`;
 }
 
 function calcChangeAmount(price, pct) {
@@ -52,11 +52,12 @@ function calcRange(price, pct) {
 
 function formatCapKRW(n) {
   if (typeof n !== "number" || !Number.isFinite(n)) return "-";
-  return `KRW ${new Intl.NumberFormat("en-US", {
-    notation: "compact",
-    compactDisplay: "short",
-    maximumFractionDigits: 1,
-  }).format(n)}`;
+  const jo = 1_000_000_000_000;
+  const eok = 100_000_000;
+
+  if (n >= jo) return `${(n / jo).toFixed(1)}조원`;
+  if (n >= eok) return `${Math.round(n / eok).toLocaleString("ko-KR")}억원`;
+  return `${Math.round(n).toLocaleString("ko-KR")}원`;
 }
 
 function formatChange(n) {
@@ -396,30 +397,30 @@ export default function AssetDetail() {
                       })
                     }
                   >
-                    {watched ? "Remove from watchlist" : "Add to watchlist"}
+                    {watched ? "관심종목에서 제거" : "관심종목에 추가"}
                   </button>
 
                   <Link className="btn" to="/">
-                    Back to home
+                    홈으로 가기
                   </Link>
                 </div>
               </div>
 
               <div className="assetStatRow">
                 <div className="assetStatCard primary">
-                  <div className="assetStatLabel">Price</div>
+                  <div className="assetStatLabel">현재가</div>
                   <div className="assetPrice">
-                    {assetLoading ? "Loading..." : formatKRW(asset.priceKRW)}
+                    {assetLoading ? "불러오는 중..." : formatKRW(asset.priceKRW)}
                   </div>
                   <div className="assetStatHint">
-                    {assetLoading ? "-" : `${marketLabel} live quote`}
+                    {assetLoading ? "-" : `${marketLabel} 실시간 시세`}
                   </div>
                 </div>
 
                 <div className={`assetStatCard ${getChangeClass(asset.changePct)}`}>
-                  <div className="assetStatLabel">Change</div>
+                  <div className="assetStatLabel">등락률</div>
                   <div className={`assetChange ${getChangeClass(asset.changePct)}`}>
-                    {assetLoading ? "Loading..." : formatChange(asset.changePct)}
+                    {assetLoading ? "불러오는 중..." : formatChange(asset.changePct)}
                   </div>
                   <div className="assetStatHint">
                     {assetLoading ? "-" : formatSignedKRW(changeAmount)}
@@ -429,24 +430,24 @@ export default function AssetDetail() {
 
               <div className="assetMetaGrid">
                 <div className="assetMetaCard blue">
-                  <div className="assetMetaLabel">Market</div>
+                  <div className="assetMetaLabel">시장</div>
                   <div className="assetMetaValue">{marketLabel}</div>
                 </div>
 
                 <div className="assetMetaCard purple">
-                  <div className="assetMetaLabel">Symbol</div>
+                  <div className="assetMetaLabel">심볼</div>
                   <div className="assetMetaValue">{symbol}</div>
                 </div>
 
                 <div className="assetMetaCard green">
-                  <div className="assetMetaLabel">Market Cap</div>
+                  <div className="assetMetaLabel">시가총액</div>
                   <div className="assetMetaValue">
                     {showCap ? formatCapKRW(asset.capKRW) : "-"}
                   </div>
                 </div>
 
                 <div className="assetMetaCard orange">
-                  <div className="assetMetaLabel">News Query</div>
+                  <div className="assetMetaLabel">뉴스 키워드</div>
                   <div className="assetMetaValue">{preferredName}</div>
                 </div>
               </div>
@@ -457,9 +458,9 @@ export default function AssetDetail() {
                 <section className="assetPanel kospiChartNotice">
                   <div className="assetPanelHead">
                     <div>
-                      <div className="assetPanelTitle">Chart notice</div>
+                      <div className="assetPanelTitle">차트 안내</div>
                       <div className="assetPanelSub">
-                        Korean market charts open through the TradingView symbol page.
+                        국내 종목 차트는 TradingView 페이지에서 확인할 수 있어요.
                       </div>
                     </div>
                   </div>
@@ -467,12 +468,12 @@ export default function AssetDetail() {
                   <div className="kospiChartNoticeBody">
                     <div className="kospiChartBadge">KOSPI CHART</div>
                     <div className="kospiChartIcon">↗</div>
-                    <h3 className="kospiChartHeadline">Open the external TradingView chart</h3>
+                    <h3 className="kospiChartHeadline">외부 TradingView 차트 열기</h3>
 
                     <p className="kospiChartNoticeText">
-                      An embedded chart is not enabled for this market yet.
+                      이 시장은 아직 내장 차트를 지원하지 않아요.
                       <br />
-                      Use the button below to view the full TradingView page.
+                      아래 버튼으로 TradingView 전체 페이지를 열어보세요.
                     </p>
 
                     <a
@@ -481,11 +482,11 @@ export default function AssetDetail() {
                       rel="noopener noreferrer"
                       className="chartMoveBtn"
                     >
-                      Open TradingView
+                      TradingView 열기
                     </a>
 
                     <div className="kospiChartNoticeFoot">
-                      More integrated chart support can be added later.
+                      추후 차트 연동을 더 확장할 수 있어요.
                     </div>
                   </div>
                 </section>
@@ -500,61 +501,61 @@ export default function AssetDetail() {
               <div className="assetPanel">
                 <div className="assetPanelHead">
                   <div>
-                    <div className="assetPanelTitle">Snapshot</div>
-                    <div className="assetPanelSub">Quick summary for this asset</div>
+                    <div className="assetPanelTitle">자산 요약</div>
+                    <div className="assetPanelSub">핵심 정보를 빠르게 확인해보세요</div>
                   </div>
                 </div>
 
                 <div className="assetInfoList">
                   <div className="assetInfoItem emphasis">
-                    <div className="assetInfoItemLabel">Name</div>
+                    <div className="assetInfoItemLabel">종목명</div>
                     <div className="assetInfoItemValue">{preferredName}</div>
                   </div>
 
                   <div className="assetInfoMiniGrid">
                     <div className="assetMiniCard high">
-                      <div className="assetMiniLabel">Estimated High</div>
+                      <div className="assetMiniLabel">예상 고가</div>
                       <div className="assetMiniValue">
-                        {assetLoading ? "Loading..." : formatKRW(high)}
+                        {assetLoading ? "불러오는 중..." : formatKRW(high)}
                       </div>
                     </div>
 
                     <div className="assetMiniCard low">
-                      <div className="assetMiniLabel">Estimated Low</div>
+                      <div className="assetMiniLabel">예상 저가</div>
                       <div className="assetMiniValue">
-                        {assetLoading ? "Loading..." : formatKRW(low)}
+                        {assetLoading ? "불러오는 중..." : formatKRW(low)}
                       </div>
                     </div>
                   </div>
 
                   <div className="assetInfoItem">
-                    <div className="assetInfoItemLabel">Symbol</div>
+                    <div className="assetInfoItemLabel">심볼</div>
                     <div className="assetInfoItemValue">{symbol}</div>
                   </div>
 
                   <div className="assetInfoItem">
-                    <div className="assetInfoItemLabel">Price</div>
+                    <div className="assetInfoItemLabel">현재가</div>
                     <div className="assetInfoItemValue">
-                      {assetLoading ? "Loading..." : formatKRW(asset.priceKRW)}
+                      {assetLoading ? "불러오는 중..." : formatKRW(asset.priceKRW)}
                     </div>
                   </div>
 
                   <div className="assetInfoItem">
-                    <div className="assetInfoItemLabel">Change</div>
+                    <div className="assetInfoItemLabel">등락률</div>
                     <div className={`assetInfoItemValue ${getChangeClass(asset.changePct)}`}>
-                      {assetLoading ? "Loading..." : formatChange(asset.changePct)}
+                      {assetLoading ? "불러오는 중..." : formatChange(asset.changePct)}
                     </div>
                   </div>
 
                   <div className="assetInfoItem">
-                    <div className="assetInfoItemLabel">Change Amount</div>
+                    <div className="assetInfoItemLabel">변동 금액</div>
                     <div className="assetInfoItemValue">
-                      {assetLoading ? "Loading..." : formatSignedKRW(changeAmount)}
+                      {assetLoading ? "불러오는 중..." : formatSignedKRW(changeAmount)}
                     </div>
                   </div>
 
                   <div className="assetInfoItem">
-                    <div className="assetInfoItemLabel">Market Cap</div>
+                    <div className="assetInfoItemLabel">시가총액</div>
                     <div className="assetInfoItemValue">
                       {showCap ? formatCapKRW(asset.capKRW) : "-"}
                     </div>

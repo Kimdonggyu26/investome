@@ -4,10 +4,10 @@ import { fetchNews } from "../api/newsApi";
 import "../styles/NewsList.css";
 
 const CATEGORIES = [
-  { key: "all", label: "All" },
-  { key: "crypto", label: "Crypto" },
-  { key: "domestic", label: "Korea" },
-  { key: "global", label: "Global" },
+  { key: "all", label: "전체" },
+  { key: "crypto", label: "가상자산" },
+  { key: "domestic", label: "국내증시" },
+  { key: "global", label: "해외증시" },
 ];
 
 function ymdhm(dateStr) {
@@ -71,7 +71,7 @@ function NewsSkeleton() {
 }
 
 export default function NewsList({
-  title = "Market News",
+  title = "시장 뉴스",
   limit = 12,
   pageMode = false,
   moreLink,
@@ -150,7 +150,7 @@ export default function NewsList({
           </div>
 
           <h2 className="newsHeading">{title}</h2>
-          <div className="newsSub">Real-time market headlines from Google News RSS</div>
+          <div className="newsSub">실시간 시장 주요 뉴스를 모아봤어요</div>
         </div>
 
         <div className="newsHeaderRight">
@@ -160,14 +160,14 @@ export default function NewsList({
               className={mode === "latest" ? "active" : ""}
               onClick={() => setMode("latest")}
             >
-              Latest
+              최신순
             </button>
             <button
               type="button"
               className={mode === "popular" ? "active" : ""}
               onClick={() => setMode("popular")}
             >
-              Popular
+              인기순
             </button>
           </div>
         </div>
@@ -190,13 +190,13 @@ export default function NewsList({
         {!pageMode && moreLink && (
           <div className="newsCategoryRowRight">
             <Link to={moreLink} className="newsMoreBtn">
-              Open full news page
+              전체 뉴스 보기
             </Link>
           </div>
         )}
       </div>
 
-      {err && <div className="muted">Failed to load market news.</div>}
+      {err && <div className="muted">시장 뉴스를 불러오지 못했어요.</div>}
 
       {isLoading && items.length === 0 ? (
         <NewsSkeleton />
@@ -208,10 +208,10 @@ export default function NewsList({
               target="_blank"
               rel="noreferrer"
               className="newsFeatured"
-              title="Open article in a new tab"
+              title="새 탭에서 기사 열기"
             >
               <div className="newsFeaturedBody">
-                <div className="newsFeaturedBadge">FEATURED</div>
+                <div className="newsFeaturedBadge">주요 뉴스</div>
                 <div className="newsFeaturedTitle">{featured.title}</div>
                 <div className="newsFeaturedMeta">
                   <span>{ymdhm(featured.pubDate)}</span>
@@ -251,7 +251,7 @@ export default function NewsList({
       <br />
 
       <div className="newsDesc newsDescBottom">
-        Switch categories and sorting modes to scan the market faster.
+        카테고리와 정렬 기준을 바꿔가며 원하는 뉴스를 빠르게 찾아보세요.
       </div>
     </div>
   );

@@ -64,15 +64,15 @@ export default function CommunityFeed() {
     <section className="communityFloatPanel">
       <div className="communityFloatHeader">
         <div>
-          <div className="communityFloatEyebrow">TRENDING NOW</div>
-          <h3 className="communityFloatTitle">Top Community Posts</h3>
+          <div className="communityFloatEyebrow">실시간 인기</div>
+          <h3 className="communityFloatTitle">오늘의 인기 글</h3>
         </div>
         <span className="communityFloatLive">TODAY</span>
       </div>
 
       <div className="communityFloatList">
         {posts.length === 0 ? (
-          <div className="communityFloatEmpty">No popular community posts have been created today yet.</div>
+          <div className="communityFloatEmpty">오늘 작성된 인기 게시글이 아직 없어요.</div>
         ) : (
           posts.map((post) => (
             <button
@@ -82,11 +82,11 @@ export default function CommunityFeed() {
               onClick={() => navigate(`/board/${post.id}`)}
             >
               <div className="communityFloatItemTop">
-                <span className="communityFloatTag">Views {post.views ?? 0}</span>
+                <span className="communityFloatTag">조회 {post.views ?? 0}</span>
               </div>
               <div className="communityFloatItemTitle">{post.title}</div>
               <div className="communityFloatItemMeta">
-                {post.author} · Likes {post.likes ?? 0} · Comments {post.commentCount ?? 0}
+                {post.author} · 추천 {post.likes ?? 0} · 댓글 {post.commentCount ?? 0}
               </div>
             </button>
           ))

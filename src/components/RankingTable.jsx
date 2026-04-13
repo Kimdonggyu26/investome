@@ -15,7 +15,7 @@ const FX_REFRESH_MS = 30_000;
 
 function formatKRW(n) {
   if (typeof n !== "number" || !Number.isFinite(n)) return "-";
-  return `KRW ${Math.round(n).toLocaleString("ko-KR")}`;
+  return `${Math.round(n).toLocaleString("ko-KR")}원`;
 }
 
 function formatUSDFromKRW(priceKRW, usdKrw) {
@@ -154,8 +154,8 @@ function TableSkeleton() {
 }
 
 function getCountdownLabel(secondsLeft, isRefreshingNow) {
-  if (isRefreshingNow) return "Refreshing data...";
-  return `Next refresh in ${secondsLeft}s`;
+  if (isRefreshingNow) return "데이터를 갱신하고 있어요...";
+  return `${secondsLeft}초 뒤 새로고침`;
 }
 
 function getDisplayName(row) {
@@ -393,11 +393,11 @@ export default function RankingTable() {
             <span>LIVE</span>
           </div>
 
-          <h3>{market === "COMMODITIES" ? "Commodities" : "Top 30"}</h3>
+          <h3>{market === "COMMODITIES" ? "원자재 시세" : "TOP 30"}</h3>
           <div className="rankingSub">
             {market === "COMMODITIES"
-              ? "Major commodities with live price updates"
-              : "Live market ranking and price changes"}
+              ? "주요 원자재 가격을 실시간으로 확인해보세요"
+              : "실시간 순위와 가격 변동을 확인해보세요"}
           </div>
         </div>
 
@@ -424,7 +424,7 @@ export default function RankingTable() {
 
       {err && (
         <div className="rankingHint" style={{ marginBottom: 12 }}>
-          Live ranking data is temporarily unavailable. We will try again on the next cycle.
+          실시간 순위 데이터를 불러오지 못했어요. 다음 주기에 다시 시도할게요.
         </div>
       )}
 
@@ -437,16 +437,16 @@ export default function RankingTable() {
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Asset</th>
-                  <th>Trend</th>
+                  <th>종목</th>
+                  <th>추세</th>
                   <th>
                     <div className="priceHeadCell">
-                      <span>Price</span>
+                      <span>현재가</span>
                       {shouldShowCurrencyToggle(market) && (
                         <div
                           className="currencyToggle currencyToggleInline currencyToggleMini"
                           role="tablist"
-                          aria-label="Currency toggle"
+                          aria-label="통화 전환"
                         >
                           <button
                             type="button"
@@ -470,7 +470,7 @@ export default function RankingTable() {
                               }))
                             }
                             disabled={!usdKrw}
-                            title={!usdKrw ? "FX data is loading" : ""}
+                            title={!usdKrw ? "환율 데이터를 불러오는 중이에요" : ""}
                           >
                             USD
                           </button>
@@ -548,7 +548,7 @@ export default function RankingTable() {
         </div>
       )}
 
-      <div className="rankingHint">Select any row to open the asset detail page.</div>
+      <div className="rankingHint">행을 클릭하면 해당 자산의 상세 페이지로 이동합니다.</div>
     </div>
   );
 }

@@ -3,11 +3,11 @@ import { fetchFx } from "../api/fxApi";
 import "./FxRates.css";
 
 const FX = [
-  { key: "USDKRW", label: "United States / USD", flag: "https://flagcdn.com/w40/us.png" },
-  { key: "JPYKRW", label: "Japan / JPY", flag: "https://flagcdn.com/w40/jp.png" },
-  { key: "CNYKRW", label: "China / CNY", flag: "https://flagcdn.com/w40/cn.png" },
-  { key: "EURKRW", label: "Euro Area / EUR", flag: "https://flagcdn.com/w40/eu.png" },
-  { key: "AUDKRW", label: "Australia / AUD", flag: "https://flagcdn.com/w40/au.png" },
+  { key: "USDKRW", label: "미국 / USD", flag: "https://flagcdn.com/w40/us.png" },
+  { key: "JPYKRW", label: "일본 / JPY", flag: "https://flagcdn.com/w40/jp.png" },
+  { key: "CNYKRW", label: "중국 / CNY", flag: "https://flagcdn.com/w40/cn.png" },
+  { key: "EURKRW", label: "유럽 / EUR", flag: "https://flagcdn.com/w40/eu.png" },
+  { key: "AUDKRW", label: "호주 / AUD", flag: "https://flagcdn.com/w40/au.png" },
 ];
 
 function fmt(n) {
@@ -63,7 +63,7 @@ function formatDiff(v) {
   return `${sign}${Math.abs(v).toLocaleString("ko-KR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })} KRW`;
+  })}원`;
 }
 
 function formatDateLabel(dateValue) {
@@ -114,16 +114,16 @@ export default function FxRates() {
             <span>LIVE</span>
           </div>
 
-          <div className="fxTitle">Exchange Rates</div>
-          <div className="fxSub">Daily FX snapshot against KRW</div>
+          <div className="fxTitle">오늘의 환율</div>
+          <div className="fxSub">원화 기준 주요 환율 현황</div>
         </div>
 
-        <div className="fxUpdated">{formatDateLabel(fx?.updatedDate) || "Loading..."}</div>
+        <div className="fxUpdated">{formatDateLabel(fx?.updatedDate) || "불러오는 중..."}</div>
       </div>
 
       {err && (
         <div className="muted" style={{ marginTop: 10 }}>
-          Failed to load FX data.
+          환율 데이터를 불러오지 못했어요.
         </div>
       )}
 
@@ -137,13 +137,13 @@ export default function FxRates() {
           const col = color(diff);
           const valueText = fmt(now);
 
-          const arrow =
+          const status =
             typeof diff === "number"
               ? diff > 0
-                ? "▲"
+                ? "상승"
                 : diff < 0
-                  ? "▼"
-                  : "•"
+                  ? "하락"
+                  : "보합"
               : "";
 
           return (
@@ -156,7 +156,7 @@ export default function FxRates() {
                 <div className="fxMeta">
                   <div className="fxValue">
                     {valueText}
-                    {valueText !== "-" && <span className="fxUnit"> KRW</span>}
+                    {valueText !== "-" && <span className="fxUnit"> 원</span>}
                   </div>
                   <div className="fxLabel">{c.label}</div>
                 </div>
@@ -167,7 +167,7 @@ export default function FxRates() {
                   <>
                     <div className="fxPct">{formatPct(pct)}</div>
                     <div className="fxDiff">
-                      {arrow} {formatDiff(diff)}
+                      {status} {formatDiff(diff)}
                     </div>
                   </>
                 ) : (
@@ -179,7 +179,7 @@ export default function FxRates() {
         })}
       </div>
 
-      <div className="fxSource">Data source: Frankfurter</div>
+      <div className="fxSource">데이터 출처 : Frankfurter</div>
     </div>
   );
 }
