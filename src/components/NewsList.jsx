@@ -215,6 +215,7 @@ export default function NewsList({
                 <div className="newsFeaturedTitle">{featured.title}</div>
                 <div className="newsFeaturedMeta">
                   <span>{ymdhm(featured.pubDate)}</span>
+                  {featured.source ? <span> · {featured.source}</span> : null}
                 </div>
               </div>
             </a>
@@ -234,6 +235,7 @@ export default function NewsList({
                     <div className="newsItemTitle">{item.title}</div>
                     <div className="newsItemMeta">
                       <span>{ymdhm(item.pubDate)}</span>
+                      {item.source ? <span> · {item.source}</span> : null}
                     </div>
                   </div>
                 </a>
