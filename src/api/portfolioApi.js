@@ -23,14 +23,14 @@ async function readJsonOrThrow(res, label) {
 
 export async function fetchAssetQuote({ market, symbol, name, coinId }) {
   const query = buildQuery({ market, symbol, name, coinId });
-  const res = await fetch(`/api/asset-quote?${query}`);
+  const res = await fetch(apiUrl(`/api/asset-quote?${query}`));
   const json = await readJsonOrThrow(res, "asset quote");
   return json?.item || null;
 }
 
 export async function searchAssetCatalog({ q, market }) {
   const query = buildQuery({ q, market });
-  const res = await fetch(`/api/asset-search?${query}`);
+  const res = await fetch(apiUrl(`/api/asset-search?${query}`));
   const json = await readJsonOrThrow(res, "asset search");
   return Array.isArray(json?.items) ? json.items : [];
 }
