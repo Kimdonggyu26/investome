@@ -262,7 +262,7 @@ export async function fetchCommoditiesTopKRW() {
     "commodities top"
   );
   const items = Array.isArray(json?.items) ? json.items : [];
-  return items.map(normalizeRow);
+  return items.map((item, index) => normalizeRow({ ...item, market: "COMMODITIES" }, index));
 }
 
 async function fetchStockTop30(market) {

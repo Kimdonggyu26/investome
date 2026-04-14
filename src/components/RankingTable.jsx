@@ -159,7 +159,7 @@ function getCountdownLabel(secondsLeft, isRefreshingNow) {
 }
 
 function getDisplayName(row, market) {
-  if (market === "KOSPI" || market === "NASDAQ") {
+  if (market === "KOSPI" || market === "NASDAQ" || market === "COMMODITIES") {
     return row.name || row.displayNameEN || row.symbol || "-";
   }
   return row.displayNameEN || row.name || row.symbol || "-";

@@ -76,6 +76,15 @@ export const ASSET_NAME_MAP = {
     BKNG: "부킹홀딩스",
     SBUX: "스타벅스",
   },
+  COMMODITIES: {
+    "GC=F": "금",
+    "SI=F": "은",
+    "CL=F": "WTI 원유",
+    "BZ=F": "브렌트유",
+    "NG=F": "천연가스",
+    "PL=F": "백금",
+    "PA=F": "팔라듐",
+  },
 };
 
 export function getKoreanAssetName(market, symbol) {
