@@ -16,60 +16,54 @@ import AssetCommunity from "../components/AssetCommunity";
 import "../styles/AssetDetail.css";
 import { useWatchlist } from "../hooks/useWatchlist";
 import { fetchAssetQuote } from "../api/portfolioApi";
+import { getKoreanAssetName } from "../data/assetNameMap";
 
-function formatKRW(n) {
-  if (typeof n !== "number" || !Number.isFinite(n)) return "-";
-  return `${Math.round(n).toLocaleString("ko-KR")}원`;
+function formatKRW(value) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "-";
+  return `${Math.round(value).toLocaleString("ko-KR")}원`;
 }
 
-function formatSignedKRW(n) {
-  if (typeof n !== "number" || !Number.isFinite(n)) return "-";
-  const sign = n > 0 ? "+" : n < 0 ? "-" : "";
-  return `${sign}${Math.abs(Math.round(n)).toLocaleString("ko-KR")}원`;
+function formatSignedKRW(value) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "-";
+  const sign = value > 0 ? "+" : value < 0 ? "-" : "";
+  return `${sign}${Math.abs(Math.round(value)).toLocaleString("ko-KR")}원`;
 }
 
-function calcChangeAmount(price, pct) {
-  if (typeof price !== "number" || !Number.isFinite(price)) return null;
-  if (typeof pct !== "number" || !Number.isFinite(pct)) return null;
-  return price * (pct / 100);
-}
+function formatCapKRW(value) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "-";
 
-function calcRange(price, pct) {
-  if (typeof price !== "number" || !Number.isFinite(price)) {
-    return { high: null, low: null };
-  }
-
-  const volatility =
-    typeof pct === "number" && Number.isFinite(pct)
-      ? Math.max(1.2, Math.min(6, Math.abs(pct) * 1.8))
-      : 2.2;
-
-  const high = price * (1 + volatility / 100);
-  const low = price * (1 - volatility / 100);
-
-  return { high, low };
-}
-
-function formatCapKRW(n) {
-  if (typeof n !== "number" || !Number.isFinite(n)) return "-";
   const jo = 1_000_000_000_000;
   const eok = 100_000_000;
 
-  if (n >= jo) return `${(n / jo).toFixed(1)}조원`;
-  if (n >= eok) return `${Math.round(n / eok).toLocaleString("ko-KR")}억원`;
-  return `${Math.round(n).toLocaleString("ko-KR")}원`;
+  if (value >= jo) return `${(value / jo).toFixed(1)}조원`;
+  if (value >= eok) return `${Math.round(value / eok).toLocaleString("ko-KR")}억원`;
+  return `${Math.round(value).toLocaleString("ko-KR")}원`;
 }
 
-function formatChange(n) {
-  if (typeof n !== "number" || !Number.isFinite(n)) return "-";
-  return `${n > 0 ? "+" : ""}${n.toFixed(2)}%`;
+function formatChange(value) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "-";
+  return `${value > 0 ? "+" : ""}${value.toFixed(2)}%`;
 }
 
-function getChangeClass(n) {
-  if (typeof n !== "number" || !Number.isFinite(n)) return "flat";
-  if (n > 0) return "up";
-  if (n < 0) return "down";
+function calcChangeAmount(price, changePct) {
+  if (typeof price !== "number" || !Number.isFinite(price)) return null;
+  if (typeof changePct !== "number" || !Number.isFinite(changePct)) return null;
+  return price * (changePct / 100);
+}
+
+function getChangeClass(value) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "flat";
+  if (value > 0) return "up";
+  if (value < 0) return "down";
   return "flat";
+}
+
+function getMarketLabel(market) {
+  if (market === "CRYPTO") return "가상자산";
+  if (market === "KOSPI") return "KOSPI";
+  if (market === "KOSDAQ") return "KOSDAQ";
+  if (market === "COMMODITIES") return "원자재";
+  return "NASDAQ";
 }
 
 function getTradingViewSymbol(market, symbol) {
@@ -121,11 +115,6 @@ function getTradingViewPageUrl(market, symbol) {
   }
 
   if (market === "CRYPTO") {
-    if (normalized === "BTC") return "https://www.tradingview.com/symbols/BTCUSDT/";
-    if (normalized === "ETH") return "https://www.tradingview.com/symbols/ETHUSDT/";
-    if (normalized === "XRP") return "https://www.tradingview.com/symbols/XRPUSDT/";
-    if (normalized === "SOL") return "https://www.tradingview.com/symbols/SOLUSDT/";
-    if (normalized === "DOGE") return "https://www.tradingview.com/symbols/DOGEUSDT/";
     return `https://www.tradingview.com/symbols/${normalized}USDT/`;
   }
 
@@ -146,41 +135,43 @@ function getTradingViewPageUrl(market, symbol) {
   return "";
 }
 
-function getNewsQuery({ market, symbol, name, displayNameEN }) {
-  const upper = String(symbol || "").toUpperCase();
+function getNewsQuery({ market, symbol, koreanName, englishName }) {
+  const parts = [koreanName, englishName, symbol].filter(Boolean);
 
   if (market === "CRYPTO") {
-    if (upper === "BTC") return '"Bitcoin" OR "BTC"';
-    if (upper === "ETH") return '"Ethereum" OR "ETH"';
-    if (upper === "XRP") return '"XRP" OR "Ripple"';
-    return `"${displayNameEN || name || symbol}" OR "${symbol}"`;
+    const cryptoMap = {
+      BTC: '"Bitcoin" OR "비트코인" OR "BTC"',
+      ETH: '"Ethereum" OR "이더리움" OR "ETH"',
+      XRP: '"XRP" OR "리플" OR "Ripple"',
+    };
+
+    return cryptoMap[String(symbol || "").toUpperCase()] || parts.map((value) => `"${value}"`).join(" OR ");
   }
 
   if (market === "COMMODITIES") {
-    const map = {
-      "GC=F": '"gold futures" OR "gold price" OR XAUUSD',
-      "SI=F": '"silver futures" OR "silver price" OR XAGUSD',
-      "CL=F": '"WTI crude oil" OR "crude oil futures" OR oil',
-      "BZ=F": '"Brent crude" OR "Brent oil"',
-      "NG=F": '"natural gas" OR "Henry Hub gas"',
-      "PL=F": '"platinum futures" OR "platinum price"',
-      "PA=F": '"palladium futures" OR "palladium price"',
+    const commodityMap = {
+      "GC=F": '"gold futures" OR "금 선물" OR "gold price"',
+      "SI=F": '"silver futures" OR "은 선물" OR "silver price"',
+      "CL=F": '"WTI crude oil" OR "서부텍사스원유" OR oil',
+      "BZ=F": '"Brent crude" OR "브렌트유"',
+      "NG=F": '"natural gas" OR "천연가스"',
+      "PL=F": '"platinum futures" OR "백금"',
+      "PA=F": '"palladium futures" OR "팔라듐"',
     };
 
-    return map[upper] || `"${displayNameEN || name || symbol}"`;
+    return commodityMap[String(symbol || "").toUpperCase()] || parts.map((value) => `"${value}"`).join(" OR ");
   }
 
-  return [displayNameEN, name, symbol]
-    .filter(Boolean)
-    .map((value) => `"${value}"`)
-    .join(" OR ");
+  return parts.map((value) => `"${value}"`).join(" OR ");
 }
 
 function getFallbackAsset(market, symbol) {
+  const koreanName = getKoreanAssetName(market, symbol);
+
   return {
     market,
     symbol,
-    name: symbol,
+    name: koreanName || symbol,
     displayNameEN: symbol,
     iconUrl: "",
     coinId: "",
@@ -209,13 +200,39 @@ function AssetLogo({ iconUrl, name }) {
 }
 
 function getPreferredName(asset, symbol) {
-  return asset.displayNameEN || asset.name || symbol;
+  return (
+    getKoreanAssetName(asset.market, symbol) ||
+    asset.name ||
+    asset.displayNameEN ||
+    symbol
+  );
+}
+
+function getDisplayNameEN(asset, symbol) {
+  const preferredKorean = getKoreanAssetName(asset.market, symbol);
+
+  if (
+    asset.displayNameEN &&
+    asset.displayNameEN !== symbol &&
+    asset.displayNameEN !== preferredKorean
+  ) {
+    return asset.displayNameEN;
+  }
+
+  return "";
+}
+
+async function fetchRankingRows(market) {
+  if (market === "CRYPTO") return fetchCryptoTop30KRW().catch(() => []);
+  if (market === "KOSPI") return fetchKospiTop30KRW().catch(() => []);
+  if (market === "NASDAQ") return fetchNasdaqTop30KRW().catch(() => []);
+  if (market === "COMMODITIES") return fetchCommoditiesTopKRW().catch(() => []);
+  return [];
 }
 
 export default function AssetDetail() {
   const { market = "", symbol = "" } = useParams();
   const { prices, changes, loading, error } = useTicker();
-
   const [asset, setAsset] = useState(getFallbackAsset(market, symbol));
   const [assetLoading, setAssetLoading] = useState(true);
   const { watchlist, isWatched, toggleWatchlist } = useWatchlist();
@@ -241,18 +258,7 @@ export default function AssetDetail() {
           coinId: watchedItem?.coinId || "",
         }).catch(() => null);
 
-        let rows = [];
-
-        if (market === "CRYPTO") {
-          rows = await fetchCryptoTop30KRW().catch(() => []);
-        } else if (market === "KOSPI") {
-          rows = await fetchKospiTop30KRW().catch(() => []);
-        } else if (market === "NASDAQ") {
-          rows = await fetchNasdaqTop30KRW().catch(() => []);
-        } else if (market === "COMMODITIES") {
-          rows = await fetchCommoditiesTopKRW().catch(() => []);
-        }
-
+        const rows = await fetchRankingRows(market);
         const found =
           rows.find(
             (row) =>
@@ -261,35 +267,29 @@ export default function AssetDetail() {
 
         if (!alive) return;
 
+        const mappedKoreanName = getKoreanAssetName(market, symbol);
         const resolvedName =
+          mappedKoreanName ||
+          liveQuote?.name ||
+          found?.name ||
+          watchedItem?.name ||
           liveQuote?.displayNameEN ||
           found?.displayNameEN ||
           watchedItem?.displayNameEN ||
-          found?.name ||
-          watchedItem?.name ||
-          liveQuote?.name ||
           symbol;
 
         const resolvedDisplayName =
           liveQuote?.displayNameEN ||
           found?.displayNameEN ||
           watchedItem?.displayNameEN ||
-          liveQuote?.name ||
-          found?.name ||
-          resolvedName;
-
-        const resolvedIcon =
-          found?.iconUrl ||
-          watchedItem?.iconUrl ||
-          liveQuote?.iconUrl ||
-          "";
+          (resolvedName !== symbol ? resolvedName : symbol);
 
         setAsset({
           market,
           symbol: liveQuote?.symbol || symbol,
           name: resolvedName,
           displayNameEN: resolvedDisplayName,
-          iconUrl: resolvedIcon,
+          iconUrl: found?.iconUrl || watchedItem?.iconUrl || liveQuote?.iconUrl || "",
           coinId: liveQuote?.coinId || found?.coinId || watchedItem?.coinId || "",
           capKRW: liveQuote?.capKRW ?? found?.capKRW ?? null,
           priceKRW: liveQuote?.priceKRW ?? found?.priceKRW ?? null,
@@ -304,11 +304,11 @@ export default function AssetDetail() {
     }
 
     loadAsset();
-    const t = setInterval(loadAsset, 20_000);
+    const timer = setInterval(loadAsset, 20_000);
 
     return () => {
       alive = false;
-      clearInterval(t);
+      clearInterval(timer);
     };
   }, [market, symbol, watchlist]);
 
@@ -322,33 +322,24 @@ export default function AssetDetail() {
     [market, symbol]
   );
 
+  const preferredName = getPreferredName(asset, symbol);
+  const preferredDisplayNameEN = getDisplayNameEN(asset, symbol);
+  const marketLabel = getMarketLabel(market);
+  const showCap = asset.capKRW != null;
+  const isKoreanMarket = market === "KOSPI" || market === "KOSDAQ";
+  const watched = isWatched(market, symbol);
+  const changeAmount = calcChangeAmount(asset.priceKRW, asset.changePct);
+
   const newsQuery = useMemo(
     () =>
       getNewsQuery({
         market,
         symbol,
-        name: asset.name,
-        displayNameEN: asset.displayNameEN,
+        koreanName: preferredName,
+        englishName: preferredDisplayNameEN,
       }),
-    [market, symbol, asset.name, asset.displayNameEN]
+    [market, symbol, preferredName, preferredDisplayNameEN]
   );
-
-  const marketLabel =
-    market === "CRYPTO"
-      ? "CRYPTO"
-      : market === "KOSPI"
-        ? "KOSPI"
-        : market === "COMMODITIES"
-          ? "COMMODITIES"
-          : "NASDAQ";
-
-  const showCap = market === "CRYPTO" || market === "NASDAQ";
-  const isKoreanMarket = market === "KOSPI" || market === "KOSDAQ";
-
-  const changeAmount = calcChangeAmount(asset.priceKRW, asset.changePct);
-  const { high, low } = calcRange(asset.priceKRW, asset.changePct);
-  const watched = isWatched(market, symbol);
-  const preferredName = getPreferredName(asset, symbol);
 
   return (
     <>
@@ -367,15 +358,15 @@ export default function AssetDetail() {
                 <div className="assetIdentity">
                   <AssetLogo iconUrl={asset.iconUrl} name={preferredName} />
 
-                  <div>
+                  <div className="assetIdentityCopy">
                     <div className="assetMarketBadge">{marketLabel}</div>
                     <h1 className="assetName">{preferredName}</h1>
                     <div className="assetSymbolRow">
-                      <span>{symbol}</span>
-                      {asset.displayNameEN && asset.displayNameEN !== symbol ? (
+                      <span className="assetSymbolChip">{symbol}</span>
+                      {preferredDisplayNameEN ? (
                         <>
-                          <span>·</span>
-                          <span>{asset.displayNameEN}</span>
+                          <span className="assetSymbolDivider">·</span>
+                          <span className="assetSubName">{preferredDisplayNameEN}</span>
                         </>
                       ) : null}
                     </div>
@@ -391,7 +382,7 @@ export default function AssetDetail() {
                         market,
                         symbol,
                         name: preferredName,
-                        displayNameEN: asset.displayNameEN,
+                        displayNameEN: preferredDisplayNameEN,
                         iconUrl: asset.iconUrl,
                         coinId: asset.coinId,
                       })
@@ -441,14 +432,12 @@ export default function AssetDetail() {
 
                 <div className="assetMetaCard green">
                   <div className="assetMetaLabel">시가총액</div>
-                  <div className="assetMetaValue">
-                    {showCap ? formatCapKRW(asset.capKRW) : "-"}
-                  </div>
+                  <div className="assetMetaValue">{showCap ? formatCapKRW(asset.capKRW) : "-"}</div>
                 </div>
 
                 <div className="assetMetaCard orange">
-                  <div className="assetMetaLabel">뉴스 키워드</div>
-                  <div className="assetMetaValue">{preferredName}</div>
+                  <div className="assetMetaLabel">대표 검색어</div>
+                  <div className="assetMetaValue">{preferredDisplayNameEN || preferredName}</div>
                 </div>
               </div>
             </section>
@@ -458,22 +447,22 @@ export default function AssetDetail() {
                 <section className="assetPanel kospiChartNotice">
                   <div className="assetPanelHead">
                     <div>
-                      <div className="assetPanelTitle">차트 안내</div>
+                      <div className="assetPanelTitle">차트 바로가기</div>
                       <div className="assetPanelSub">
-                        국내 종목 차트는 TradingView 페이지에서 확인할 수 있어요.
+                        국내 종목 차트는 TradingView 페이지에서 더 안정적으로 확인할 수 있어요.
                       </div>
                     </div>
                   </div>
 
                   <div className="kospiChartNoticeBody">
-                    <div className="kospiChartBadge">KOSPI CHART</div>
+                    <div className="kospiChartBadge">KOREA MARKET</div>
                     <div className="kospiChartIcon">↗</div>
-                    <h3 className="kospiChartHeadline">외부 TradingView 차트 열기</h3>
+                    <h3 className="kospiChartHeadline">TradingView에서 상세 차트 보기</h3>
 
                     <p className="kospiChartNoticeText">
-                      이 시장은 아직 내장 차트를 지원하지 않아요.
+                      국내 종목은 외부 차트 페이지로 연결하는 편이 더 정확하고 안정적이에요.
                       <br />
-                      아래 버튼으로 TradingView 전체 페이지를 열어보세요.
+                      아래 버튼으로 현재 종목의 실시간 차트 화면을 바로 열 수 있습니다.
                     </p>
 
                     <a
@@ -486,7 +475,7 @@ export default function AssetDetail() {
                     </a>
 
                     <div className="kospiChartNoticeFoot">
-                      추후 차트 연동을 더 확장할 수 있어요.
+                      새 탭에서 종목 차트 페이지가 열립니다.
                     </div>
                   </div>
                 </section>
@@ -502,7 +491,7 @@ export default function AssetDetail() {
                 <div className="assetPanelHead">
                   <div>
                     <div className="assetPanelTitle">자산 요약</div>
-                    <div className="assetPanelSub">핵심 정보를 빠르게 확인해보세요</div>
+                    <div className="assetPanelSub">핵심 수치만 빠르게 확인할 수 있도록 정리했어요.</div>
                   </div>
                 </div>
 
@@ -510,22 +499,6 @@ export default function AssetDetail() {
                   <div className="assetInfoItem emphasis">
                     <div className="assetInfoItemLabel">종목명</div>
                     <div className="assetInfoItemValue">{preferredName}</div>
-                  </div>
-
-                  <div className="assetInfoMiniGrid">
-                    <div className="assetMiniCard high">
-                      <div className="assetMiniLabel">예상 고가</div>
-                      <div className="assetMiniValue">
-                        {assetLoading ? "불러오는 중..." : formatKRW(high)}
-                      </div>
-                    </div>
-
-                    <div className="assetMiniCard low">
-                      <div className="assetMiniLabel">예상 저가</div>
-                      <div className="assetMiniValue">
-                        {assetLoading ? "불러오는 중..." : formatKRW(low)}
-                      </div>
-                    </div>
                   </div>
 
                   <div className="assetInfoItem">
@@ -556,9 +529,7 @@ export default function AssetDetail() {
 
                   <div className="assetInfoItem">
                     <div className="assetInfoItemLabel">시가총액</div>
-                    <div className="assetInfoItemValue">
-                      {showCap ? formatCapKRW(asset.capKRW) : "-"}
-                    </div>
+                    <div className="assetInfoItemValue">{showCap ? formatCapKRW(asset.capKRW) : "-"}</div>
                   </div>
                 </div>
               </div>
