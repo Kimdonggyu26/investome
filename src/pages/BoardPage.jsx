@@ -206,7 +206,7 @@ useEffect(() => {
                         <span className="boardComments">[{post.commentCount}]</span>
                       ) : null}
 
-                      {post.imageData ? (
+                      {post.hasImage || post.imageData ? (
                         <span className="boardImageBadge">사진</span>
                       ) : null}
                     </button>
