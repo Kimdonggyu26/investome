@@ -25,15 +25,15 @@ function ymdhm(dateStr) {
 
 function relativeLabel(dateStr) {
   const date = new Date(dateStr).getTime();
-  if (Number.isNaN(date)) return "방금 전";
+  if (Number.isNaN(date)) return "방금";
 
   const minutes = Math.max(0, Math.floor((Date.now() - date) / 60000));
-  if (minutes < 10) return "방금 들어온 기사";
-  if (minutes < 60) return `${minutes}분 전 업데이트`;
+  if (minutes < 1) return "방금";
+  if (minutes < 60) return `${minutes}분 전`;
 
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}시간 전 업데이트`;
-  return "오늘 주요 흐름";
+  if (hours < 24) return `${hours}시간 전`;
+  return `${Math.floor(hours / 24)}일 전`;
 }
 
 function popularScore(item) {
@@ -76,6 +76,49 @@ function categoryLabel(category) {
 
 function categoryAccent(category) {
   return CATEGORIES.find((item) => item.key === category)?.accent || "ALL";
+}
+
+function domainFromLink(link) {
+  try {
+    if (!link) return "";
+    return new URL(link).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
+function faviconUrl(link) {
+  const domain = domainFromLink(link);
+  return domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` : "";
+}
+
+function sourceInitial(source, category) {
+  const text = String(source || categoryAccent(category) || "N").trim();
+  return text.slice(0, 1).toUpperCase();
+}
+
+function NewsThumb({ item, category }) {
+  const [errored, setErrored] = useState(false);
+  const icon = faviconUrl(item.link);
+
+  if (icon && !errored) {
+    return (
+      <div className="newsItemThumb">
+        <img
+          src={icon}
+          alt={item.source || "뉴스 출처"}
+          className="newsItemThumbImage"
+          onError={() => setErrored(true)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="newsItemThumb newsItemThumbFallback">
+      {sourceInitial(item.source, category)}
+    </div>
+  );
 }
 
 function NewsSkeleton() {
@@ -261,11 +304,10 @@ export default function NewsList({
                 <div className="newsFeaturedBadge">대표 기사</div>
                 <div className="newsFeaturedTitle">{featured.title}</div>
                 <div className="newsFeaturedMeta">
-                  <span>{ymdhm(featured.pubDate)}</span>
                   {featured.source ? <span>{featured.source}</span> : null}
                   <span>{relativeLabel(featured.pubDate)}</span>
+                  {ymdhm(featured.pubDate) ? <span>{ymdhm(featured.pubDate)}</span> : null}
                 </div>
-                <div className="newsFeaturedAction">기사 읽기</div>
               </div>
             </a>
           )}
@@ -280,7 +322,7 @@ export default function NewsList({
                   rel="noreferrer"
                   className="newsItem"
                 >
-                  <div className="newsItemRank">{String(idx + (pageMode ? 2 : 1)).padStart(2, "0")}</div>
+                  <NewsThumb item={item} category={category} />
 
                   <div className="newsItemMain">
                     <div className="newsItemTopline">
@@ -289,12 +331,10 @@ export default function NewsList({
                     </div>
                     <div className="newsItemTitle">{item.title}</div>
                     <div className="newsItemMeta">
-                      <span>{ymdhm(item.pubDate)}</span>
                       {item.source ? <span>{item.source}</span> : null}
+                      {domainFromLink(item.link) ? <span>{domainFromLink(item.link)}</span> : null}
                     </div>
                   </div>
-
-                  <div className="newsItemArrow">읽기</div>
                 </a>
               ))}
           </div>
