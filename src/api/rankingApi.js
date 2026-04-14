@@ -1,4 +1,5 @@
 import { SEARCH_ASSETS } from "../data/searchAssets";
+import { getKoreanAssetName } from "../data/assetNameMap";
 
 const STOCK_META_BY_SYMBOL = Object.fromEntries(
   SEARCH_ASSETS.filter(
@@ -122,11 +123,14 @@ function buildCommodityIcon(symbol) {
 function normalizeRow(row, index) {
   const symbol = (row.symbol || "-").toUpperCase();
   const meta = STOCK_META_BY_SYMBOL[symbol] || null;
+  const market = row.market || meta?.market || "";
   const commodityIcon = buildCommodityIcon(symbol);
   const stockIcon = buildLogo(pickStockDomain(symbol));
+  const koreanName = getKoreanAssetName(market, symbol);
   const primaryName =
-    row.displayNameEN ||
+    koreanName ||
     row.name ||
+    row.displayNameEN ||
     meta?.displayNameEN ||
     meta?.name ||
     symbol ||
@@ -134,6 +138,7 @@ function normalizeRow(row, index) {
 
   return {
     rank: row.rank ?? index + 1,
+    market,
     name: primaryName,
     displayNameEN: row.displayNameEN ?? meta?.displayNameEN ?? "",
     symbol,
@@ -183,6 +188,7 @@ function fallbackStockRows(market) {
     .map((item, index) =>
       normalizeRow(
         {
+          market,
           rank: index + 1,
           name: item.name,
           displayNameEN: item.displayNameEN,
@@ -267,7 +273,7 @@ async function fetchStockTop30(market) {
     );
 
     const items = Array.isArray(json?.items) ? json.items : [];
-    const rows = items.map(normalizeRow);
+    const rows = items.map((item, index) => normalizeRow({ ...item, market }, index));
 
     if (hasUsableRows(rows)) {
       return rows;

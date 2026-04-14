@@ -158,7 +158,10 @@ function getCountdownLabel(secondsLeft, isRefreshingNow) {
   return `${secondsLeft}초 뒤 새로고침`;
 }
 
-function getDisplayName(row) {
+function getDisplayName(row, market) {
+  if (market === "KOSPI" || market === "NASDAQ") {
+    return row.name || row.displayNameEN || row.symbol || "-";
+  }
   return row.displayNameEN || row.name || row.symbol || "-";
 }
 
@@ -485,7 +488,7 @@ export default function RankingTable() {
               <tbody>
                 {rows.map((row) => {
                   const flash = flashMap[row.symbol];
-                  const displayName = getDisplayName(row);
+                  const displayName = getDisplayName(row, market);
                   const secondaryLabel = getSecondaryLabel(row, market);
 
                   const rowFlashClass =
