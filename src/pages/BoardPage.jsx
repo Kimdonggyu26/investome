@@ -211,16 +211,6 @@ useEffect(() => {
                       ) : null}
                     </button>
 
-                    {post.imageData ? (
-                      <div className="boardListThumbWrap">
-                        <img
-                          src={post.imageData}
-                          alt={post.imageName || post.title}
-                          className="boardListThumb"
-                        />
-                      </div>
-                    ) : null}
-
                     {post.content ? (
                       <div className="boardExcerpt">{post.content}</div>
                     ) : null}
