@@ -3,9 +3,48 @@ import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
 import NewsList from "../components/NewsList";
 import { useTicker } from "../hooks/useTicker";
+import "../styles/NewsPage.css";
+
+function signedPercent(value) {
+  if (typeof value !== "number" || Number.isNaN(value)) return "-";
+  return `${value > 0 ? "+" : ""}${value.toFixed(2)}%`;
+}
 
 export default function NewsPage() {
   const { prices, changes, loading, error } = useTicker();
+
+  const marketPulses = [
+    {
+      label: "코스피",
+      value:
+        typeof prices?.KOSPI === "number"
+          ? prices.KOSPI.toLocaleString("ko-KR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })
+          : "-",
+      change: signedPercent(changes?.KOSPI),
+    },
+    {
+      label: "나스닥",
+      value:
+        typeof prices?.NASDAQ === "number"
+          ? prices.NASDAQ.toLocaleString("ko-KR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })
+          : "-",
+      change: signedPercent(changes?.NASDAQ),
+    },
+    {
+      label: "비트코인",
+      value:
+        typeof prices?.BTC === "number"
+          ? `${Math.round(prices.BTC).toLocaleString("ko-KR")}원`
+          : "-",
+      change: signedPercent(changes?.BTC),
+    },
+  ];
 
   return (
     <>
@@ -17,81 +56,40 @@ export default function NewsPage() {
       />
       <Header />
 
-      <main style={{ padding: "18px 0 40px", background: "var(--bg)" }}>
-        <div className="container" style={{ display: "grid", gap: 18 }}>
-          <section
-            className="card"
-            style={{
-              position: "relative",
-              overflow: "hidden",
-              padding: "28px 24px",
-              border: "1px solid rgba(255,255,255,0.08)",
-              background: "rgba(255,255,255,0.03)",
-            }}
-          >
-            <div
-              style={{
-                position: "relative",
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 18,
-                alignItems: "center",
-                flexWrap: "wrap",
-              }}
-            >
-              <div>
-                <div
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 8,
-                    height: 30,
-                    padding: "0 12px",
-                    borderRadius: 999,
-                    fontSize: 12,
-                    fontWeight: 900,
-                    color: "#dff6ff",
-                    background: "rgba(14,165,255,0.16)",
-                    border: "1px solid rgba(14,165,255,0.28)",
-                    marginBottom: 14,
-                  }}
-                >
-                  INVESTOME NEWS ROOM
-                </div>
-
-                <h1
-                  style={{
-                    margin: 0,
-                    fontSize: 38,
-                    lineHeight: 1.15,
-                    letterSpacing: "-1px",
-                  }}
-                >
-                  경제, 증시, 코인, 거시 이슈를 한눈에
-                </h1>
-
-                <p
-                  style={{
-                    margin: "14px 0 0",
-                    color: "rgba(255,255,255,0.66)",
-                    fontSize: 15,
-                    lineHeight: 1.7,
-                    maxWidth: 760,
-                  }}
-                >
-                  카테고리별로 최신 시장 뉴스를 빠르게 확인하고, 원하는 기사를 바로 열어보세요.
+      <main className="newsPageMain">
+        <div className="container newsPageContainer">
+          <section className="newsPageHero card">
+            <div className="newsPageHeroTop">
+              <div className="newsPageHeroCopy">
+                <div className="newsPageBadge">INVESTOME NEWS ROOM</div>
+                <h1>지금 시장에서 봐야 할 뉴스만 빠르게</h1>
+                <p>
+                  카테고리별로 뉴스를 정리하고, 대표 기사와 최신 흐름을 한 번에
+                  읽을 수 있게 구성했습니다.
                 </p>
               </div>
 
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <div className="newsPageHeroActions">
                 <Link className="btn" to="/">
                   홈으로 가기
                 </Link>
               </div>
             </div>
+
+            <div className="newsPagePulseGrid">
+              {marketPulses.map((item) => (
+                <article key={item.label} className="newsPagePulseCard">
+                  <span>{item.label}</span>
+                  <strong>{item.value}</strong>
+                  <em className={item.change.startsWith("+") ? "up" : item.change.startsWith("-") ? "down" : ""}>
+                    {item.change}
+                  </em>
+                </article>
+              ))}
+            </div>
           </section>
 
-          <NewsList title="실시간 뉴스 피드" limit={60} pageMode />
+          <NewsList title="실시간 뉴스룸" limit={60} pageMode />
         </div>
       </main>
     </>

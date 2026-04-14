@@ -4,10 +4,10 @@ import { fetchNews } from "../api/newsApi";
 import "../styles/NewsList.css";
 
 const CATEGORIES = [
-  { key: "all", label: "전체" },
-  { key: "crypto", label: "가상자산" },
-  { key: "domestic", label: "국내증시" },
-  { key: "global", label: "해외증시" },
+  { key: "all", label: "전체", accent: "ALL" },
+  { key: "crypto", label: "가상자산", accent: "CRYPTO" },
+  { key: "domestic", label: "국내증시", accent: "KOREA" },
+  { key: "global", label: "해외증시", accent: "GLOBAL" },
 ];
 
 function ymdhm(dateStr) {
@@ -21,6 +21,19 @@ function ymdhm(dateStr) {
   const mm = String(d.getMinutes()).padStart(2, "0");
 
   return `${y}.${m}.${day} ${hh}:${mm}`;
+}
+
+function relativeLabel(dateStr) {
+  const date = new Date(dateStr).getTime();
+  if (Number.isNaN(date)) return "방금 전";
+
+  const minutes = Math.max(0, Math.floor((Date.now() - date) / 60000));
+  if (minutes < 10) return "방금 들어온 기사";
+  if (minutes < 60) return `${minutes}분 전 업데이트`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}시간 전 업데이트`;
+  return "오늘 주요 흐름";
 }
 
 function popularScore(item) {
@@ -55,6 +68,14 @@ function popularScore(item) {
   }
 
   return s;
+}
+
+function categoryLabel(category) {
+  return CATEGORIES.find((item) => item.key === category)?.label || "전체";
+}
+
+function categoryAccent(category) {
+  return CATEGORIES.find((item) => item.key === category)?.accent || "ALL";
 }
 
 function NewsSkeleton() {
@@ -143,17 +164,20 @@ export default function NewsList({
   return (
     <div className={`card newsWrap ${pageMode ? "newsWrapPage" : ""}`}>
       <div className="newsHeader">
-        <div>
+        <div className="newsHeaderCopy">
           <div className="tickerLiveBadge live sectionTickerBadge">
             <span className="tickerLiveDot" />
             <span>LIVE</span>
           </div>
 
           <h2 className="newsHeading">{title}</h2>
-          <div className="newsSub">실시간 시장 주요 뉴스를 모아봤어요</div>
+          <div className="newsSub">
+            카테고리별 핵심 기사와 방금 올라온 소식을 보기 쉽게 정리했습니다.
+          </div>
         </div>
 
         <div className="newsHeaderRight">
+          <div className="newsModeLabel">정렬 기준</div>
           <div className="newsTabs">
             <button
               type="button"
@@ -182,7 +206,8 @@ export default function NewsList({
               className={`newsCategoryChip ${category === c.key ? "active" : ""}`}
               onClick={() => setCategory(c.key)}
             >
-              {c.label}
+              <span className="newsCategoryChipAccent">{c.accent}</span>
+              <span>{c.label}</span>
             </button>
           ))}
         </div>
@@ -196,6 +221,23 @@ export default function NewsList({
         )}
       </div>
 
+      {!err && pageMode && (
+        <div className="newsQuickMeta">
+          <div className="newsQuickMetaItem">
+            <span>현재 카테고리</span>
+            <strong>{categoryLabel(category)}</strong>
+          </div>
+          <div className="newsQuickMetaItem">
+            <span>표시 기사</span>
+            <strong>{view.length}건</strong>
+          </div>
+          <div className="newsQuickMetaItem">
+            <span>정렬</span>
+            <strong>{mode === "latest" ? "최신순" : "인기순"}</strong>
+          </div>
+        </div>
+      )}
+
       {err && <div className="muted">시장 뉴스를 불러오지 못했어요.</div>}
 
       {isLoading && items.length === 0 ? (
@@ -208,20 +250,27 @@ export default function NewsList({
               target="_blank"
               rel="noreferrer"
               className="newsFeatured"
-              title="새 탭에서 기사 열기"
+              title="새 창에서 기사 열기"
             >
+              <div className="newsFeaturedVisual">
+                <div className="newsFeaturedRank">TOP 1</div>
+                <div className="newsFeaturedCategory">{categoryAccent(category)}</div>
+              </div>
+
               <div className="newsFeaturedBody">
-                <div className="newsFeaturedBadge">주요 뉴스</div>
+                <div className="newsFeaturedBadge">대표 기사</div>
                 <div className="newsFeaturedTitle">{featured.title}</div>
                 <div className="newsFeaturedMeta">
                   <span>{ymdhm(featured.pubDate)}</span>
-                  {featured.source ? <span> · {featured.source}</span> : null}
+                  {featured.source ? <span>{featured.source}</span> : null}
+                  <span>{relativeLabel(featured.pubDate)}</span>
                 </div>
+                <div className="newsFeaturedAction">기사 읽기</div>
               </div>
             </a>
           )}
 
-          <div className="newsList">
+          <div className={`newsList ${pageMode ? "newsListPage" : ""}`}>
             {!err &&
               rest.map((item, idx) => (
                 <a
@@ -231,13 +280,21 @@ export default function NewsList({
                   rel="noreferrer"
                   className="newsItem"
                 >
+                  <div className="newsItemRank">{String(idx + (pageMode ? 2 : 1)).padStart(2, "0")}</div>
+
                   <div className="newsItemMain">
+                    <div className="newsItemTopline">
+                      <span className="newsItemCategory">{categoryLabel(category)}</span>
+                      <span className="newsItemFreshness">{relativeLabel(item.pubDate)}</span>
+                    </div>
                     <div className="newsItemTitle">{item.title}</div>
                     <div className="newsItemMeta">
                       <span>{ymdhm(item.pubDate)}</span>
-                      {item.source ? <span> · {item.source}</span> : null}
+                      {item.source ? <span>{item.source}</span> : null}
                     </div>
                   </div>
+
+                  <div className="newsItemArrow">읽기</div>
                 </a>
               ))}
           </div>
@@ -250,10 +307,8 @@ export default function NewsList({
         </div>
       )}
 
-      <br />
-
       <div className="newsDesc newsDescBottom">
-        카테고리와 정렬 기준을 바꿔가며 원하는 뉴스를 빠르게 찾아보세요.
+        카테고리와 정렬 기준을 바꾸면 원하는 흐름의 뉴스를 더 빠르게 찾을 수 있어요.
       </div>
     </div>
   );
