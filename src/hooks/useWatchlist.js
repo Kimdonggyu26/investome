@@ -56,6 +56,11 @@ function writeWatchlist(items, userId) {
   window.dispatchEvent(new Event("watchlist:change"));
 }
 
+function clearWatchlist(userId) {
+  localStorage.removeItem(getWatchlistStorageKey(userId));
+  window.dispatchEvent(new Event("watchlist:change"));
+}
+
 async function fetchWatchlistFromApi() {
   const res = await fetch(apiUrl("/api/watchlist"), {
     headers: getAuthHeaders(),
@@ -89,14 +94,15 @@ export function useWatchlist() {
   const userId = authUser?.id || "guest";
   const isLoggedIn = !!authUser;
 
-  const [items, setItems] = useState(() => readWatchlist(userId));
+  const [items, setItems] = useState(() => (isLoggedIn ? readWatchlist(userId) : []));
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
       if (!isLoggedIn) {
-        setItems(readWatchlist(userId));
+        clearWatchlist("guest");
+        setItems([]);
         return;
       }
 
@@ -151,13 +157,10 @@ export function useWatchlist() {
     const exists = keySet.has(key);
 
     if (!isLoggedIn) {
-      const next = exists
-        ? items.filter((item) => `${item.market}:${item.symbol}` !== key)
-        : [{ ...normalizedAsset, addedAt: new Date().toISOString() }, ...items];
-
-      setItems(next);
-      writeWatchlist(next, userId);
-      return;
+      return {
+        ok: false,
+        requiresLogin: true,
+      };
     }
 
     try {
@@ -171,8 +174,16 @@ export function useWatchlist() {
 
       setItems(normalized);
       writeWatchlist(normalized, userId);
+      return {
+        ok: true,
+        requiresLogin: false,
+      };
     } catch (error) {
       console.error(error);
+      return {
+        ok: false,
+        requiresLogin: false,
+      };
     }
   }
 

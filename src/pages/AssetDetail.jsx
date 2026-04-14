@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
 import WatchlistPanel from "../components/WatchlistPanel";
@@ -232,6 +232,7 @@ async function fetchRankingRows(market) {
 
 export default function AssetDetail() {
   const { market = "", symbol = "" } = useParams();
+  const navigate = useNavigate();
   const { prices, changes, loading, error } = useTicker();
   const [asset, setAsset] = useState(getFallbackAsset(market, symbol));
   const [assetLoading, setAssetLoading] = useState(true);
@@ -341,6 +342,22 @@ export default function AssetDetail() {
     [market, symbol, preferredName, preferredDisplayNameEN]
   );
 
+  async function handleWatchlistToggle() {
+    const result = await toggleWatchlist({
+      market,
+      symbol,
+      name: preferredName,
+      displayNameEN: preferredDisplayNameEN,
+      iconUrl: asset.iconUrl,
+      coinId: asset.coinId,
+    });
+
+    if (result?.requiresLogin) {
+      alert("관심종목은 로그인 후 이용할 수 있어요.");
+      navigate("/login");
+    }
+  }
+
   return (
     <>
       <TopTickerBar prices={prices} changes={changes} loading={loading} error={error} />
@@ -377,16 +394,7 @@ export default function AssetDetail() {
                   <button
                     type="button"
                     className={`btn watchBtn ${watched ? "active" : ""}`}
-                    onClick={() =>
-                      toggleWatchlist({
-                        market,
-                        symbol,
-                        name: preferredName,
-                        displayNameEN: preferredDisplayNameEN,
-                        iconUrl: asset.iconUrl,
-                        coinId: asset.coinId,
-                      })
-                    }
+                    onClick={handleWatchlistToggle}
                   >
                     {watched ? "관심종목에서 제거" : "관심종목에 추가"}
                   </button>
