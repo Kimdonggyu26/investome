@@ -205,7 +205,21 @@ useEffect(() => {
                       {(post.commentCount || 0) > 0 ? (
                         <span className="boardComments">[{post.commentCount}]</span>
                       ) : null}
+
+                      {post.imageData ? (
+                        <span className="boardImageBadge">사진</span>
+                      ) : null}
                     </button>
+
+                    {post.imageData ? (
+                      <div className="boardListThumbWrap">
+                        <img
+                          src={post.imageData}
+                          alt={post.imageName || post.title}
+                          className="boardListThumb"
+                        />
+                      </div>
+                    ) : null}
 
                     {post.content ? (
                       <div className="boardExcerpt">{post.content}</div>

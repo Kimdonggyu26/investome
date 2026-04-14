@@ -8,7 +8,7 @@ import {
   fetchBoardPost,
   toggleBoardPostLike,
 } from "../api/boardApi";
-import { getAuthUser, isLoggedIn } from "../utils/auth";
+import { clearAuth, getAuthUser, isLoggedIn } from "../utils/auth";
 import "../styles/BoardDetailPage.css";
 
 function formatBoardDateTime(dateValue) {
@@ -39,6 +39,14 @@ export default function BoardDetailPage() {
     author: nickname,
     content: "",
   });
+
+  function handleExpiredAuth(message = "로그인이 만료되었어요. 다시 로그인해주세요.") {
+    clearAuth();
+    window.dispatchEvent(new Event("investome-auth-changed"));
+    setCommentError(message);
+    alert(message);
+    navigate("/login");
+  }
 
   useEffect(() => {
     setCommentForm((prev) => ({
@@ -91,6 +99,11 @@ export default function BoardDetailPage() {
       setPost(nextPost);
       setLiked(!!nextPost.likedByMe);
     } catch (err) {
+      if (err.message?.includes("로그인이 만료")) {
+        handleExpiredAuth();
+        return;
+      }
+
       alert(err.message || "추천 처리 중 오류가 발생했어요.");
     }
   }
@@ -105,7 +118,7 @@ export default function BoardDetailPage() {
     }
 
     if (!commentForm.content.trim()) {
-      setCommentError("내용을 입력해 주세요.");
+      setCommentError("댓글 내용을 입력해주세요.");
       return;
     }
 
@@ -121,6 +134,11 @@ export default function BoardDetailPage() {
         content: "",
       });
     } catch (err) {
+      if (err.message?.includes("로그인이 만료")) {
+        handleExpiredAuth();
+        return;
+      }
+
       setCommentError(err.message || "댓글 등록 중 오류가 발생했습니다.");
     }
   }
@@ -131,9 +149,14 @@ export default function BoardDetailPage() {
 
     try {
       await deleteBoardPost(postId);
-      alert("게시글이 삭제되었어요.");
+      alert("게시글을 삭제했어요.");
       navigate("/board");
     } catch (err) {
+      if (err.message?.includes("로그인이 만료")) {
+        handleExpiredAuth();
+        return;
+      }
+
       alert(err.message || "게시글 삭제 중 오류가 발생했어요.");
     }
   }
@@ -147,6 +170,11 @@ export default function BoardDetailPage() {
       setPost(nextPost);
       setLiked(!!nextPost.likedByMe);
     } catch (err) {
+      if (err.message?.includes("로그인이 만료")) {
+        handleExpiredAuth();
+        return;
+      }
+
       alert(err.message || "댓글 삭제 중 오류가 발생했어요.");
     }
   }
@@ -265,14 +293,14 @@ export default function BoardDetailPage() {
 
             <form className="boardCommentForm" onSubmit={handleCommentSubmit}>
               <div className="boardCommentAuthor">
-                {loggedIn ? `${nickname} 님` : "로그인 후 댓글 작성 가능"}
+                {loggedIn ? `${nickname}님` : "로그인 후 댓글을 작성할 수 있어요."}
               </div>
 
               <textarea
                 className="boardCommentTextarea"
                 placeholder={
                   loggedIn
-                    ? "댓글을 입력해 주세요."
+                    ? "댓글 내용을 입력해주세요."
                     : "로그인 후 댓글을 작성할 수 있어요."
                 }
                 value={commentForm.content}

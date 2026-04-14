@@ -1,4 +1,5 @@
 import { apiUrl } from "../lib/apiClient";
+import { clearAuth } from "../utils/auth";
 
 function getAuthHeaders() {
   const token = localStorage.getItem("accessToken");
@@ -8,13 +9,50 @@ function getAuthHeaders() {
   };
 }
 
+async function readErrorMessage(res, fallback) {
+  let text = "";
+
+  try {
+    text = await res.text();
+  } catch {
+    text = "";
+  }
+
+  if (res.status === 401) {
+    clearAuth();
+    window.dispatchEvent(new Event("investome-auth-changed"));
+    return "로그인이 만료되었어요. 다시 로그인해주세요.";
+  }
+
+  if (res.status === 403) {
+    return "권한이 없어요.";
+  }
+
+  try {
+    const parsed = text ? JSON.parse(text) : null;
+    if (parsed?.message) return parsed.message;
+    if (parsed?.error) return String(parsed.error);
+  } catch {
+    // plain text response
+  }
+
+  return text || fallback;
+}
+
+async function readJsonOrThrow(res, fallback) {
+  if (!res.ok) {
+    throw new Error(await readErrorMessage(res, fallback));
+  }
+
+  return res.json();
+}
+
 export async function fetchBoardPosts() {
   const res = await fetch(apiUrl("/api/board/posts"), {
     headers: getAuthHeaders(),
   });
 
-  if (!res.ok) throw new Error("게시글 목록 조회 실패");
-  return res.json();
+  return readJsonOrThrow(res, "게시글 목록을 불러오지 못했어요.");
 }
 
 export async function fetchBoardPost(postId, increaseView = false) {
@@ -25,8 +63,7 @@ export async function fetchBoardPost(postId, increaseView = false) {
     }
   );
 
-  if (!res.ok) throw new Error("게시글 조회 실패");
-  return res.json();
+  return readJsonOrThrow(res, "게시글을 불러오지 못했어요.");
 }
 
 export async function createBoardPost(payload) {
@@ -36,12 +73,7 @@ export async function createBoardPost(payload) {
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || "게시글 작성 실패");
-  }
-
-  return res.json();
+  return readJsonOrThrow(res, "게시글 작성에 실패했어요.");
 }
 
 export async function updateBoardPost(postId, payload) {
@@ -51,12 +83,7 @@ export async function updateBoardPost(postId, payload) {
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || "게시글 수정 실패");
-  }
-
-  return res.json();
+  return readJsonOrThrow(res, "게시글 수정에 실패했어요.");
 }
 
 export async function deleteBoardPost(postId) {
@@ -66,8 +93,7 @@ export async function deleteBoardPost(postId) {
   });
 
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || "게시글 삭제 실패");
+    throw new Error(await readErrorMessage(res, "게시글 삭제에 실패했어요."));
   }
 }
 
@@ -78,12 +104,7 @@ export async function createBoardComment(postId, payload) {
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || "댓글 작성 실패");
-  }
-
-  return res.json();
+  return readJsonOrThrow(res, "댓글 작성에 실패했어요.");
 }
 
 export async function deleteBoardComment(postId, commentId) {
@@ -95,12 +116,7 @@ export async function deleteBoardComment(postId, commentId) {
     }
   );
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || "댓글 삭제 실패");
-  }
-
-  return res.json();
+  return readJsonOrThrow(res, "댓글 삭제에 실패했어요.");
 }
 
 export async function toggleBoardPostLike(postId) {
@@ -109,10 +125,5 @@ export async function toggleBoardPostLike(postId) {
     headers: getAuthHeaders(),
   });
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || "추천 처리 실패");
-  }
-
-  return res.json();
+  return readJsonOrThrow(res, "추천 처리에 실패했어요.");
 }
