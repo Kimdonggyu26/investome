@@ -1,14 +1,230 @@
 .homePage{
   position: relative;
-  padding: 14px 0 18px;
+  padding: 18px 0 24px;
 }
 
 .homeContainer{
   position: relative;
+  display: grid;
+  gap: 20px;
+}
+
+.homeHeroSection{
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.95fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.homeHeroPanel,
+.homeBriefPanel,
+.homeSignalCard,
+.homePortfolioPreview{
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(112, 140, 182, 0.18);
+  background:
+    radial-gradient(circle at top left, rgba(45, 111, 255, 0.18), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(0, 206, 201, 0.12), transparent 32%),
+    linear-gradient(180deg, rgba(18, 24, 35, 0.98), rgba(10, 14, 22, 0.98));
+  box-shadow: 0 22px 54px rgba(3, 8, 18, 0.34);
+}
+
+.homeHeroPanel{
+  padding: 34px 34px 30px;
+  border-radius: 30px;
+}
+
+.homeHeroBadge,
+.homeSectionEyebrow,
+.homeSignalLabel{
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(103, 140, 255, 0.24);
+  background: rgba(30, 48, 92, 0.44);
+  color: #b6c8ff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  padding: 7px 12px;
+}
+
+.homeHeroTitle{
+  margin: 18px 0 14px;
+  font-size: clamp(2rem, 3vw, 3.25rem);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  color: #f6f8fd;
+}
+
+.homeHeroLead,
+.homeSectionLead,
+.homeSignalCard p,
+.homeBriefCard p,
+.homePortfolioList,
+.homePortfolioPreview p{
+  margin: 0;
+  color: #aebbd2;
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+.homeHeroActions{
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.homeHeroPrimaryBtn,
+.homeHeroGhostBtn,
+.homePortfolioLink{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.homeHeroPrimaryBtn,
+.homePortfolioLink{
+  color: #f7fbff;
+  background: linear-gradient(135deg, #2c72ff, #18c59c);
+}
+
+.homeHeroGhostBtn{
+  color: #d6dff0;
+  border: 1px solid rgba(121, 146, 190, 0.26);
+  background: rgba(19, 27, 42, 0.74);
+}
+
+.homeHeroPrimaryBtn:hover,
+.homeHeroGhostBtn:hover,
+.homePortfolioLink:hover{
+  transform: translateY(-1px);
+}
+
+.homeHeroPoints{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.homeHeroPoint{
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(110, 127, 161, 0.18);
+  background: rgba(9, 14, 23, 0.48);
+}
+
+.homeHeroPoint span,
+.homePortfolioStat span,
+.homePortfolioInsightHeader span{
+  display: block;
+  color: #7f8da6;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.homeHeroPoint strong,
+.homePortfolioStat strong,
+.homePortfolioInsightHeader strong{
+  color: #eff4ff;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.homeBriefPanel{
+  padding: 28px 26px;
+  border-radius: 26px;
+}
+
+.homeSectionTitle{
+  margin: 16px 0 10px;
+  color: #f6f8fd;
+  font-size: 27px;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.homeBriefList{
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.homeBriefCard{
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(9, 14, 23, 0.54);
+  border: 1px solid rgba(115, 130, 168, 0.16);
+}
+
+.homeBriefTop{
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  color: #eef4ff;
+  font-weight: 700;
+}
+
+.homeBriefValue{
+  margin: 10px 0 8px;
+  font-size: 24px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+}
+
+.homeBriefFocus{
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(44, 114, 255, 0.18), rgba(24, 197, 156, 0.18));
+  border: 1px solid rgba(86, 141, 255, 0.22);
+}
+
+.homeBriefFocus span{
+  display: block;
+  color: #a8b7d4;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.homeBriefFocus strong{
+  color: #f7fbff;
+  font-size: 18px;
+}
+
+.homeSignalSection{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.homeSignalCard{
+  padding: 22px 22px 20px;
+  border-radius: 22px;
+}
+
+.homeSignalCard strong{
+  display: block;
+  margin: 14px 0 10px;
+  color: #f3f7ff;
+  font-size: 20px;
+  line-height: 1.45;
+  letter-spacing: -0.03em;
 }
 
 .homeTopSection{
-  margin-bottom: 18px;
+  margin-bottom: 0;
 }
 
 .homeTopGrid{
@@ -22,8 +238,62 @@
   min-width: 0;
 }
 
+.homeBottomSection{
+  min-width: 0;
+}
+
+.homeBottomGrid{
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.9fr);
+  gap: 18px;
+  align-items: start;
+}
+
 .homeNewsSection{
   min-width: 0;
+}
+
+.homePortfolioPreview{
+  padding: 26px;
+  border-radius: 26px;
+}
+
+.homePortfolioStats{
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.homePortfolioStat{
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(9, 14, 23, 0.54);
+  border: 1px solid rgba(115, 130, 168, 0.16);
+}
+
+.homePortfolioInsight{
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(10, 15, 24, 0.72);
+  border: 1px solid rgba(105, 125, 160, 0.16);
+}
+
+.homePortfolioInsightHeader{
+  margin-bottom: 14px;
+}
+
+.homePortfolioList{
+  padding-left: 18px;
+}
+
+.homePortfolioList li + li{
+  margin-top: 10px;
+}
+
+.homePortfolioLink{
+  width: 100%;
+  margin-top: 20px;
 }
 
 .homeRightFloat{
@@ -34,9 +304,29 @@
   z-index: 20;
 }
 
+.homeFooter{
+  padding: 20px 0 40px;
+}
+
+.homeFooterInner{
+  color: #77849b;
+  font-size: 13px;
+}
+
 @media (max-width: 1700px){
   .homeRightFloat{
     display: none;
+  }
+}
+
+@media (max-width: 1200px){
+  .homeHeroSection,
+  .homeBottomGrid{
+    grid-template-columns: 1fr;
+  }
+
+  .homeSignalSection{
+    grid-template-columns: 1fr;
   }
 }
 
@@ -45,6 +335,16 @@
     grid-template-columns: 1fr;
     gap: 16px;
   }
+
+  .homeHeroPanel,
+  .homeBriefPanel,
+  .homePortfolioPreview{
+    padding: 24px;
+  }
+
+  .homeHeroPoints{
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px){
@@ -52,8 +352,25 @@
     padding-top: 12px;
   }
 
-  .homeTopGrid{
-    grid-template-columns: 1fr;
+  .homeContainer{
     gap: 16px;
+  }
+
+  .homeHeroTitle{
+    font-size: 34px;
+  }
+
+  .homeSectionTitle{
+    font-size: 24px;
+  }
+
+  .homeHeroActions{
+    flex-direction: column;
+  }
+
+  .homeHeroPrimaryBtn,
+  .homeHeroGhostBtn,
+  .homePortfolioLink{
+    width: 100%;
   }
 }
