@@ -35,14 +35,6 @@
   letter-spacing: -0.04em;
 }
 
-.newsPageHeroCopy p {
-  margin: 14px 0 0;
-  max-width: 760px;
-  color: rgba(255, 255, 255, 0.68);
-  font-size: 15px;
-  line-height: 1.75;
-}
-
 .newsPageBadge {
   display: inline-flex;
   align-items: center;
@@ -71,33 +63,56 @@
 }
 
 .newsPagePulseCard {
-  padding: 16px 18px;
-  border-radius: 18px;
+  padding: 18px 18px 16px;
+  border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(10, 15, 23, 0.54);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  background:
+    linear-gradient(180deg, rgba(18, 28, 43, 0.9), rgba(9, 14, 22, 0.92)),
+    radial-gradient(circle at top left, rgba(74, 168, 255, 0.14), transparent 28%);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
 }
 
-.newsPagePulseCard span {
-  display: block;
+.newsPagePulseTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.newsPagePulseTop span {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.56);
-  margin-bottom: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.08em;
+  font-weight: 700;
 }
 
 .newsPagePulseCard strong {
   display: block;
-  font-size: 24px;
+  font-size: 29px;
   letter-spacing: -0.03em;
+  color: #f8fbff;
+  font-variant-numeric: tabular-nums;
 }
 
-.newsPagePulseCard em {
+.newsPagePulseTop em {
   display: inline-flex;
-  margin-top: 10px;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
   font-style: normal;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.74);
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.newsPagePulseFoot {
+  margin-top: 12px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.48);
 }
 
 @media (max-width: 900px) {

@@ -63,10 +63,6 @@ export default function NewsPage() {
               <div className="newsPageHeroCopy">
                 <div className="newsPageBadge">INVESTOME NEWS ROOM</div>
                 <h1>지금 시장에서 봐야 할 뉴스만 빠르게</h1>
-                <p>
-                  카테고리별로 뉴스를 정리하고, 대표 기사와 최신 흐름을 한 번에
-                  읽을 수 있게 구성했습니다.
-                </p>
               </div>
 
               <div className="newsPageHeroActions">
@@ -79,11 +75,14 @@ export default function NewsPage() {
             <div className="newsPagePulseGrid">
               {marketPulses.map((item) => (
                 <article key={item.label} className="newsPagePulseCard">
-                  <span>{item.label}</span>
+                  <div className="newsPagePulseTop">
+                    <span>{item.label}</span>
+                    <em className={item.change.startsWith("+") ? "up" : item.change.startsWith("-") ? "down" : ""}>
+                      {item.change}
+                    </em>
+                  </div>
                   <strong>{item.value}</strong>
-                  <em className={item.change.startsWith("+") ? "up" : item.change.startsWith("-") ? "down" : ""}>
-                    {item.change}
-                  </em>
+                  <div className="newsPagePulseFoot">실시간 시세 반영</div>
                 </article>
               ))}
             </div>

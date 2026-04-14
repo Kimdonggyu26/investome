@@ -10,18 +10,7 @@ const CATEGORIES = [
   { key: "global", label: "해외증시", accent: "GLOBAL" },
 ];
 
-function ymdhm(dateStr) {
-  const d = new Date(dateStr);
-  if (Number.isNaN(d.getTime())) return "";
-
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-
-  return `${y}.${m}.${day} ${hh}:${mm}`;
-}
+const PAGE_SIZE = 10;
 
 function relativeLabel(dateStr) {
   const date = new Date(dateStr).getTime();
@@ -87,40 +76,6 @@ function domainFromLink(link) {
   }
 }
 
-function faviconUrl(link) {
-  const domain = domainFromLink(link);
-  return domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` : "";
-}
-
-function sourceInitial(source, category) {
-  const text = String(source || categoryAccent(category) || "N").trim();
-  return text.slice(0, 1).toUpperCase();
-}
-
-function NewsThumb({ item, category }) {
-  const [errored, setErrored] = useState(false);
-  const icon = faviconUrl(item.link);
-
-  if (icon && !errored) {
-    return (
-      <div className="newsItemThumb">
-        <img
-          src={icon}
-          alt={item.source || "뉴스 출처"}
-          className="newsItemThumbImage"
-          onError={() => setErrored(true)}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="newsItemThumb newsItemThumbFallback">
-      {sourceInitial(item.source, category)}
-    </div>
-  );
-}
-
 function NewsSkeleton() {
   return (
     <div className="newsSkeletonWrap">
@@ -146,6 +101,7 @@ export default function NewsList({
   const [category, setCategory] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [isSwitching, setIsSwitching] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     let alive = true;
@@ -189,6 +145,10 @@ export default function NewsList({
     };
   }, [category, limit]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [category, mode]);
+
   const view = useMemo(() => {
     const arr = [...items];
 
@@ -201,8 +161,23 @@ export default function NewsList({
     return arr;
   }, [items, mode]);
 
-  const featured = pageMode ? view[0] : null;
-  const rest = pageMode ? view.slice(1) : view;
+  const totalPages = pageMode ? Math.max(1, Math.ceil(view.length / PAGE_SIZE)) : 1;
+  const safePage = Math.min(currentPage, totalPages);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const pagedItems = useMemo(() => {
+    if (!pageMode) return view;
+    const start = (safePage - 1) * PAGE_SIZE;
+    return view.slice(start, start + PAGE_SIZE);
+  }, [pageMode, safePage, view]);
+
+  const featured = pageMode ? pagedItems[0] : null;
+  const rest = pageMode ? pagedItems.slice(1) : pagedItems;
 
   return (
     <div className={`card newsWrap ${pageMode ? "newsWrapPage" : ""}`}>
@@ -214,13 +189,9 @@ export default function NewsList({
           </div>
 
           <h2 className="newsHeading">{title}</h2>
-          <div className="newsSub">
-            카테고리별 핵심 기사와 방금 올라온 소식을 보기 쉽게 정리했습니다.
-          </div>
         </div>
 
         <div className="newsHeaderRight">
-          <div className="newsModeLabel">정렬 기준</div>
           <div className="newsTabs">
             <button
               type="button"
@@ -271,12 +242,14 @@ export default function NewsList({
             <strong>{categoryLabel(category)}</strong>
           </div>
           <div className="newsQuickMetaItem">
-            <span>표시 기사</span>
-            <strong>{view.length}건</strong>
+            <span>페이지</span>
+            <strong>
+              {safePage} / {totalPages}
+            </strong>
           </div>
           <div className="newsQuickMetaItem">
-            <span>정렬</span>
-            <strong>{mode === "latest" ? "최신순" : "인기순"}</strong>
+            <span>표시 기사</span>
+            <strong>{view.length}건</strong>
           </div>
         </div>
       )}
@@ -306,7 +279,6 @@ export default function NewsList({
                 <div className="newsFeaturedMeta">
                   {featured.source ? <span>{featured.source}</span> : null}
                   <span>{relativeLabel(featured.pubDate)}</span>
-                  {ymdhm(featured.pubDate) ? <span>{ymdhm(featured.pubDate)}</span> : null}
                 </div>
               </div>
             </a>
@@ -322,8 +294,6 @@ export default function NewsList({
                   rel="noreferrer"
                   className="newsItem"
                 >
-                  <NewsThumb item={item} category={category} />
-
                   <div className="newsItemMain">
                     <div className="newsItemTopline">
                       <span className="newsItemCategory">{categoryLabel(category)}</span>
@@ -338,6 +308,24 @@ export default function NewsList({
                 </a>
               ))}
           </div>
+
+          {pageMode && totalPages > 1 && (
+            <div className="newsPager">
+              {Array.from({ length: totalPages }).map((_, idx) => {
+                const page = idx + 1;
+                return (
+                  <button
+                    key={page}
+                    type="button"
+                    className={page === safePage ? "active" : ""}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {isSwitching && (
             <div className="newsLoadingOverlay" aria-hidden="true">
