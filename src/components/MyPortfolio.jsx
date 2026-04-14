@@ -667,7 +667,7 @@ const localSuggestionList = useMemo(() => {
               </div>
             </div>
 
-            <div className="portfolioSummaryGrid">
+            <div className="portfolioSummaryGrid portfolioSummaryGridExpanded">
               <div className="portfolioSummaryStat">
                 <span className="label">총 투자금액</span>
                 <strong className={totalCostMotion}>{formatKRW(totalCost)}</strong>
@@ -679,7 +679,7 @@ const localSuggestionList = useMemo(() => {
               </div>
             </div>
 
-            <div className="portfolioOverviewFooter">
+            <div className="portfolioOverviewFooter portfolioOverviewFooterCompact">
               <div className="portfolioOverviewPnlGroup">
                 <span className="label">총 손익</span>
                 <strong className={`${totalPnl >= 0 ? "isUp" : "isDown"} ${totalPnlMotion}`}>
@@ -895,6 +895,30 @@ const localSuggestionList = useMemo(() => {
                         </div>
 
                         <div className="portfolioHoldingValue">{formatKRW(item.value)}</div>
+                      </div>
+
+                      <div className="portfolioHoldingCompactGrid">
+                        <div className="portfolioHoldingCompactStat">
+                          <span>평가손익</span>
+                          <strong style={{ color: itemPnlColor }}>
+                            {formatSignedKRW(item.pnl)}
+                          </strong>
+                        </div>
+
+                        <div className="portfolioHoldingCompactStat">
+                          <span>수익률</span>
+                          <strong className={item.rate >= 0 ? "isUp" : "isDown"}>
+                            {item.rate > 0 ? "+" : ""}
+                            {item.rate.toFixed(2)}%
+                          </strong>
+                        </div>
+
+                        <div className="portfolioHoldingCompactStat">
+                          <span>현재가</span>
+                          <strong>
+                            {item.currentPrice == null ? "-" : formatKRW(item.currentPrice)}
+                          </strong>
+                        </div>
                       </div>
 
                       <div className="portfolioHoldingMetaRow">

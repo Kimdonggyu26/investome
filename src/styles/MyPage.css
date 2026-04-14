@@ -3504,6 +3504,250 @@
   color: rgba(255,255,255,0.62);
 }
 
+/* ===== portfolio premium refinement ===== */
+
+.portfolioHeroCard,
+.portfolioGoalCard,
+.portfolioHoldingsCard,
+.portfolioInsightCard,
+.portfolioAllocationCard,
+.portfolioCalculatorCard{
+  border: 1px solid rgba(148,163,184,0.12);
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 24%),
+    linear-gradient(180deg, rgba(15,23,42,0.82), rgba(7,11,18,0.96));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.03),
+    0 20px 45px rgba(0,0,0,0.22);
+}
+
+.portfolioEyebrow{
+  color: rgba(191,219,254,0.62);
+  letter-spacing: 1.4px;
+}
+
+.portfolioTitle,
+.portfolioTitleSm{
+  letter-spacing: -0.04em;
+}
+
+.portfolioSummaryGridExpanded{
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.portfolioSummaryGridExpanded .portfolioSummaryStat{
+  padding: 18px 18px 16px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.018));
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.portfolioSummaryGridExpanded .portfolioSummaryStat strong{
+  font-size: clamp(24px, 2.4vw, 34px);
+}
+
+.portfolioOverviewFooterCompact{
+  gap: 12px;
+}
+
+.portfolioOverviewFooterCompact > div{
+  padding: 18px 18px 16px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.036), rgba(255,255,255,0.016));
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.portfolioOverviewFooterCompact .portfolioOverviewRateGroup strong{
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.portfolioOverviewFooterCompact .portfolioOverviewRateGroup strong em{
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.48);
+}
+
+.portfolioOverviewMiniList{
+  gap: 12px;
+}
+
+.portfolioOverviewMiniItem{
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.032), rgba(255,255,255,0.016));
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.portfolioOverviewMiniItem strong{
+  font-size: 16px;
+}
+
+.portfolioHoldingsCard{
+  background:
+    radial-gradient(circle at top right, rgba(59,130,246,0.08), transparent 24%),
+    linear-gradient(180deg, rgba(15,23,42,0.84), rgba(7,11,18,0.96));
+}
+
+.portfolioHoldingListTall{
+  gap: 10px;
+  padding-right: 4px;
+}
+
+.portfolioHoldingItem{
+  padding: 16px 16px 14px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.portfolioHoldingItem:hover{
+  transform: translateY(-1px);
+  border-color: rgba(96,165,250,0.22);
+  background: linear-gradient(180deg, rgba(37,99,235,0.06), rgba(255,255,255,0.018));
+}
+
+.portfolioHoldingTop{
+  align-items: flex-start;
+}
+
+.portfolioHoldingIdentity{
+  min-width: 0;
+  flex: 1;
+}
+
+.portfolioHoldingIdentity > div{
+  min-width: 0;
+}
+
+.portfolioHoldingName{
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.portfolioHoldingSub{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.portfolioHoldingValue{
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.portfolioHoldingCompactGrid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.portfolioHoldingCompactStat{
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.026);
+  border: 1px solid rgba(255,255,255,0.05);
+  display: grid;
+  gap: 6px;
+}
+
+.portfolioHoldingCompactStat span{
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.48);
+  letter-spacing: 0.02em;
+}
+
+.portfolioHoldingCompactStat strong{
+  font-size: 15px;
+  color: rgba(255,255,255,0.95);
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+
+.portfolioHoldingMetaRow{
+  display: none;
+}
+
+.portfolioHoldingBottomRow{
+  margin-top: 12px;
+  align-items: center;
+}
+
+.portfolioHoldingTagWrap{
+  gap: 6px;
+}
+
+.portfolioMarketTag,
+.portfolioSoftTag{
+  height: 26px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 999px;
+}
+
+.portfolioDeleteBtn{
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.72);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.portfolioHoldingBar{
+  margin-top: 10px;
+  height: 5px;
+  background: rgba(255,255,255,0.05);
+}
+
+.portfolioHoldingFill{
+  box-shadow: 0 0 16px rgba(96,165,250,0.2);
+}
+
+.portfolioInsightCard{
+  background:
+    radial-gradient(circle at top left, rgba(124,58,237,0.08), transparent 24%),
+    linear-gradient(180deg, rgba(15,23,42,0.84), rgba(7,11,18,0.96));
+}
+
+.portfolioInsightHero.compact{
+  border-radius: 20px;
+}
+
+.portfolioInsightGrid.compact{
+  gap: 10px;
+}
+
+.portfolioInsightFocusCard{
+  border-radius: 20px;
+}
+
+@media (max-width: 860px){
+  .portfolioSummaryGridExpanded,
+  .portfolioOverviewFooterCompact,
+  .portfolioOverviewMiniList,
+  .portfolioHoldingCompactGrid{
+    grid-template-columns: 1fr;
+  }
+
+  .portfolioHoldingValue{
+    font-size: 18px;
+  }
+}
+
 .portfolioAddBtn,
 .portfolioGhostBtn{
   box-shadow: none;
