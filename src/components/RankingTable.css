@@ -120,11 +120,11 @@
   align-items: center;
   gap: 8px;
   border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.018);
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.018));
   color: rgba(255,255,255,0.78);
   font-size: 12px;
   font-weight: 700;
-  box-shadow: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
   margin-top: 6px;
 }
 
@@ -166,25 +166,27 @@
   padding:8px 14px;
   border-radius:999px;
   border:1px solid rgba(255,255,255,0.10);
-  background:rgba(255,255,255,0.024);
+  background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
   color:rgba(255,255,255,0.68);
   cursor:pointer;
   font-size:13px;
   font-weight: 700;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
   transition:all .18s ease;
 }
 
 .marketTabs button:hover{
   border-color: rgba(74,168,255,0.28);
   color: var(--text-strong);
-  box-shadow: 0 0 16px rgba(74,168,255,0.07);
+  box-shadow: 0 10px 20px rgba(74,168,255,0.08);
+  transform: translateY(-1px);
 }
 
 .marketTabs button.active{
-  background: rgba(74,168,255,0.14);
+  background: linear-gradient(135deg, rgba(74,168,255,0.22), rgba(74,168,255,0.12));
   color: var(--text-strong);
   border-color: rgba(74,168,255,0.22);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 12px 24px rgba(74,168,255,0.10);
 }
 
 .rankingScroll{
@@ -314,6 +316,23 @@
   font-weight: 800;
   color: rgba(255,255,255,0.92);
   transition: color .25s ease, text-shadow .25s ease, transform .25s ease;
+}
+
+.rankingChangeCell{
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.rankingChangeCell.is-up{
+  color: var(--up-strong) !important;
+}
+
+.rankingChangeCell.is-down{
+  color: var(--down-strong) !important;
+}
+
+.rankingChangeCell.is-flat{
+  color: var(--text-strong) !important;
 }
 
 .valueGlowUp{

@@ -55,6 +55,13 @@ function colorByChange(pct) {
   return "var(--text-strong)";
 }
 
+function changeClassName(pct) {
+  if (typeof pct !== "number") return "is-flat";
+  if (pct > 0) return "is-up";
+  if (pct < 0) return "is-down";
+  return "is-flat";
+}
+
 function Avatar({ iconUrl, name }) {
   const [imgError, setImgError] = useState(false);
 
@@ -535,7 +542,7 @@ export default function RankingTable() {
                       </td>
 
                       <td
-                        className={`valueUpdate ${valueFlashClass}`}
+                        className={`valueUpdate rankingChangeCell ${valueFlashClass} ${changeClassName(row.changePct)}`}
                         style={{ color: colorByChange(row.changePct), fontWeight: 800 }}
                       >
                         {typeof row.changePct === "number"

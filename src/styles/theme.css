@@ -82,12 +82,12 @@
   --accent-strong: #216df0;
   --accent-soft: rgba(46, 134, 255, 0.12);
 
-  --up: #0ca678;
-  --up-soft: rgba(12, 166, 120, 0.10);
-  --up-strong: #0f9f6e;
-  --down: #e03152;
-  --down-soft: rgba(224, 49, 82, 0.10);
-  --down-strong: #d62f55;
+  --up: #0f9f7a;
+  --up-soft: rgba(15, 159, 122, 0.11);
+  --up-strong: #0b8c6b;
+  --down: #de3e60;
+  --down-soft: rgba(222, 62, 96, 0.10);
+  --down-strong: #c93457;
 
   --header-bg: rgba(248, 251, 255, 0.86);
   --header-border: rgba(15, 23, 42, 0.08);
@@ -323,15 +323,112 @@ select {
 :root[data-theme="light"] .rankingRefreshBadge,
 :root[data-theme="light"] .marketTabs button,
 :root[data-theme="light"] .fxUpdated {
-  background: rgba(241, 246, 253, 0.92) !important;
-  border-color: rgba(15, 23, 42, 0.10) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(238, 245, 255, 0.94)) !important;
+  border-color: rgba(31, 89, 170, 0.14) !important;
   color: var(--muted-strong) !important;
+  box-shadow: 0 10px 24px rgba(29, 53, 87, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.86) !important;
 }
 
 :root[data-theme="light"] .marketTabs button.active {
-  background: rgba(46, 134, 255, 0.10) !important;
+  background: linear-gradient(135deg, rgba(46, 134, 255, 0.18), rgba(105, 155, 255, 0.12)) !important;
+  color: #10345f !important;
+  border-color: rgba(46, 134, 255, 0.26) !important;
+  box-shadow: 0 14px 28px rgba(46, 134, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
+}
+
+:root[data-theme="light"] .marketTabs button:hover {
   color: var(--text-strong) !important;
   border-color: rgba(46, 134, 255, 0.22) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(236, 244, 255, 0.96)) !important;
+}
+
+:root[data-theme="light"] .rankingRefreshBadge {
+  color: #35537a !important;
+}
+
+:root[data-theme="light"] .rankingRefreshDot {
+  background: linear-gradient(180deg, #20c997, #0f9f7a) !important;
+  box-shadow: 0 0 0 4px rgba(15, 159, 122, 0.14), 0 0 18px rgba(15, 159, 122, 0.20) !important;
+}
+
+:root[data-theme="light"] .tickerLiveBadge {
+  color: #10345f !important;
+  border-color: rgba(46, 134, 255, 0.24) !important;
+  background: linear-gradient(135deg, rgba(46, 134, 255, 0.18), rgba(116, 188, 255, 0.12)) !important;
+  box-shadow: 0 12px 26px rgba(46, 134, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+:root[data-theme="light"] .tickerLiveDot {
+  background: linear-gradient(180deg, #2f9bff, #1f76ee) !important;
+  box-shadow: 0 0 0 0 rgba(46, 134, 255, 0.40), 0 0 16px rgba(46, 134, 255, 0.26) !important;
+}
+
+:root[data-theme="light"] .newsTabs button,
+:root[data-theme="light"] .newsCategoryChip,
+:root[data-theme="light"] .newsPager button {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 255, 0.94)) !important;
+  border-color: rgba(31, 89, 170, 0.14) !important;
+  color: #49637f !important;
+  box-shadow: 0 8px 18px rgba(29, 53, 87, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+:root[data-theme="light"] .newsTabs button:hover,
+:root[data-theme="light"] .newsCategoryChip:hover,
+:root[data-theme="light"] .newsPager button:hover,
+:root[data-theme="light"] .newsMoreBtn:hover {
+  color: var(--text-strong) !important;
+  border-color: rgba(46, 134, 255, 0.24) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(235, 244, 255, 0.96)) !important;
+}
+
+:root[data-theme="light"] .newsTabs button.active,
+:root[data-theme="light"] .newsCategoryChip.active,
+:root[data-theme="light"] .newsPager button.active,
+:root[data-theme="light"] .newsMoreBtn {
+  color: #10345f !important;
+  border-color: rgba(46, 134, 255, 0.24) !important;
+  background: linear-gradient(135deg, rgba(46, 134, 255, 0.18), rgba(125, 165, 255, 0.12)) !important;
+  box-shadow: 0 14px 28px rgba(46, 134, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.94) !important;
+}
+
+:root[data-theme="light"] .newsCategoryChipAccent,
+:root[data-theme="light"] .newsItemFreshness,
+:root[data-theme="light"] .communityFloatTag,
+:root[data-theme="light"] .communityFloatLive {
+  background: rgba(46, 134, 255, 0.10) !important;
+  border-color: rgba(46, 134, 255, 0.18) !important;
+  color: #355d8f !important;
+}
+
+:root[data-theme="light"] .newsCategoryChip.active .newsCategoryChipAccent,
+:root[data-theme="light"] .newsItemCategory {
+  background: rgba(46, 134, 255, 0.14) !important;
+  border-color: rgba(46, 134, 255, 0.20) !important;
+  color: #0f3766 !important;
+}
+
+:root[data-theme="light"] .rankingChangeCell.is-up {
+  color: var(--up-strong) !important;
+}
+
+:root[data-theme="light"] .rankingChangeCell.is-down {
+  color: var(--down-strong) !important;
+}
+
+:root[data-theme="light"] .rankingChangeCell.is-flat {
+  color: var(--text-strong) !important;
+}
+
+:root[data-theme="light"] .tickerChange.up,
+:root[data-theme="light"] .fxPct.up,
+:root[data-theme="light"] .fxRight.up {
+  color: var(--up-strong) !important;
+}
+
+:root[data-theme="light"] .tickerChange.down,
+:root[data-theme="light"] .fxPct.down,
+:root[data-theme="light"] .fxRight.down {
+  color: var(--down-strong) !important;
 }
 
 :root[data-theme="light"] .fxRow {
@@ -353,12 +450,6 @@ select {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 253, 0.96)) !important;
   border-color: rgba(15, 23, 42, 0.08) !important;
   box-shadow: 0 18px 38px rgba(29, 53, 87, 0.10) !important;
-}
-
-:root[data-theme="light"] .communityFloatLive {
-  color: #2f6fb8 !important;
-  background: rgba(46, 134, 255, 0.10) !important;
-  border-color: rgba(46, 134, 255, 0.20) !important;
 }
 
 :root[data-theme="light"] .communityFloatEyebrow,
