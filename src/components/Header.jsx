@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { SEARCH_ASSETS } from "../data/searchAssets";
+import { useTheme } from "../contexts/ThemeContext.jsx";
 import "../styles/Header.css";
 
 function normalize(text = "") {
@@ -83,6 +84,7 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const wrapRef = useRef(null);
+  const { theme, toggleTheme } = useTheme();
 
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -314,6 +316,21 @@ export default function Header() {
         </div>
 
         <div className="headerActions">
+          <button
+            type="button"
+            className="themeToggleBtn"
+            onClick={toggleTheme}
+            aria-label={theme === "dark" ? "라이트 모드로 전환" : "다크 모드로 전환"}
+            title={theme === "dark" ? "라이트 모드" : "다크 모드"}
+          >
+            <span className="themeToggleIcon" aria-hidden="true">
+              {theme === "dark" ? "☀" : "☾"}
+            </span>
+            <span className="themeToggleLabel">
+              {theme === "dark" ? "라이트" : "다크"}
+            </span>
+          </button>
+
           {authUser ? (
             <div className="authUserBox">
               <div className="authUserInfo">

@@ -1,6 +1,9 @@
 import { useMemo } from "react";
+import { useTheme } from "../contexts/ThemeContext.jsx";
 
 export default function TradingViewChart({ symbol, title }) {
+  const { theme } = useTheme();
+
   const src = useMemo(() => {
     const params = new URLSearchParams({
       frameElementId: `tradingview_widget_${String(symbol || "chart").replace(/[^A-Z0-9_:-]/gi, "_")}`,
@@ -9,9 +12,9 @@ export default function TradingViewChart({ symbol, title }) {
       hidesidetoolbar: "1",
       symboledit: "0",
       saveimage: "0",
-      toolbarbg: "#0f172a",
+      toolbarbg: theme === "light" ? "#f8fbff" : "#0f172a",
       studies: "[]",
-      theme: "dark",
+      theme,
       style: "1",
       timezone: "Asia/Seoul",
       withdateranges: "1",
@@ -29,7 +32,7 @@ export default function TradingViewChart({ symbol, title }) {
     });
 
     return `https://s.tradingview.com/widgetembed/?${params.toString()}`;
-  }, [symbol]);
+  }, [symbol, theme]);
 
   return (
     <div className="assetPanel chartPanel">
