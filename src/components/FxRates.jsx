@@ -41,10 +41,10 @@ function changePct(now, base) {
 }
 
 function color(v) {
-  if (typeof v !== "number") return "rgba(255,255,255,0.55)";
-  if (v > 0) return "rgba(80,255,170,0.95)";
-  if (v < 0) return "rgba(255,120,170,0.95)";
-  return "rgba(255,255,255,0.55)";
+  if (typeof v !== "number") return "var(--muted)";
+  if (v > 0) return "var(--up-strong)";
+  if (v < 0) return "var(--down-strong)";
+  return "var(--muted)";
 }
 
 function formatPct(p) {

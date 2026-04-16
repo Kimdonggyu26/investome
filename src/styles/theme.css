@@ -30,8 +30,10 @@
 
   --up: #00f5a0;
   --up-soft: rgba(0, 245, 160, 0.14);
+  --up-strong: #19d39b;
   --down: #ff5b61;
   --down-soft: rgba(255, 91, 97, 0.12);
+  --down-strong: #ff6f8d;
 
   --header-bg: rgba(8, 12, 20, 0.72);
   --header-border: rgba(255, 255, 255, 0.06);
@@ -82,8 +84,10 @@
 
   --up: #0ca678;
   --up-soft: rgba(12, 166, 120, 0.10);
+  --up-strong: #0f9f6e;
   --down: #e03152;
   --down-soft: rgba(224, 49, 82, 0.10);
+  --down-strong: #d62f55;
 
   --header-bg: rgba(248, 251, 255, 0.86);
   --header-border: rgba(15, 23, 42, 0.08);
@@ -349,6 +353,12 @@ select {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 253, 0.96)) !important;
   border-color: rgba(15, 23, 42, 0.08) !important;
   box-shadow: 0 18px 38px rgba(29, 53, 87, 0.10) !important;
+}
+
+:root[data-theme="light"] .communityFloatLive {
+  color: #2f6fb8 !important;
+  background: rgba(46, 134, 255, 0.10) !important;
+  border-color: rgba(46, 134, 255, 0.20) !important;
 }
 
 :root[data-theme="light"] .communityFloatEyebrow,

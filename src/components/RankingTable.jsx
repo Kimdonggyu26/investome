@@ -49,10 +49,10 @@ function shouldShowCurrencyToggle(market) {
 }
 
 function colorByChange(pct) {
-  if (typeof pct !== "number") return "rgba(255,255,255,0.88)";
-  if (pct > 0) return "rgba(80,255,170,0.95)";
-  if (pct < 0) return "rgba(255,120,170,0.95)";
-  return "rgba(255,255,255,0.88)";
+  if (typeof pct !== "number") return "var(--text-strong)";
+  if (pct > 0) return "var(--up-strong)";
+  if (pct < 0) return "var(--down-strong)";
+  return "var(--text-strong)";
 }
 
 function Avatar({ iconUrl, name }) {
