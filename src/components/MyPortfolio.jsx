@@ -1171,7 +1171,7 @@ const localSuggestionList = useMemo(() => {
                   onChange={(e) =>
                     setCalcForm((prev) => ({ ...prev, buyPrice: sanitizeNumericInput(e.target.value, { allowDecimal: true }) }))
                   }
-                  placeholder="예: 105000"
+                  placeholder="예: 105,000"
                 />
               </label>
 
@@ -1184,7 +1184,7 @@ const localSuggestionList = useMemo(() => {
                   onChange={(e) =>
                     setCalcForm((prev) => ({ ...prev, sellPrice: sanitizeNumericInput(e.target.value, { allowDecimal: true }) }))
                   }
-                  placeholder="예: 112000"
+                  placeholder="예: 112,000"
                 />
               </label>
 

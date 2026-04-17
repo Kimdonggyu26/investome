@@ -4091,12 +4091,23 @@
 }
 
 [data-theme="light"] .portfolioAddBtnIcon,
+[data-theme="light"] .portfolioEmptyIcon,
 [data-theme="light"] .portfolioEmptySoftIcon,
 [data-theme="light"] .targetEmptyIcon {
   background: linear-gradient(135deg, #deefff, #cfe3ff);
   color: #2562a2;
   border-color: rgba(120, 170, 236, 0.32);
   box-shadow: 0 10px 22px rgba(112, 142, 185, 0.12);
+}
+
+[data-theme="light"] .portfolioEmptyState h4,
+[data-theme="light"] .portfolioEmptySoft strong {
+  color: #16253d;
+}
+
+[data-theme="light"] .portfolioEmptyState p,
+[data-theme="light"] .portfolioEmptySoft p {
+  color: #7388a3;
 }
 
 [data-theme="light"] .portfolioSearchBox input,
