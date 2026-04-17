@@ -4098,3 +4098,31 @@
   background: linear-gradient(180deg, rgba(116, 175, 244, 0.92), rgba(116, 175, 244, 0.45));
   border: 3px solid rgba(244, 248, 255, 0.96);
 }
+
+[data-theme="light"] .portfolioHoldingCompactStat strong,
+[data-theme="light"] .portfolioInsightMain.compact strong,
+[data-theme="light"] .portfolioInsightFocusRight,
+[data-theme="light"] .portfolioCalcResultHead strong,
+[data-theme="light"] .portfolioCalcStat strong,
+[data-theme="light"] .portfolioHoldingValue {
+  color: #16253d;
+}
+
+[data-theme="light"] .portfolioHoldingCompactStat strong.isUp,
+[data-theme="light"] .portfolioCalcResultHead strong.isUp,
+[data-theme="light"] .portfolioCalcStat strong.isUp {
+  color: #069b6f;
+}
+
+[data-theme="light"] .portfolioHoldingCompactStat strong.isDown,
+[data-theme="light"] .portfolioCalcResultHead strong.isDown,
+[data-theme="light"] .portfolioCalcStat strong.isDown {
+  color: #dd4e73;
+}
+
+[data-theme="light"] .portfolioInsightHero.compact {
+  background:
+    radial-gradient(circle at top left, rgba(95,170,255,0.10), transparent 26%),
+    linear-gradient(180deg, rgba(246,250,255,1), rgba(239,246,255,0.97));
+  border-color: rgba(120,170,236,0.30);
+}

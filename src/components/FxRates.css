@@ -112,6 +112,7 @@
   color: var(--text-strong);
   font-variant-numeric: tabular-nums;
   transition: color .2s ease, text-shadow .2s ease, transform .2s ease;
+  animation: fxValueRise .62s cubic-bezier(.2,.8,.24,1);
 }
 
 .fxValue.isUp{
@@ -134,24 +135,21 @@
   justify-content: center;
   text-align: right;
   line-height: 1.2;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.04);
-  background: rgba(255,255,255,0.018);
+  padding: 0;
   font-variant-numeric: tabular-nums;
 }
 
 .fxRight.isUp{
-  background: linear-gradient(180deg, rgba(14,155,111,0.09), rgba(255,255,255,0.02));
-  border-color: rgba(14,155,111,0.16);
+  background: none;
+  border: none;
 }
 
 .fxRight.isDown{
-  background: linear-gradient(180deg, rgba(221,78,115,0.08), rgba(255,255,255,0.02));
-  border-color: rgba(221,78,115,0.14);
+  background: none;
+  border: none;
 }
 
-.fxPct{ font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
+.fxPct{ font-weight: 800; font-size: 18px; letter-spacing: -0.02em; animation: fxValueRise .62s cubic-bezier(.2,.8,.24,1); }
 .fxDiff{ margin-top: 4px; font-size: 11px; font-weight: 600; opacity: 0.68; }
 
 .fxSource{
@@ -218,6 +216,24 @@
 }
 
 [data-theme="light"] .fxRight{
-  background: linear-gradient(180deg, #f8fbff, #eef5ff);
-  border-color: rgba(183,204,233,0.38);
+  background: none;
+  border: none;
+}
+
+@keyframes fxValueRise{
+  0%{
+    transform: translateY(10px);
+    opacity: .28;
+    filter: blur(1px);
+  }
+  55%{
+    transform: translateY(0);
+    opacity: 1;
+    filter: blur(0);
+  }
+  100%{
+    transform: translateY(0);
+    opacity: 1;
+    filter: blur(0);
+  }
 }

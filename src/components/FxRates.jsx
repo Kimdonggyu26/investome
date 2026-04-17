@@ -112,6 +112,8 @@ export default function FxRates() {
     };
   }, []);
 
+  const tickKey = fx?.updatedDate || "initial";
+
   return (
     <div className="fxCard" id="fx">
       <div className="fxHeader">
@@ -162,7 +164,7 @@ export default function FxRates() {
                 </div>
 
                 <div className="fxMeta">
-                  <div className={`fxValue ${tone}`}>
+                  <div className={`fxValue ${tone}`} key={`${c.key}-${tickKey}-value`}>
                     {valueText}
                     {valueText !== "-" && <span className="fxUnit"> 원</span>}
                   </div>
@@ -173,8 +175,8 @@ export default function FxRates() {
               <div className={`fxRight ${tone}`} style={{ color: col }}>
                 {typeof diff === "number" && typeof pct === "number" ? (
                   <>
-                    <div className="fxPct">{formatPct(pct)}</div>
-                    <div className="fxDiff">
+                    <div className="fxPct" key={`${c.key}-${tickKey}-pct`}>{formatPct(pct)}</div>
+                    <div className="fxDiff" key={`${c.key}-${tickKey}-diff`}>
                       {status} {formatDiff(diff)}
                     </div>
                   </>
