@@ -58,9 +58,6 @@ function formatPct(p) {
   if (typeof p !== "number" || !Number.isFinite(p)) return "-";
   const sign = p > 0 ? "+" : p < 0 ? "-" : "";
   const abs = Math.abs(p);
-
-  if (abs < 0.01) return `${sign}${abs.toFixed(4)}%`;
-  if (abs < 0.1) return `${sign}${abs.toFixed(3)}%`;
   return `${sign}${abs.toFixed(2)}%`;
 }
 
