@@ -307,17 +307,28 @@ select {
 }
 
 :root[data-theme="light"] .currencyToggle {
-  background: rgba(241, 246, 253, 0.96) !important;
-  border-color: rgba(15, 23, 42, 0.10) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 8px 18px rgba(29, 53, 87, 0.08) !important;
+  background: linear-gradient(180deg, rgba(248, 251, 255, 0.98), rgba(232, 240, 251, 0.96)) !important;
+  border-color: rgba(31, 89, 170, 0.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 10px 20px rgba(29, 53, 87, 0.08) !important;
 }
 
 :root[data-theme="light"] .currencyToggle button {
-  color: var(--muted-strong) !important;
+  color: #5b7291 !important;
+  border-radius: 999px !important;
 }
 
 :root[data-theme="light"] .currencyToggle button.active {
-  color: #fff !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #4297ff, #2e78f3) !important;
+  box-shadow: 0 8px 18px rgba(46, 134, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+:root[data-theme="light"] .currencyToggle button:hover:not(:disabled) {
+  color: #173b66 !important;
+}
+
+:root[data-theme="light"] .currencyToggle button:disabled {
+  opacity: 0.45 !important;
 }
 
 :root[data-theme="light"] .rankingRefreshBadge,
@@ -372,6 +383,10 @@ select {
 :root[data-theme="light"] .tickerLiveDot {
   background: linear-gradient(180deg, #7dd8ff, #3a97ff) !important;
   box-shadow: 0 0 0 0 rgba(46, 134, 255, 0.40), 0 0 18px rgba(46, 134, 255, 0.30) !important;
+}
+
+:root[data-theme="light"] .tickerLiveBadge.live .tickerLiveDot {
+  animation: tickerLivePulseLight 1.6s infinite !important;
 }
 
 :root[data-theme="light"] .newsTabs button,
@@ -490,4 +505,239 @@ select {
 :root[data-theme="light"] .communityFloatItem:hover {
   background: rgba(248, 251, 255, 0.98) !important;
   box-shadow: 0 12px 24px rgba(29, 53, 87, 0.08) !important;
+}
+
+:root[data-theme="light"] .newsPageMain,
+:root[data-theme="light"] .myPage,
+:root[data-theme="light"] .myPageMain,
+:root[data-theme="light"] .boardPage {
+  background: transparent !important;
+}
+
+:root[data-theme="light"] .newsPageHero {
+  border-color: rgba(31, 89, 170, 0.12) !important;
+  background:
+    radial-gradient(circle at top left, rgba(92, 178, 255, 0.18), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(86, 214, 196, 0.10), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 255, 0.94)) !important;
+  box-shadow: 0 18px 36px rgba(29, 53, 87, 0.10) !important;
+}
+
+:root[data-theme="light"] .newsPageBadge,
+:root[data-theme="light"] .boardNoticeBadge,
+:root[data-theme="light"] .boardImageBadge,
+:root[data-theme="light"] .mypageGuestBadge,
+:root[data-theme="light"] .mypagePreviewBadge,
+:root[data-theme="light"] .portfolioLiveBadge,
+:root[data-theme="light"] .portfolioGhostTag,
+:root[data-theme="light"] .portfolioMarketTag,
+:root[data-theme="light"] .portfolioSoftTag {
+  color: #10345f !important;
+  border-color: rgba(46, 134, 255, 0.22) !important;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(168, 226, 255, 0.34), transparent 44%),
+    linear-gradient(135deg, rgba(92, 178, 255, 0.18), rgba(143, 206, 255, 0.10)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.90), 0 10px 20px rgba(46, 134, 255, 0.10) !important;
+}
+
+:root[data-theme="light"] .portfolioLiveDot {
+  background: linear-gradient(180deg, #7dd8ff, #3a97ff) !important;
+  box-shadow: 0 0 0 0 rgba(46, 134, 255, 0.36), 0 0 18px rgba(46, 134, 255, 0.26) !important;
+}
+
+:root[data-theme="light"] .portfolioLiveBadge.live .portfolioLiveDot {
+  animation: portfolioLivePulse 1.6s infinite !important;
+}
+
+:root[data-theme="light"] .newsPagePulseCard {
+  border-color: rgba(31, 89, 170, 0.12) !important;
+  background:
+    radial-gradient(circle at top left, rgba(92, 178, 255, 0.20), transparent 30%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 247, 255, 0.94)) !important;
+  box-shadow: 0 14px 28px rgba(29, 53, 87, 0.10) !important;
+}
+
+:root[data-theme="light"] .newsPagePulseTop span,
+:root[data-theme="light"] .newsPagePulseFoot {
+  color: var(--muted) !important;
+}
+
+:root[data-theme="light"] .newsPagePulseTop em {
+  color: #355d8f !important;
+  background: rgba(46, 134, 255, 0.10) !important;
+  border-color: rgba(46, 134, 255, 0.18) !important;
+}
+
+:root[data-theme="light"] .boardHero,
+:root[data-theme="light"] .boardToolbar {
+  padding: 20px 22px !important;
+  border-radius: 22px !important;
+  border: 1px solid rgba(17, 24, 39, 0.08) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 249, 255, 0.94)) !important;
+  box-shadow: 0 14px 32px rgba(29, 53, 87, 0.08) !important;
+}
+
+:root[data-theme="light"] .boardEyebrow,
+:root[data-theme="light"] .boardDesc,
+:root[data-theme="light"] .boardNo,
+:root[data-theme="light"] .boardAuthor,
+:root[data-theme="light"] .boardDate,
+:root[data-theme="light"] .boardViews,
+:root[data-theme="light"] .boardLikes,
+:root[data-theme="light"] .boardExcerpt,
+:root[data-theme="light"] .boardEmpty {
+  color: var(--muted) !important;
+}
+
+:root[data-theme="light"] .boardWriteBtn,
+:root[data-theme="light"] .boardTabs button.active,
+:root[data-theme="light"] .boardPager button.active,
+:root[data-theme="light"] .boardSearch button {
+  color: #10345f !important;
+  border-color: rgba(46, 134, 255, 0.24) !important;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(160, 223, 255, 0.50), transparent 40%),
+    linear-gradient(135deg, rgba(78, 156, 255, 0.22), rgba(134, 178, 255, 0.14)) !important;
+  box-shadow: 0 12px 24px rgba(46, 134, 255, 0.12), inset 0 1px 0 rgba(255,255,255,0.94) !important;
+}
+
+:root[data-theme="light"] .boardTabs button,
+:root[data-theme="light"] .boardPager button,
+:root[data-theme="light"] .boardSearch select,
+:root[data-theme="light"] .boardSearch input {
+  color: #49637f !important;
+  border-color: rgba(31, 89, 170, 0.14) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 255, 0.94)) !important;
+  box-shadow: 0 8px 18px rgba(29, 53, 87, 0.08), inset 0 1px 0 rgba(255,255,255,0.90) !important;
+}
+
+:root[data-theme="light"] .boardTableWrap {
+  border-color: rgba(17, 24, 39, 0.08) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(245,249,255,0.94)) !important;
+  box-shadow: 0 18px 38px rgba(29, 53, 87, 0.08) !important;
+}
+
+:root[data-theme="light"] .boardTableHead {
+  background: linear-gradient(180deg, rgba(235, 242, 252, 0.98), rgba(226, 235, 248, 0.96)) !important;
+  border-bottom-color: rgba(17, 24, 39, 0.08) !important;
+  color: #4b6280 !important;
+}
+
+:root[data-theme="light"] .boardRow {
+  border-bottom-color: rgba(17, 24, 39, 0.06) !important;
+}
+
+:root[data-theme="light"] .boardRow:hover {
+  background: rgba(46, 134, 255, 0.04) !important;
+}
+
+:root[data-theme="light"] .boardSubjectText {
+  color: var(--text-strong) !important;
+}
+
+:root[data-theme="light"] .boardComments {
+  color: #2d82f0 !important;
+}
+
+:root[data-theme="light"] .portfolioHeroCard,
+:root[data-theme="light"] .portfolioGoalCard,
+:root[data-theme="light"] .portfolioInsightCard,
+:root[data-theme="light"] .portfolioAllocationCard,
+:root[data-theme="light"] .portfolioCalculatorCard,
+:root[data-theme="light"] .portfolioHoldingsCard,
+:root[data-theme="light"] .portfolioHelperCard,
+:root[data-theme="light"] .mypageGuestCard,
+:root[data-theme="light"] .mypagePreviewMockCard {
+  border-color: rgba(17, 24, 39, 0.08) !important;
+  background:
+    radial-gradient(circle at top left, rgba(92, 178, 255, 0.12), transparent 26%),
+    linear-gradient(180deg, rgba(255,255,255,0.98), rgba(245,249,255,0.94)) !important;
+  box-shadow: 0 18px 36px rgba(29, 53, 87, 0.10) !important;
+}
+
+:root[data-theme="light"] .portfolioMiniGlowCard,
+:root[data-theme="light"] .portfolioFlowMeta > div,
+:root[data-theme="light"] .portfolioLegendItem,
+:root[data-theme="light"] .portfolioHoldingItem,
+:root[data-theme="light"] .portfolioHoldingCompactStat,
+:root[data-theme="light"] .portfolioOverviewMiniItem,
+:root[data-theme="light"] .portfolioTargetStat,
+:root[data-theme="light"] .portfolioInsightStat,
+:root[data-theme="light"] .portfolioInsightFocusCard,
+:root[data-theme="light"] .portfolioCalcResultCard,
+:root[data-theme="light"] .portfolioCalcStat,
+:root[data-theme="light"] .portfolioHelperStat,
+:root[data-theme="light"] .portfolioTopMoverCard,
+:root[data-theme="light"] .mypageGuestFeature,
+:root[data-theme="light"] .targetEmptyCard,
+:root[data-theme="light"] .portfolioGoalEmptyState {
+  border-color: rgba(17, 24, 39, 0.08) !important;
+  background: rgba(255,255,255,0.76) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.90), 0 10px 22px rgba(29, 53, 87, 0.06) !important;
+}
+
+:root[data-theme="light"] .portfolioTitle,
+:root[data-theme="light"] .portfolioTitleSm,
+:root[data-theme="light"] .portfolioTotalValue,
+:root[data-theme="light"] .portfolioPnl,
+:root[data-theme="light"] .portfolioHoldingName,
+:root[data-theme="light"] .portfolioHoldingValue,
+:root[data-theme="light"] .portfolioLegendText strong,
+:root[data-theme="light"] .portfolioOverviewMiniItem strong,
+:root[data-theme="light"] .portfolioTargetStat strong,
+:root[data-theme="light"] .portfolioInsightStat strong,
+:root[data-theme="light"] .portfolioCalcStat strong,
+:root[data-theme="light"] .mypageGuestTitle,
+:root[data-theme="light"] .mypageGuestFeature strong,
+:root[data-theme="light"] .mypagePreviewMockCard h4 {
+  color: var(--text-strong) !important;
+}
+
+:root[data-theme="light"] .portfolioEyebrow,
+:root[data-theme="light"] .portfolioHoldingSub,
+:root[data-theme="light"] .portfolioHoldingMetaRow,
+:root[data-theme="light"] .portfolioLegendText span,
+:root[data-theme="light"] .portfolioMiniGlowCard .label,
+:root[data-theme="light"] .portfolioFlowMeta .label,
+:root[data-theme="light"] .portfolioOverviewMiniItem span,
+:root[data-theme="light"] .portfolioTargetStat .label,
+:root[data-theme="light"] .portfolioInsightStat .label,
+:root[data-theme="light"] .portfolioInsightStat small,
+:root[data-theme="light"] .portfolioCalcStat span,
+:root[data-theme="light"] .portfolioCalcField span,
+:root[data-theme="light"] .portfolioCalcHint,
+:root[data-theme="light"] .mypageGuestDesc,
+:root[data-theme="light"] .mypageGuestFeature span,
+:root[data-theme="light"] .mypagePreviewMiniEyebrow,
+:root[data-theme="light"] .mypagePreviewHoldingMeta {
+  color: var(--muted) !important;
+}
+
+:root[data-theme="light"] .portfolioRingInner {
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.94)) !important;
+  border-color: rgba(17, 24, 39, 0.08) !important;
+}
+
+:root[data-theme="light"] .portfolioRingInner span {
+  color: var(--muted) !important;
+}
+
+:root[data-theme="light"] .portfolioSearchBox input,
+:root[data-theme="light"] .portfolioFormGrid input,
+:root[data-theme="light"] .portfolioFormGrid select,
+:root[data-theme="light"] .portfolioCalcField input,
+:root[data-theme="light"] .portfolioTargetEditor input {
+  border-color: rgba(17, 24, 39, 0.10) !important;
+  background: rgba(255,255,255,0.94) !important;
+  color: var(--text-strong) !important;
+}
+
+:root[data-theme="light"] .portfolioAddBtn,
+:root[data-theme="light"] .portfolioGhostBtn,
+:root[data-theme="light"] .portfolioDeleteBtn,
+:root[data-theme="light"] .mypageGuestLoginBtn,
+:root[data-theme="light"] .mypageGuestHomeBtn,
+:root[data-theme="light"] .targetEmptyButton {
+  border-color: rgba(46, 134, 255, 0.22) !important;
+  box-shadow: 0 12px 24px rgba(46, 134, 255, 0.10) !important;
 }
