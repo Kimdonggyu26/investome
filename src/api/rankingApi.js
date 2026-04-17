@@ -18,6 +18,12 @@ function rankingApiUrl(path) {
   return `${base.replace(/\/$/, "")}${path}`;
 }
 
+function stockRankingApiUrl(path) {
+  const backendBase = (import.meta.env.VITE_API_BASE_URL || "").trim();
+  if (!backendBase) return rankingApiUrl(path);
+  return `${backendBase.replace(/\/$/, "")}${path}`;
+}
+
 function buildLogo(domain) {
   if (!domain) return "";
   return `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(
@@ -268,7 +274,7 @@ export async function fetchCommoditiesTopKRW() {
 async function fetchStockTop30(market) {
   try {
     const json = await readJsonOrThrow(
-      await fetch(rankingApiUrl(`/api/stock-top30?market=${market}`)),
+      await fetch(stockRankingApiUrl(`/api/stock-top30?market=${market}`)),
       `${market} top30`
     );
 
