@@ -120,11 +120,13 @@
 }
 
 .fxValue.isUp{
-  text-shadow: 0 0 16px rgba(14,155,111,0.16);
+  color: var(--text-strong);
+  text-shadow: none;
 }
 
 .fxValue.isDown{
-  text-shadow: 0 0 16px rgba(221,78,115,0.14);
+  color: var(--text-strong);
+  text-shadow: none;
 }
 
 .fxUnit{

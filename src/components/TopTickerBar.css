@@ -135,7 +135,7 @@
     0 0 22px rgba(78, 180, 255, 0.18),
     0 12px 24px rgba(113, 140, 174, 0.12),
     inset 0 1px 0 rgba(255,255,255,0.9);
-  transform: translateY(-1px);
+  transform: translateY(0);
 }
 
 .tickerSymbol{
