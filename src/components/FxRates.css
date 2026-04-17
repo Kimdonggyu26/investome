@@ -105,12 +105,16 @@
 .fxMeta{ display: flex; flex-direction: column; justify-content: center; gap: 6px; min-width: 0; }
 
 .fxValue{
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: nowrap;
   font-weight: 800;
   font-size: 26px;
   line-height: 1;
   letter-spacing: -0.04em;
   color: var(--text-strong);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   transition: color .2s ease, text-shadow .2s ease, transform .2s ease;
   animation: fxValueRise .62s cubic-bezier(.2,.8,.24,1);
 }
@@ -123,7 +127,14 @@
   text-shadow: 0 0 16px rgba(221,78,115,0.14);
 }
 
-.fxUnit{ margin-left: 4px; font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.66); }
+.fxUnit{
+  margin-left: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.66);
+  line-height: 1;
+  transform: translateY(-1px);
+}
 .fxLabel{ font-size: 13px; color: rgba(255,255,255,0.56); letter-spacing: -0.01em; }
 
 .fxRight{
