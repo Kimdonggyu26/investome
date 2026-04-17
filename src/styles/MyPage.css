@@ -3907,6 +3907,49 @@
   color: #16253d;
 }
 
+[data-theme="light"] .mypagePreviewShell::before{
+  background: linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(236,244,255,0.12));
+}
+
+[data-theme="light"] .mypagePreviewShell::after{
+  background: linear-gradient(to top, rgba(236,244,255,0.16), rgba(236,244,255,0));
+}
+
+[data-theme="light"] .mypagePreviewOverlay{
+  background: transparent;
+}
+
+[data-theme="light"] .mypagePreviewScale{
+  filter: none;
+  opacity: 1;
+}
+
+[data-theme="light"] .mypagePreviewMock{
+  background:
+    radial-gradient(circle at 18% 12%, rgba(95,170,255,0.08), transparent 26%),
+    radial-gradient(circle at 80% 78%, rgba(124,77,255,0.06), transparent 24%),
+    linear-gradient(180deg, #f9fbff, #f2f7ff 55%, #edf4fd);
+}
+
+[data-theme="light"] .mypagePreviewFlowBox,
+[data-theme="light"] .mypagePreviewHoldingItem,
+[data-theme="light"] .mypagePreviewLegendItem,
+[data-theme="light"] .mypagePreviewMiniStat{
+  border-color: rgba(185,205,233,0.38);
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,248,254,0.95));
+  box-shadow: 0 10px 20px rgba(114,141,176,0.08);
+}
+
+[data-theme="light"] .mypagePreviewProfit,
+[data-theme="light"] .mypagePreviewHoldingBottom .up{
+  color: #069b6f;
+}
+
+[data-theme="light"] .mypagePreviewLegendItem em,
+[data-theme="light"] .mypagePreviewHoldingBottom span{
+  color: #7388a3;
+}
+
 [data-theme="light"] .myPage {
   background:
     radial-gradient(circle at 12% 8%, rgba(95, 170, 255, 0.08), transparent 24%),
