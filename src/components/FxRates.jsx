@@ -47,6 +47,13 @@ function color(v) {
   return "var(--muted)";
 }
 
+function toneClass(v) {
+  if (typeof v !== "number" || !Number.isFinite(v)) return "isFlat";
+  if (v > 0) return "isUp";
+  if (v < 0) return "isDown";
+  return "isFlat";
+}
+
 function formatPct(p) {
   if (typeof p !== "number" || !Number.isFinite(p)) return "-";
   const sign = p > 0 ? "+" : p < 0 ? "-" : "";
@@ -135,6 +142,7 @@ export default function FxRates() {
           const diff = diffValue(now, base);
           const pct = changePct(now, base);
           const col = color(diff);
+          const tone = toneClass(diff);
           const valueText = fmt(now);
 
           const status =
@@ -147,14 +155,14 @@ export default function FxRates() {
               : "";
 
           return (
-            <div className="fxRow" key={c.key}>
+            <div className={`fxRow ${tone}`} key={c.key}>
               <div className="fxLeft">
                 <div className="fxFlag" aria-hidden="true">
                   <img src={c.flag} alt="" />
                 </div>
 
                 <div className="fxMeta">
-                  <div className="fxValue">
+                  <div className={`fxValue ${tone}`}>
                     {valueText}
                     {valueText !== "-" && <span className="fxUnit"> 원</span>}
                   </div>
@@ -162,7 +170,7 @@ export default function FxRates() {
                 </div>
               </div>
 
-              <div className="fxRight" style={{ color: col }}>
+              <div className={`fxRight ${tone}`} style={{ color: col }}>
                 {typeof diff === "number" && typeof pct === "number" ? (
                   <>
                     <div className="fxPct">{formatPct(pct)}</div>

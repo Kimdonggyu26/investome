@@ -3906,3 +3906,195 @@
 [data-theme="light"] .mypagePreviewFlowValue{
   color: #16253d;
 }
+
+[data-theme="light"] .myPage {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(95, 170, 255, 0.08), transparent 24%),
+    linear-gradient(180deg, #eef5fc, #f8fbff 28%, #eef4fb);
+}
+
+[data-theme="light"] .portfolioHeroCard,
+[data-theme="light"] .portfolioGoalCard,
+[data-theme="light"] .portfolioHoldingsCard,
+[data-theme="light"] .portfolioInsightCard,
+[data-theme="light"] .portfolioAllocationCard,
+[data-theme="light"] .portfolioCalculatorCard,
+[data-theme="light"] .portfolioOverviewMiniItem,
+[data-theme="light"] .portfolioTargetStat,
+[data-theme="light"] .portfolioInsightStat,
+[data-theme="light"] .portfolioInsightFocusCard,
+[data-theme="light"] .portfolioCalcStat,
+[data-theme="light"] .portfolioMiniGlowCard,
+[data-theme="light"] .portfolioLegendItem,
+[data-theme="light"] .portfolioHoldingItem,
+[data-theme="light"] .portfolioCalcResultCard,
+[data-theme="light"] .portfolioCalcHint,
+[data-theme="light"] .portfolioFlowMeta > div,
+[data-theme="light"] .portfolioHelperStat,
+[data-theme="light"] .portfolioHelperNote,
+[data-theme="light"] .portfolioTopMoverCard,
+[data-theme="light"] .portfolioEmptyMiniCard,
+[data-theme="light"] .portfolioEmptySoft,
+[data-theme="light"] .portfolioGoalEmptyState,
+[data-theme="light"] .targetEmptyCard,
+[data-theme="light"] .portfolioAllocationEmptyPanel {
+  border-color: rgba(183, 204, 233, 0.34);
+  background:
+    radial-gradient(circle at top left, rgba(95, 170, 255, 0.08), transparent 26%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 254, 0.95));
+  box-shadow: 0 18px 42px rgba(113, 140, 174, 0.12);
+}
+
+[data-theme="light"] .portfolioRingInner,
+[data-theme="light"] .portfolioModal,
+[data-theme="light"] .portfolioSuggestList {
+  border-color: rgba(183, 204, 233, 0.34);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 254, 0.95));
+  box-shadow: 0 20px 44px rgba(113, 140, 174, 0.14);
+}
+
+[data-theme="light"] .portfolioFlowBox,
+[data-theme="light"] .portfolioHoldingCompactStat,
+[data-theme="light"] .portfolioSummaryGridExpanded .portfolioSummaryStat,
+[data-theme="light"] .portfolioOverviewFooterCompact > div {
+  border-color: rgba(183, 204, 233, 0.34);
+  background: linear-gradient(180deg, rgba(250, 252, 255, 0.98), rgba(241, 246, 254, 0.96));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="light"] .portfolioTitle,
+[data-theme="light"] .portfolioTitleSm,
+[data-theme="light"] .portfolioTotalValue,
+[data-theme="light"] .portfolioModalTitle,
+[data-theme="light"] .portfolioHoldingName,
+[data-theme="light"] .portfolioHoldingValue,
+[data-theme="light"] .portfolioLegendText strong,
+[data-theme="light"] .portfolioInsightFocusName,
+[data-theme="light"] .portfolioHelperHero strong,
+[data-theme="light"] .portfolioTopMoverName,
+[data-theme="light"] .portfolioCalcResultHead strong,
+[data-theme="light"] .portfolioCalcStat strong,
+[data-theme="light"] .portfolioMiniGlowCard strong,
+[data-theme="light"] .portfolioFlowMeta strong,
+[data-theme="light"] .portfolioRingInner strong,
+[data-theme="light"] .targetEmptyTitle,
+[data-theme="light"] .portfolioAllocationEmptyText strong,
+[data-theme="light"] .portfolioGoalEmptyState h4 {
+  color: #16253d;
+}
+
+[data-theme="light"] .portfolioPnl,
+[data-theme="light"] .portfolioTopMoverRight,
+[data-theme="light"] .portfolioAddBtn,
+[data-theme="light"] .targetEmptyButton {
+  color: #155f9a;
+}
+
+[data-theme="light"] .portfolioEyebrow,
+[data-theme="light"] .portfolioMiniGlowCard .label,
+[data-theme="light"] .portfolioFlowMeta .label,
+[data-theme="light"] .portfolioHoldingSub,
+[data-theme="light"] .portfolioHoldingCompactStat span,
+[data-theme="light"] .portfolioLegendText span,
+[data-theme="light"] .portfolioGhostTag,
+[data-theme="light"] .portfolioSoftTag,
+[data-theme="light"] .portfolioInsightFocusSub,
+[data-theme="light"] .portfolioInsightStat .label,
+[data-theme="light"] .portfolioInsightStat small,
+[data-theme="light"] .portfolioHelperStat .label,
+[data-theme="light"] .portfolioHelperNote,
+[data-theme="light"] .portfolioTopMoverSub,
+[data-theme="light"] .portfolioTopMoverEmpty,
+[data-theme="light"] .portfolioCalcField span,
+[data-theme="light"] .portfolioCalcStat span,
+[data-theme="light"] .portfolioCalcHint,
+[data-theme="light"] .portfolioCalcResultHead span,
+[data-theme="light"] .portfolioEmptySoft p,
+[data-theme="light"] .portfolioEmptyMiniCard span,
+[data-theme="light"] .portfolioRingInner span,
+[data-theme="light"] .targetEmptyDesc,
+[data-theme="light"] .portfolioAllocationEmptyText span,
+[data-theme="light"] .portfolioGoalEmptyState p {
+  color: #7388a3;
+}
+
+[data-theme="light"] .portfolioLiveBadge,
+[data-theme="light"] .portfolioGhostTag,
+[data-theme="light"] .portfolioSoftTag,
+[data-theme="light"] .portfolioMarketTag,
+[data-theme="light"] .portfolioHelperRateBadge {
+  border-color: rgba(120, 170, 236, 0.32);
+  background: linear-gradient(180deg, #edf5ff, #dcebff);
+  color: #2e5f97;
+  box-shadow: none;
+}
+
+[data-theme="light"] .portfolioAddBtn,
+[data-theme="light"] .portfolioGhostBtn,
+[data-theme="light"] .portfolioDeleteBtn,
+[data-theme="light"] .portfolioModalClose {
+  border-color: rgba(120, 170, 236, 0.34);
+  background: linear-gradient(180deg, #ffffff, #edf5ff);
+  color: #2f4f71;
+  box-shadow: 0 10px 22px rgba(112, 142, 185, 0.12);
+}
+
+[data-theme="light"] .portfolioAddBtnIcon,
+[data-theme="light"] .portfolioEmptySoftIcon,
+[data-theme="light"] .targetEmptyIcon {
+  background: linear-gradient(135deg, #deefff, #cfe3ff);
+  color: #2562a2;
+  border-color: rgba(120, 170, 236, 0.32);
+  box-shadow: 0 10px 22px rgba(112, 142, 185, 0.12);
+}
+
+[data-theme="light"] .portfolioSearchBox input,
+[data-theme="light"] .portfolioFormGrid input,
+[data-theme="light"] .portfolioFormGrid select,
+[data-theme="light"] .portfolioCalcField input {
+  background: #ffffff;
+  border-color: rgba(185, 205, 233, 0.44);
+  color: #22344f;
+}
+
+[data-theme="light"] .portfolioSearchBox input::placeholder,
+[data-theme="light"] .portfolioFormGrid input::placeholder,
+[data-theme="light"] .portfolioCalcField input::placeholder {
+  color: #9aa9bd;
+}
+
+[data-theme="light"] .portfolioSuggestItem {
+  color: #20344f;
+}
+
+[data-theme="light"] .portfolioSuggestItem small,
+[data-theme="light"] .portfolioFormHint {
+  color: #7a90ab;
+}
+
+[data-theme="light"] .portfolioSuggestItem:hover {
+  background: rgba(95, 170, 255, 0.08);
+}
+
+[data-theme="light"] .portfolioHoldingBar,
+[data-theme="light"] .portfolioTargetBar,
+[data-theme="light"] .portfolioAccentBar {
+  background: rgba(179, 204, 233, 0.42);
+}
+
+[data-theme="light"] .portfolioHoldingsCard .luxuryScroll,
+[data-theme="light"] .portfolioAllocationCard .luxuryScroll {
+  scrollbar-color: rgba(136, 176, 228, 0.72) rgba(244, 248, 255, 0.96);
+}
+
+[data-theme="light"] .portfolioHoldingsCard .luxuryScroll::-webkit-scrollbar-track,
+[data-theme="light"] .portfolioAllocationCard .luxuryScroll::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, rgba(246, 250, 255, 0.98), rgba(239, 245, 253, 0.96));
+  border-left: 1px solid rgba(190, 206, 226, 0.38);
+}
+
+[data-theme="light"] .portfolioHoldingsCard .luxuryScroll::-webkit-scrollbar-thumb,
+[data-theme="light"] .portfolioAllocationCard .luxuryScroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(116, 175, 244, 0.92), rgba(116, 175, 244, 0.45));
+  border: 3px solid rgba(244, 248, 255, 0.96);
+}
