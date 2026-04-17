@@ -119,8 +119,4 @@
   .newsPageHeroCopy h1 {
     font-size: 31px;
   }
-
-  .newsPagePulseGrid {
-    grid-template-columns: 1fr;
-  }
 }

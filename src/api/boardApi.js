@@ -56,12 +56,9 @@ export async function fetchBoardPosts() {
 }
 
 export async function fetchBoardPost(postId, increaseView = false) {
-  const res = await fetch(
-    apiUrl(`/api/board/posts/${postId}?increaseView=${increaseView}`),
-    {
-      headers: getAuthHeaders(),
-    }
-  );
+  const res = await fetch(apiUrl(`/api/board/posts/${postId}?increaseView=${increaseView}`), {
+    headers: getAuthHeaders(),
+  });
 
   return readJsonOrThrow(res, "게시글을 불러오지 못했어요.");
 }
@@ -108,13 +105,10 @@ export async function createBoardComment(postId, payload) {
 }
 
 export async function deleteBoardComment(postId, commentId) {
-  const res = await fetch(
-    apiUrl(`/api/board/posts/${postId}/comments/${commentId}`),
-    {
-      method: "DELETE",
-      headers: getAuthHeaders(),
-    }
-  );
+  const res = await fetch(apiUrl(`/api/board/posts/${postId}/comments/${commentId}`), {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
 
   return readJsonOrThrow(res, "댓글 삭제에 실패했어요.");
 }

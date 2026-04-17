@@ -22,6 +22,11 @@ function formatBoardDateTime(dateValue) {
   ).padStart(2, "0")}`;
 }
 
+function categoryLabel(category) {
+  if (category === "free") return "자유게시판";
+  return category || "게시판";
+}
+
 export default function BoardDetailPage() {
   const navigate = useNavigate();
   const { postId } = useParams();
@@ -34,7 +39,7 @@ export default function BoardDetailPage() {
   const [liked, setLiked] = useState(false);
   const [commentError, setCommentError] = useState("");
   const [loading, setLoading] = useState(true);
-
+  const [replyTarget, setReplyTarget] = useState(null);
   const [commentForm, setCommentForm] = useState({
     author: nickname,
     content: "",
@@ -65,10 +70,8 @@ export default function BoardDetailPage() {
     fetchBoardPost(postId, shouldIncrease)
       .then((data) => {
         if (!mounted) return;
-
         setPost(data);
         setLiked(!!data.likedByMe);
-
         if (shouldIncrease) {
           sessionStorage.setItem(viewedKey, "true");
         }
@@ -113,7 +116,7 @@ export default function BoardDetailPage() {
     setCommentError("");
 
     if (!loggedIn) {
-      setCommentError("댓글 작성은 로그인 후 이용할 수 있어요.");
+      setCommentError("댓글은 로그인 후 작성할 수 있어요.");
       return;
     }
 
@@ -125,6 +128,7 @@ export default function BoardDetailPage() {
     try {
       const nextPost = await createBoardComment(postId, {
         content: commentForm.content,
+        parentCommentId: replyTarget?.id ?? null,
       });
 
       setPost(nextPost);
@@ -133,13 +137,14 @@ export default function BoardDetailPage() {
         author: nickname,
         content: "",
       });
+      setReplyTarget(null);
     } catch (err) {
       if (err.message?.includes("로그인이 만료")) {
         handleExpiredAuth();
         return;
       }
 
-      setCommentError(err.message || "댓글 등록 중 오류가 발생했습니다.");
+      setCommentError(err.message || "댓글 등록 중 오류가 발생했어요.");
     }
   }
 
@@ -149,7 +154,7 @@ export default function BoardDetailPage() {
 
     try {
       await deleteBoardPost(postId);
-      alert("게시글을 삭제했어요.");
+      alert("게시글이 삭제되었어요.");
       navigate("/board");
     } catch (err) {
       if (err.message?.includes("로그인이 만료")) {
@@ -169,6 +174,9 @@ export default function BoardDetailPage() {
       const nextPost = await deleteBoardComment(postId, commentId);
       setPost(nextPost);
       setLiked(!!nextPost.likedByMe);
+      if (replyTarget?.id === commentId) {
+        setReplyTarget(null);
+      }
     } catch (err) {
       if (err.message?.includes("로그인이 만료")) {
         handleExpiredAuth();
@@ -177,6 +185,17 @@ export default function BoardDetailPage() {
 
       alert(err.message || "댓글 삭제 중 오류가 발생했어요.");
     }
+  }
+
+  function handleReplyClick(comment) {
+    if (!loggedIn) {
+      alert("로그인 후 답글을 작성할 수 있어요.");
+      navigate("/login");
+      return;
+    }
+
+    setReplyTarget(comment);
+    setCommentError("");
   }
 
   if (loading) {
@@ -200,7 +219,7 @@ export default function BoardDetailPage() {
           <section className="boardDetailWrap">
             <div className="boardDetailEmpty">
               게시글을 찾을 수 없습니다.
-              <div style={{ marginTop: 16 }}>
+              <div className="boardDetailEmptyAction">
                 <Link to="/board" className="boardDetailGhostBtn">
                   목록으로
                 </Link>
@@ -228,7 +247,7 @@ export default function BoardDetailPage() {
             </button>
 
             {post.mine ? (
-              <div style={{ display: "flex", gap: "8px" }}>
+              <div className="boardDetailTopActions">
                 <button
                   type="button"
                   className="boardDetailGhostBtn"
@@ -248,16 +267,13 @@ export default function BoardDetailPage() {
           </div>
 
           <article className="boardDetailCard">
-            <div className="boardDetailCategory">
-              {post.category === "free" ? "자유게시판" : post.category}
-            </div>
-
+            <div className="boardDetailCategory">{categoryLabel(post.category)}</div>
             <h1 className="boardDetailTitle">{post.title}</h1>
 
             <div className="boardDetailMeta">
               <span>작성자 {post.author}</span>
               <span>작성일 {formatBoardDateTime(post.createdAt)}</span>
-              <span>조회수 {post.views ?? 0}</span>
+              <span>조회 {post.views ?? 0}</span>
               <span>추천 {post.likes ?? 0}</span>
               <span>댓글 {post.commentCount ?? 0}</span>
             </div>
@@ -296,11 +312,24 @@ export default function BoardDetailPage() {
                 {loggedIn ? `${nickname}님` : "로그인 후 댓글을 작성할 수 있어요."}
               </div>
 
+              {replyTarget ? (
+                <div className="boardReplyNotice">
+                  <span>
+                    <strong>{replyTarget.author}</strong>님에게 답글 작성 중
+                  </span>
+                  <button type="button" onClick={() => setReplyTarget(null)}>
+                    취소
+                  </button>
+                </div>
+              ) : null}
+
               <textarea
                 className="boardCommentTextarea"
                 placeholder={
                   loggedIn
-                    ? "댓글 내용을 입력해주세요."
+                    ? replyTarget
+                      ? "답글 내용을 입력해주세요."
+                      : "댓글 내용을 입력해주세요."
                     : "로그인 후 댓글을 작성할 수 있어요."
                 }
                 value={commentForm.content}
@@ -313,9 +342,7 @@ export default function BoardDetailPage() {
                 disabled={!loggedIn}
               />
 
-              {commentError ? (
-                <div className="boardCommentError">{commentError}</div>
-              ) : null}
+              {commentError ? <div className="boardCommentError">{commentError}</div> : null}
 
               <div className="boardCommentSubmitRow">
                 <button
@@ -323,7 +350,7 @@ export default function BoardDetailPage() {
                   className="boardCommentSubmitBtn"
                   disabled={!loggedIn}
                 >
-                  댓글 등록
+                  {replyTarget ? "답글 등록" : "댓글 등록"}
                 </button>
               </div>
             </form>
@@ -331,35 +358,37 @@ export default function BoardDetailPage() {
             <div className="boardCommentList luxuryScroll">
               {post.comments && post.comments.length > 0 ? (
                 post.comments.map((comment) => (
-                  <div key={comment.id} className="boardCommentItem">
-                    <div className="boardCommentItemTop">
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "10px",
-                          alignItems: "center",
-                          flexWrap: "wrap",
-                        }}
-                      >
+                  <div
+                    key={comment.id}
+                    className={`boardCommentItem ${comment.depth > 0 ? "isReply" : ""}`}
+                  >
+                    <div className="boardCommentItemHead">
+                      <div className="boardCommentMetaMain">
                         <strong>{comment.author}</strong>
                         <span>{formatBoardDateTime(comment.createdAt)}</span>
+                        {comment.depth > 0 ? (
+                          <em className="boardCommentReplyBadge">답글</em>
+                        ) : null}
                       </div>
 
-                      {comment.mine ? (
+                      <div className="boardCommentActions">
                         <button
                           type="button"
-                          onClick={() => handleDeleteComment(comment.id)}
-                          style={{
-                            border: "none",
-                            background: "transparent",
-                            color: "#ff8a8a",
-                            cursor: "pointer",
-                            fontSize: "13px",
-                          }}
+                          className="boardCommentActionBtn"
+                          onClick={() => handleReplyClick(comment)}
                         >
-                          삭제
+                          답글
                         </button>
-                      ) : null}
+                        {comment.mine ? (
+                          <button
+                            type="button"
+                            className="boardCommentActionBtn danger"
+                            onClick={() => handleDeleteComment(comment.id)}
+                          >
+                            삭제
+                          </button>
+                        ) : null}
+                      </div>
                     </div>
 
                     <div className="boardCommentItemContent">{comment.content}</div>

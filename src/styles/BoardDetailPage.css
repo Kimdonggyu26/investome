@@ -1,13 +1,13 @@
-.boardDetailPage{
+.boardDetailPage {
   padding: 18px 0 40px;
 }
 
-.boardDetailWrap{
+.boardDetailWrap {
   width: min(960px, calc(100% - 32px));
   margin: 0 auto;
 }
 
-.boardDetailTopBar{
+.boardDetailTopBar {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -16,113 +16,123 @@
   flex-wrap: wrap;
 }
 
-.boardDetailCard,
-.boardCommentSection{
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.025);
-  box-shadow: 0 18px 50px rgba(0,0,0,0.26);
-  padding: 22px;
+.boardDetailTopActions {
+  display: flex;
+  gap: 8px;
 }
 
-.boardCommentSection{
+.boardDetailCard,
+.boardCommentSection {
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.025);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.26);
+  padding: 24px;
+}
+
+.boardCommentSection {
   margin-top: 18px;
 }
 
-.boardDetailGhostBtn{
+.boardDetailGhostBtn {
   height: 40px;
   padding: 0 14px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.04);
-  color: rgba(255,255,255,0.92);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.92);
   font-weight: 800;
   cursor: pointer;
-}
-
-.boardDetailCategory{
+  text-decoration: none;
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
-  padding: 0 10px;
+  justify-content: center;
+}
+
+.boardDetailCategory {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 11px;
   border-radius: 999px;
-  background: rgba(14,165,255,0.16);
-  border: 1px solid rgba(14,165,255,0.22);
+  background: rgba(14, 165, 255, 0.16);
+  border: 1px solid rgba(14, 165, 255, 0.22);
   color: #dff6ff;
   font-size: 12px;
   font-weight: 900;
   margin-bottom: 12px;
 }
 
-.boardDetailTitle{
+.boardDetailTitle {
   margin: 0;
   font-size: 30px;
   line-height: 1.25;
   font-weight: 900;
+  letter-spacing: -0.03em;
 }
 
-.boardDetailMeta{
+.boardDetailMeta {
   margin-top: 14px;
   display: flex;
   flex-wrap: wrap;
   gap: 10px 16px;
-  color: rgba(255,255,255,0.56);
+  color: rgba(255, 255, 255, 0.56);
   font-size: 13px;
 }
 
-.boardDetailImageWrap{
+.boardDetailImageWrap {
   margin-top: 18px;
   border-radius: 18px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
 }
 
-.boardDetailImage{
+.boardDetailImage {
   width: 100%;
   max-height: 680px;
   object-fit: contain;
   display: block;
-  background: rgba(0,0,0,0.2);
+  background: rgba(0, 0, 0, 0.2);
 }
 
-.boardDetailContent{
-  margin-top: 24px;
+.boardDetailContent {
+  margin-top: 22px;
   min-height: 220px;
-  padding: 20px;
+  padding: 22px;
   border-radius: 18px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
-  color: rgba(255,255,255,0.92);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.92);
   white-space: pre-wrap;
   line-height: 1.9;
   font-size: 15px;
 }
 
-.boardDetailActionRow{
+.boardDetailActionRow {
   margin-top: 18px;
   display: flex;
   justify-content: center;
 }
 
-.boardDetailLikeBtn{
+.boardDetailLikeBtn {
   min-width: 160px;
   height: 46px;
   padding: 0 18px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.04);
-  color: rgba(255,255,255,0.92);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.92);
   font-weight: 900;
   cursor: pointer;
 }
 
-.boardDetailLikeBtn.isActive{
-  background: linear-gradient(135deg, rgba(14,165,255,0.22), rgba(124,77,255,0.16));
+.boardDetailLikeBtn.isActive {
+  background: linear-gradient(135deg, rgba(14, 165, 255, 0.22), rgba(124, 77, 255, 0.16));
   color: white;
 }
 
-.boardCommentHeader{
+.boardCommentHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -130,173 +140,338 @@
   gap: 12px;
 }
 
-.boardCommentHeader h2{
+.boardCommentHeader h2 {
   margin: 0;
   font-size: 22px;
 }
 
-.boardCommentHeader span{
-  color: rgba(255,255,255,0.56);
+.boardCommentHeader span {
+  color: rgba(255, 255, 255, 0.56);
   font-size: 13px;
   font-weight: 800;
 }
 
-.boardCommentForm{
+.boardCommentForm {
   padding: 18px;
   border-radius: 18px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.boardCommentAuthor{
+.boardCommentAuthor {
   margin-bottom: 10px;
   font-size: 14px;
   font-weight: 800;
-  color: rgba(255,255,255,0.9);
+  color: rgba(255, 255, 255, 0.9);
 }
 
-.boardCommentTextarea{
+.boardReplyNotice {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(14, 165, 255, 0.08);
+  border: 1px solid rgba(14, 165, 255, 0.14);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.boardReplyNotice strong {
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.boardReplyNotice button {
+  border: none;
+  background: transparent;
+  color: #7fd4ff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.boardCommentTextarea {
   width: 100%;
   min-height: 120px;
   resize: vertical;
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.03);
-  color: rgba(255,255,255,0.92);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.92);
   outline: none;
   padding: 12px 14px;
 }
 
-.boardCommentTextarea:disabled{
+.boardCommentTextarea:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
 
-.boardCommentError{
+.boardCommentError {
   margin-top: 10px;
   color: #ff8db3;
   font-size: 13px;
   font-weight: 700;
 }
 
-.boardCommentSubmitRow{
+.boardCommentSubmitRow {
   margin-top: 12px;
   display: flex;
   justify-content: flex-end;
 }
 
-.boardCommentSubmitBtn{
+.boardCommentSubmitBtn {
   height: 42px;
   padding: 0 16px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: linear-gradient(135deg, rgba(14,165,255,0.22), rgba(124,77,255,0.16));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(14, 165, 255, 0.22), rgba(124, 77, 255, 0.16));
   color: white;
   font-weight: 900;
   cursor: pointer;
 }
 
-.boardCommentSubmitBtn:disabled{
+.boardCommentSubmitBtn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.boardCommentList{
+.boardCommentList {
   margin-top: 18px;
-  display: grid;
-  gap: 12px;
-  max-height: 520px;
+  max-height: 620px;
   overflow-y: auto;
   padding-right: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.boardCommentList.luxuryScroll{
-  scrollbar-color: rgba(14,165,255,0.55) rgba(255,255,255,0.06);
+.boardCommentList.luxuryScroll {
+  scrollbar-color: rgba(14, 165, 255, 0.55) rgba(255, 255, 255, 0.06);
   scrollbar-width: thin;
 }
 
-.boardCommentList.luxuryScroll::-webkit-scrollbar{
+.boardCommentList.luxuryScroll::-webkit-scrollbar {
   width: 12px;
 }
 
-.boardCommentList.luxuryScroll::-webkit-scrollbar-track{
-  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-  border-left: 1px solid rgba(255,255,255,0.06);
+.boardCommentList.luxuryScroll::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 999px;
 }
 
-.boardCommentList.luxuryScroll::-webkit-scrollbar-thumb{
-  background: linear-gradient(180deg, rgba(14,165,255,0.85), rgba(14,165,255,0.25));
-  border: 3px solid rgba(10,12,18,0.9);
+.boardCommentList.luxuryScroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(14, 165, 255, 0.85), rgba(14, 165, 255, 0.25));
+  border: 3px solid rgba(10, 12, 18, 0.9);
   border-radius: 999px;
-  box-shadow: 0 0 16px rgba(14,165,255,0.35);
+  box-shadow: 0 0 16px rgba(14, 165, 255, 0.35);
 }
 
-.boardCommentItem{
-  padding: 16px;
-  border-radius: 16px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
+.boardCommentItem {
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.boardCommentItemTop{
+.boardCommentItem.isReply {
+  position: relative;
+  padding-left: 24px;
+}
+
+.boardCommentItem.isReply::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 18px;
+  bottom: 18px;
+  width: 2px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(74, 168, 255, 0.42), rgba(74, 168, 255, 0.08));
+}
+
+.boardCommentItemHead {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 8px;
+}
+
+.boardCommentMetaMain {
+  display: flex;
+  gap: 10px;
+  align-items: center;
   flex-wrap: wrap;
 }
 
-.boardCommentItemTop strong{
+.boardCommentMetaMain strong {
   font-size: 14px;
 }
 
-.boardCommentItemTop span{
-  color: rgba(255,255,255,0.48);
+.boardCommentMetaMain span {
+  color: rgba(255, 255, 255, 0.48);
   font-size: 12px;
 }
 
-.boardCommentItemContent{
-  color: rgba(255,255,255,0.86);
-  line-height: 1.7;
+.boardCommentReplyBadge {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 800;
+  color: #7fd4ff;
+  background: rgba(14, 165, 255, 0.1);
+  border: 1px solid rgba(14, 165, 255, 0.15);
+  border-radius: 999px;
+  min-height: 24px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.boardCommentActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.boardCommentActionBtn {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.64);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 0;
+}
+
+.boardCommentActionBtn:hover {
+  color: #7fd4ff;
+}
+
+.boardCommentActionBtn.danger:hover {
+  color: #ff7d9d;
+}
+
+.boardCommentItemContent {
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.8;
   white-space: pre-wrap;
+  font-size: 14px;
 }
 
 .boardCommentEmpty,
-.boardDetailEmpty{
+.boardDetailEmpty {
   padding: 40px 20px;
   text-align: center;
-  color: rgba(255,255,255,0.62);
+  color: rgba(255, 255, 255, 0.62);
 }
 
-.boardDetailEmpty button{
-  margin-top: 14px;
-  height: 42px;
-  padding: 0 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.04);
-  color: rgba(255,255,255,0.92);
-  cursor: pointer;
+.boardDetailEmptyAction {
+  margin-top: 16px;
 }
 
-@media (max-width: 768px){
-  .boardDetailWrap{
+[data-theme="light"] .boardDetailCard,
+[data-theme="light"] .boardCommentSection {
+  border-color: rgba(167, 190, 220, 0.22);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 250, 255, 0.94));
+  box-shadow: 0 18px 42px rgba(102, 132, 173, 0.12);
+}
+
+[data-theme="light"] .boardDetailGhostBtn {
+  border-color: rgba(162, 188, 222, 0.42);
+  background: linear-gradient(180deg, #ffffff, #f4f8ff);
+  color: #244061;
+}
+
+[data-theme="light"] .boardDetailTitle,
+[data-theme="light"] .boardCommentHeader h2,
+[data-theme="light"] .boardCommentAuthor,
+[data-theme="light"] .boardCommentMetaMain strong,
+[data-theme="light"] .boardReplyNotice strong {
+  color: #16253d;
+}
+
+[data-theme="light"] .boardDetailMeta,
+[data-theme="light"] .boardCommentHeader span,
+[data-theme="light"] .boardCommentMetaMain span {
+  color: #6e839f;
+}
+
+[data-theme="light"] .boardDetailContent,
+[data-theme="light"] .boardCommentForm {
+  background: linear-gradient(180deg, rgba(247, 250, 255, 0.98), rgba(242, 247, 255, 0.94));
+  border-color: rgba(185, 205, 233, 0.34);
+  color: #1f314d;
+}
+
+[data-theme="light"] .boardCommentTextarea {
+  background: #ffffff;
+  border-color: rgba(185, 205, 233, 0.44);
+  color: #22344f;
+}
+
+[data-theme="light"] .boardCommentTextarea::placeholder {
+  color: #9aa9bd;
+}
+
+[data-theme="light"] .boardReplyNotice {
+  background: rgba(90, 171, 255, 0.1);
+  border-color: rgba(90, 171, 255, 0.18);
+  color: #355270;
+}
+
+[data-theme="light"] .boardCommentList {
+  border-top-color: rgba(190, 206, 226, 0.5);
+}
+
+[data-theme="light"] .boardCommentItem {
+  border-bottom-color: rgba(190, 206, 226, 0.48);
+}
+
+[data-theme="light"] .boardCommentItemContent,
+[data-theme="light"] .boardCommentActionBtn {
+  color: #334a69;
+}
+
+[data-theme="light"] .boardCommentActionBtn:hover {
+  color: #1570ef;
+}
+
+[data-theme="light"] .boardCommentActionBtn.danger:hover {
+  color: #dc4a6d;
+}
+
+[data-theme="light"] .boardDetailLikeBtn,
+[data-theme="light"] .boardCommentSubmitBtn {
+  border-color: rgba(120, 171, 238, 0.28);
+  box-shadow: 0 10px 24px rgba(104, 145, 205, 0.16);
+}
+
+[data-theme="light"] .boardCommentEmpty,
+[data-theme="light"] .boardDetailEmpty {
+  color: #7488a3;
+}
+
+@media (max-width: 768px) {
+  .boardDetailWrap {
     width: min(100%, calc(100% - 20px));
   }
 
   .boardDetailCard,
-  .boardCommentSection{
+  .boardCommentSection {
     padding: 18px;
   }
 
-  .boardDetailTitle{
+  .boardDetailTitle {
     font-size: 24px;
   }
 
-  .boardDetailContent{
+  .boardDetailContent {
     min-height: 180px;
     padding: 16px;
+  }
+
+  .boardCommentItemHead {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

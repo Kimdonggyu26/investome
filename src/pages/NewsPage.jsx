@@ -5,46 +5,8 @@ import NewsList from "../components/NewsList";
 import { useTicker } from "../hooks/useTicker";
 import "../styles/NewsPage.css";
 
-function signedPercent(value) {
-  if (typeof value !== "number" || Number.isNaN(value)) return "-";
-  return `${value > 0 ? "+" : ""}${value.toFixed(2)}%`;
-}
-
 export default function NewsPage() {
   const { prices, changes, loading, error } = useTicker();
-
-  const marketPulses = [
-    {
-      label: "코스피",
-      value:
-        typeof prices?.KOSPI === "number"
-          ? prices.KOSPI.toLocaleString("ko-KR", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })
-          : "-",
-      change: signedPercent(changes?.KOSPI),
-    },
-    {
-      label: "나스닥",
-      value:
-        typeof prices?.NASDAQ === "number"
-          ? prices.NASDAQ.toLocaleString("ko-KR", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })
-          : "-",
-      change: signedPercent(changes?.NASDAQ),
-    },
-    {
-      label: "비트코인",
-      value:
-        typeof prices?.BTC === "number"
-          ? `${Math.round(prices.BTC).toLocaleString("ko-KR")}원`
-          : "-",
-      change: signedPercent(changes?.BTC),
-    },
-  ];
 
   return (
     <>
@@ -70,21 +32,6 @@ export default function NewsPage() {
                   홈으로 가기
                 </Link>
               </div>
-            </div>
-
-            <div className="newsPagePulseGrid">
-              {marketPulses.map((item) => (
-                <article key={item.label} className="newsPagePulseCard">
-                  <div className="newsPagePulseTop">
-                    <span>{item.label}</span>
-                    <em className={item.change.startsWith("+") ? "up" : item.change.startsWith("-") ? "down" : ""}>
-                      {item.change}
-                    </em>
-                  </div>
-                  <strong>{item.value}</strong>
-                  <div className="newsPagePulseFoot">실시간 시세 반영</div>
-                </article>
-              ))}
             </div>
           </section>
 

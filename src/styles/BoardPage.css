@@ -167,6 +167,15 @@
   color: rgba(255,255,255,0.70);
 }
 
+.boardTableHead > :nth-child(5),
+.boardTableHead > :nth-child(6),
+.boardViews,
+.boardLikes{
+  justify-self: end;
+  text-align: right;
+  padding-right: 8px;
+}
+
 .boardSubject{
   min-width: 0;
 }

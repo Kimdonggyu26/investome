@@ -8,17 +8,11 @@ import { apiUrl } from "../lib/apiClient";
 
 function validateSignup({ nickname, email, password, passwordConfirm }) {
   return {
-    nickname:
-      nickname.trim().length >= 2 ? "" : "닉네임은 2자 이상 입력해주세요.",
-    email: /\S+@\S+\.\S+/.test(email)
-      ? ""
-      : "올바른 이메일 형식을 입력해주세요.",
-    password:
-      password.length >= 8 ? "" : "비밀번호는 8자 이상 입력해주세요.",
+    nickname: nickname.trim().length >= 2 ? "" : "닉네임은 2자 이상 입력해주세요.",
+    email: /\S+@\S+\.\S+/.test(email) ? "" : "올바른 이메일 형식을 입력해주세요.",
+    password: password.length >= 8 ? "" : "비밀번호는 8자 이상 입력해주세요.",
     passwordConfirm:
-      password === passwordConfirm
-        ? ""
-        : "비밀번호 확인이 일치하지 않습니다.",
+      password === passwordConfirm ? "" : "비밀번호 확인이 일치하지 않습니다.",
   };
 }
 
@@ -42,9 +36,10 @@ export default function AuthPage() {
 
   const signupErrors = useMemo(() => validateSignup(form), [form]);
 
-  const isSignupValid = useMemo(() => {
-    return Object.values(signupErrors).every((value) => value === "");
-  }, [signupErrors]);
+  const isSignupValid = useMemo(
+    () => Object.values(signupErrors).every((value) => value === ""),
+    [signupErrors]
+  );
 
   function updateField(field, value) {
     setForm((prev) => ({
@@ -70,7 +65,7 @@ export default function AuthPage() {
         });
 
         if (!res.ok) {
-          throw new Error("로그인 실패");
+          throw new Error("로그인에 실패했습니다.");
         }
 
         const data = await res.json();
@@ -78,15 +73,12 @@ export default function AuthPage() {
         localStorage.setItem("accessToken", data.accessToken);
         localStorage.setItem("investome_user", JSON.stringify(data));
         localStorage.setItem("investome_logged_in", "true");
-        localStorage.setItem(
-          "investome_keep_login",
-          keepLogin ? "true" : "false"
-        );
+        localStorage.setItem("investome_keep_login", keepLogin ? "true" : "false");
 
         window.dispatchEvent(new Event("investome-auth-changed"));
         navigate("/mypage");
       } catch (err) {
-        alert("이메일 또는 비밀번호가 틀렸습니다.");
+        alert("이메일 또는 비밀번호가 올바르지 않습니다.");
       }
       return;
     }
@@ -111,14 +103,14 @@ export default function AuthPage() {
 
       if (!res.ok) {
         const message = await res.text();
-        throw new Error(message || "회원가입 실패");
+        throw new Error(message || "회원가입에 실패했습니다.");
       }
 
-      alert("회원가입 성공! 로그인 해주세요.");
+      alert("회원가입이 완료됐어요. 로그인해주세요.");
       navigate("/login");
-      } catch (err) {
-        alert(err.message || "회원가입 실패");
-      }
+    } catch (err) {
+      alert(err.message || "회원가입에 실패했습니다.");
+    }
   }
 
   return (
@@ -137,16 +129,10 @@ export default function AuthPage() {
             <div className="authTopArea">
               <div className="authTabRowWrap">
                 <div className="authTabRow">
-                  <Link
-                    to="/login"
-                    className={`authTab ${isLogin ? "active" : ""}`}
-                  >
+                  <Link to="/login" className={`authTab ${isLogin ? "active" : ""}`}>
                     로그인
                   </Link>
-                  <Link
-                    to="/signup"
-                    className={`authTab ${!isLogin ? "active" : ""}`}
-                  >
+                  <Link to="/signup" className={`authTab ${!isLogin ? "active" : ""}`}>
                     회원가입
                   </Link>
                 </div>
@@ -159,8 +145,8 @@ export default function AuthPage() {
               <h1 className="authTitle">{isLogin ? "로그인" : "회원가입"}</h1>
               <p className="authSub">
                 {isLogin
-                  ? "계정으로 로그인해서 관심종목, 포트폴리오, 게시판 활동을 관리해보세요."
-                  : "빠르게 가입하고 관심종목, 포트폴리오, 게시판 기능을 이용해보세요."}
+                  ? "계정으로 로그인하면 관심종목, 포트폴리오, 게시판 활동을 편하게 관리할 수 있어요."
+                  : "빠르게 가입하고 관심종목, 포트폴리오, 게시판 기능을 바로 이용해보세요."}
               </p>
             </div>
 
@@ -170,14 +156,12 @@ export default function AuthPage() {
                   <label>닉네임</label>
                   <input
                     type="text"
-                    placeholder="닉네임을 입력하세요"
+                    placeholder="닉네임을 입력해주세요"
                     value={form.nickname}
                     onChange={(e) => updateField("nickname", e.target.value)}
                   />
                   {form.nickname && signupErrors.nickname && (
-                    <div className="authFieldError">
-                      {signupErrors.nickname}
-                    </div>
+                    <div className="authFieldError">{signupErrors.nickname}</div>
                   )}
                 </div>
               )}
@@ -200,7 +184,7 @@ export default function AuthPage() {
                 <div className="authInputWrap">
                   <input
                     type={showPassword ? "text" : "password"}
-                    placeholder="비밀번호를 입력하세요"
+                    placeholder="비밀번호를 입력해주세요"
                     value={form.password}
                     onChange={(e) => updateField("password", e.target.value)}
                   />
@@ -223,11 +207,9 @@ export default function AuthPage() {
                   <div className="authInputWrap">
                     <input
                       type={showPasswordConfirm ? "text" : "password"}
-                      placeholder="비밀번호를 다시 입력하세요"
+                      placeholder="비밀번호를 다시 입력해주세요"
                       value={form.passwordConfirm}
-                      onChange={(e) =>
-                        updateField("passwordConfirm", e.target.value)
-                      }
+                      onChange={(e) => updateField("passwordConfirm", e.target.value)}
                     />
                     <button
                       type="button"
@@ -238,9 +220,7 @@ export default function AuthPage() {
                     </button>
                   </div>
                   {form.passwordConfirm && signupErrors.passwordConfirm && (
-                    <div className="authFieldError">
-                      {signupErrors.passwordConfirm}
-                    </div>
+                    <div className="authFieldError">{signupErrors.passwordConfirm}</div>
                   )}
                 </div>
               )}

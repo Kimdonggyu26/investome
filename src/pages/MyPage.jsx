@@ -19,7 +19,7 @@ function MyPagePreviewMock() {
 
           <div className="mypagePreviewSummaryRow">
             <div className="mypagePreviewMiniStat">
-              <span>매수원금</span>
+              <span>매수금액</span>
               <strong>₩28,403,000</strong>
             </div>
             <div className="mypagePreviewMiniStat">
@@ -120,17 +120,6 @@ function MyPagePreviewMock() {
               />
             </svg>
           </div>
-
-          <div className="mypagePreviewFlowMeta compact">
-            <div>
-              <span>최고 수익률</span>
-              <strong>+17.4%</strong>
-            </div>
-            <div>
-              <span>최저 수익률</span>
-              <strong>+2.8%</strong>
-            </div>
-          </div>
         </div>
 
         <div className="mypagePreviewMockCard holdings">
@@ -167,7 +156,7 @@ function MyPagePreviewMock() {
                 <b>₩10,950,000</b>
               </div>
               <div className="mypagePreviewHoldingMeta">
-                평균단가 ₩63,500 · 현재가 ₩72,300
+                평균단가 ₩73,500 · 현재가 ₩82,300
               </div>
               <div className="mypagePreviewHoldingBottom">
                 <em className="up">+₩1,420,000 (+14.90%)</em>
@@ -213,8 +202,11 @@ function MyPageGuestView() {
 
         <div className="mypageGuestBadge">MEMBERS ONLY</div>
 
-        <div className="mypageGuestIconWrap">
-          <div className="mypageGuestIcon">◌</div>
+        <div className="mypageGuestIconWrap" aria-hidden="true">
+          <div className="mypageGuestIcon">
+            <span className="mypageGuestIconHalo" />
+            <span className="mypageGuestIconCore" />
+          </div>
         </div>
 
         <h1 className="mypageGuestTitle">로그인 후 이용해주세요</h1>
@@ -222,17 +214,17 @@ function MyPageGuestView() {
         <div className="mypageGuestFeatureRow">
           <div className="mypageGuestFeature">
             <strong>보유 종목 관리</strong>
-            <span>주식·코인 포트폴리오를 한눈에</span>
+            <span>주식과 코인 포트폴리오를 한눈에 정리할 수 있어요.</span>
           </div>
 
           <div className="mypageGuestFeature">
             <strong>자산 비중 분석</strong>
-            <span>원형 차트로 직관적인 확인</span>
+            <span>원형 차트로 내 투자 비중을 빠르게 확인할 수 있어요.</span>
           </div>
 
           <div className="mypageGuestFeature">
             <strong>실시간 반영 UI</strong>
-            <span>세련된 흐름으로 자연스럽게</span>
+            <span>시장 흐름에 따라 포트폴리오를 더 자연스럽게 볼 수 있어요.</span>
           </div>
         </div>
 
@@ -240,7 +232,7 @@ function MyPageGuestView() {
           <div className="mypageGuestPreviewTop">
             <div>
               <span className="mypageGuestPreviewEyebrow">PREVIEW</span>
-              <h3>마이페이지에서는 이런 게 가능해요 !</h3>
+              <h3>마이페이지에서는 이런 화면을 바로 볼 수 있어요</h3>
             </div>
           </div>
 

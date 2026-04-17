@@ -300,7 +300,64 @@
 
   box-shadow: 0 6px 16px rgba(0,0,0,0.18);
 
-  z-index: 1;   /* 👈 핵심 */
+  z-index: 6;
 
   pointer-events: none;
+}
+
+.authTabRowWrap{
+  z-index: 5;
+}
+
+[data-theme="light"] .authCard{
+  border-color: rgba(170, 195, 226, 0.28);
+  background: linear-gradient(180deg, rgba(255,255,255,0.97), rgba(245,249,255,0.96));
+  box-shadow: 0 22px 48px rgba(112, 140, 178, 0.16);
+}
+
+[data-theme="light"] .authTabRow{
+  background: rgba(236,243,253,0.92);
+  border-color: rgba(181,203,232,0.45);
+}
+
+[data-theme="light"] .authTab{
+  color: #58708e;
+}
+
+[data-theme="light"] .authTab.active{
+  color: #ffffff;
+}
+
+[data-theme="light"] .authSignupHint{
+  color: #2f5d96;
+  background: linear-gradient(180deg, #eef6ff, #dcecff);
+  border-color: rgba(121,170,236,0.34);
+  box-shadow: 0 8px 18px rgba(120,152,198,0.18);
+}
+
+[data-theme="light"] .authTitle,
+[data-theme="light"] .authField label{
+  color: #16253d;
+}
+
+[data-theme="light"] .authSub,
+[data-theme="light"] .authCheckRow,
+[data-theme="light"] .authBottomText{
+  color: #6f859f;
+}
+
+[data-theme="light"] .authField input{
+  background: #ffffff;
+  border-color: rgba(185,205,233,0.48);
+  color: #1f304c;
+}
+
+[data-theme="light"] .authField input::placeholder{
+  color: #a1afc2;
+}
+
+[data-theme="light"] .authToggleBtn{
+  border-color: rgba(185,205,233,0.42);
+  background: #f7faff;
+  color: #33506f;
 }
