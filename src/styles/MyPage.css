@@ -3879,6 +3879,7 @@
 [data-theme="light"] .mypageGuestLoginBtn{
   border-color: rgba(110, 164, 236, 0.34);
   box-shadow: 0 12px 28px rgba(112, 142, 185, 0.16);
+  color: #2f4f71;
 }
 
 [data-theme="light"] .mypageGuestHomeBtn{

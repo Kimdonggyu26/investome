@@ -188,7 +188,7 @@ export default function NewsList({
             <span>LIVE</span>
           </div>
 
-          <h2 className="newsHeading">{title}</h2>
+          {!pageMode ? <h2 className="newsHeading">{title}</h2> : null}
         </div>
 
         <div className="newsHeaderRight">
@@ -226,41 +226,22 @@ export default function NewsList({
           ))}
         </div>
 
-        {!pageMode && moreLink && (
+        {!pageMode && moreLink ? (
           <div className="newsCategoryRowRight">
             <Link to={moreLink} className="newsMoreBtn">
               전체 뉴스 보기
             </Link>
           </div>
-        )}
+        ) : null}
       </div>
 
-      {!err && pageMode && (
-        <div className="newsQuickMeta">
-          <div className="newsQuickMetaItem">
-            <span>현재 카테고리</span>
-            <strong>{categoryLabel(category)}</strong>
-          </div>
-          <div className="newsQuickMetaItem">
-            <span>페이지</span>
-            <strong>
-              {safePage} / {totalPages}
-            </strong>
-          </div>
-          <div className="newsQuickMetaItem">
-            <span>표시 기사</span>
-            <strong>{view.length}건</strong>
-          </div>
-        </div>
-      )}
-
-      {err && <div className="muted">시장 뉴스를 불러오지 못했어요.</div>}
+      {err ? <div className="muted">시장 뉴스를 불러오지 못했어요.</div> : null}
 
       {isLoading && items.length === 0 ? (
         <NewsSkeleton />
       ) : (
         <div className={`newsContentShell ${isSwitching ? "isSwitching" : ""}`}>
-          {!err && pageMode && featured && (
+          {!err && pageMode && featured ? (
             <a
               href={featured.link}
               target="_blank"
@@ -282,7 +263,7 @@ export default function NewsList({
                 </div>
               </div>
             </a>
-          )}
+          ) : null}
 
           <div className={`newsList ${pageMode ? "newsListPage" : ""}`}>
             {!err &&
@@ -309,7 +290,7 @@ export default function NewsList({
               ))}
           </div>
 
-          {pageMode && totalPages > 1 && (
+          {pageMode && totalPages > 1 ? (
             <div className="newsPager">
               {Array.from({ length: totalPages }).map((_, idx) => {
                 const page = idx + 1;
@@ -325,19 +306,21 @@ export default function NewsList({
                 );
               })}
             </div>
-          )}
+          ) : null}
 
-          {isSwitching && (
+          {isSwitching ? (
             <div className="newsLoadingOverlay" aria-hidden="true">
               <div className="newsLoadingSweep" />
             </div>
-          )}
+          ) : null}
         </div>
       )}
 
-      <div className="newsDesc newsDescBottom">
-        카테고리와 정렬 기준을 바꾸면 원하는 흐름의 뉴스를 더 빠르게 찾을 수 있어요.
-      </div>
+      {!pageMode ? (
+        <div className="newsDesc newsDescBottom">
+          카테고리와 정렬 기준을 바꾸면 원하는 흐름의 뉴스를 더 빠르게 찾을 수 있어요.
+        </div>
+      ) : null}
     </div>
   );
 }

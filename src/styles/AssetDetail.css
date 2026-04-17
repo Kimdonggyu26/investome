@@ -1393,3 +1393,125 @@
   border-radius: 999px;
   background: rgba(255,255,255,0.14);
 }
+
+[data-theme="light"] .assetDetailPage {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(95,170,255,0.10), transparent 24%),
+    radial-gradient(circle at 88% 18%, rgba(124,77,255,0.08), transparent 22%),
+    linear-gradient(180deg, #eff5fc, #f7fbff 28%, #eef4fb);
+}
+
+[data-theme="light"] .assetTopCard,
+[data-theme="light"] .assetPanel,
+[data-theme="light"] .tvWrap,
+[data-theme="light"] .kospiChartNoticeBody {
+  border-color: rgba(181, 203, 232, 0.34);
+  background:
+    radial-gradient(circle at top left, rgba(95,170,255,0.08), transparent 26%),
+    linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,248,254,0.95));
+  box-shadow: 0 20px 44px rgba(113, 140, 174, 0.14);
+}
+
+[data-theme="light"] .assetHeroGlow::before {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(84, 116, 255, 0.10), transparent 28%),
+    radial-gradient(circle at 0% 100%, rgba(45, 212, 191, 0.08), transparent 32%);
+}
+
+[data-theme="light"] .assetLogo {
+  border-color: rgba(186,206,233,0.42);
+  background: #f6faff;
+}
+
+[data-theme="light"] .assetMarketBadge,
+[data-theme="light"] .assetSymbolChip {
+  color: #2d5d96;
+  background: linear-gradient(180deg, #eef6ff, #ddeeff);
+  border-color: rgba(120,170,236,0.36);
+}
+
+[data-theme="light"] .assetName,
+[data-theme="light"] .assetPanelTitle,
+[data-theme="light"] .assetMetaValue,
+[data-theme="light"] .assetInfoItemValue,
+[data-theme="light"] .assetNewsTitle,
+[data-theme="light"] .communityNick,
+[data-theme="light"] .kospiChartHeadline {
+  color: #16253d;
+}
+
+[data-theme="light"] .assetSymbolRow,
+[data-theme="light"] .assetSubName,
+[data-theme="light"] .assetStatLabel,
+[data-theme="light"] .assetStatHint,
+[data-theme="light"] .assetMetaLabel,
+[data-theme="light"] .assetPanelSub,
+[data-theme="light"] .assetInfoItemLabel,
+[data-theme="light"] .assetNewsMeta,
+[data-theme="light"] .communityDate,
+[data-theme="light"] .communityDot,
+[data-theme="light"] .kospiChartNoticeText,
+[data-theme="light"] .kospiChartNoticeFoot,
+[data-theme="light"] .assetEmpty,
+[data-theme="light"] .communityLoginNotice {
+  color: #7188a3;
+}
+
+[data-theme="light"] .assetPrice {
+  color: #16253d;
+}
+
+[data-theme="light"] .assetChange.up,
+[data-theme="light"] .assetInfoItemValue.up {
+  color: #069b6f;
+}
+
+[data-theme="light"] .assetChange.down,
+[data-theme="light"] .assetInfoItemValue.down {
+  color: #dd4e73;
+}
+
+[data-theme="light"] .assetStatCard,
+[data-theme="light"] .assetMetaCard,
+[data-theme="light"] .assetInfoItem,
+[data-theme="light"] .assetNewsItem,
+[data-theme="light"] .communityItem {
+  border-color: rgba(185,205,233,0.38);
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,248,254,0.95));
+  box-shadow: 0 16px 32px rgba(114, 141, 176, 0.10);
+}
+
+[data-theme="light"] .assetInfoItem.emphasis {
+  background:
+    radial-gradient(circle at top left, rgba(95,170,255,0.10), transparent 26%),
+    linear-gradient(180deg, rgba(246,250,255,1), rgba(239,246,255,0.97));
+  border-color: rgba(120,170,236,0.30);
+}
+
+[data-theme="light"] .assetActionRow .btn,
+[data-theme="light"] .chartMoveBtn {
+  border-color: rgba(120,170,236,0.34);
+  box-shadow: 0 12px 28px rgba(112, 142, 185, 0.16);
+}
+
+[data-theme="light"] .assetActionRow .btn {
+  background: linear-gradient(180deg, #ffffff, #eef5ff);
+  color: #355270;
+}
+
+[data-theme="light"] .watchBtn.active {
+  color: #0d4d8f;
+  background: linear-gradient(180deg, #dff0ff, #cfe6ff);
+}
+
+[data-theme="light"] .tvWrap {
+  background: linear-gradient(180deg, rgba(250,252,255,0.98), rgba(241,246,254,0.96));
+}
+
+[data-theme="light"] .kospiChartNotice {
+  border-color: rgba(183,204,233,0.38);
+  background:
+    radial-gradient(circle at top right, rgba(95,170,255,0.10), transparent 30%),
+    linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,248,254,0.95));
+  box-shadow: 0 20px 44px rgba(113, 140, 174, 0.14);
+}

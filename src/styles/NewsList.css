@@ -62,6 +62,10 @@
   margin-top: 18px;
 }
 
+.newsWrapPage .newsHeader {
+  margin-bottom: 10px;
+}
+
 .newsTabs {
   display: flex;
   gap: 8px;

@@ -23,8 +23,11 @@ export default function NewsPage() {
           <section className="newsPageHero card">
             <div className="newsPageHeroTop">
               <div className="newsPageHeroCopy">
-                <div className="newsPageBadge">INVESTOME NEWS ROOM</div>
-                <h1>지금 시장에서 봐야 할 뉴스만 빠르게</h1>
+                <div className="newsPageBadge">NEWS ROOM</div>
+                <h1>실시간 뉴스룸</h1>
+                <p className="newsPageHeroDesc">
+                  카테고리별로 실시간 뉴스를 한 눈에 확인하세요 !
+                </p>
               </div>
 
               <div className="newsPageHeroActions">
