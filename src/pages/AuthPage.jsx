@@ -134,7 +134,7 @@ export default function AuthPage() {
                   </Link>
                 </div>
 
-                <div className="authSignupHint">10초면 돼요!</div>
+                {isLogin && <div className="authSignupHint">10초면 돼요!</div>}
               </div>
             </div>
 
