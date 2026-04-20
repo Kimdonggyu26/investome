@@ -21,61 +21,71 @@ function getAssetFilters(market, symbol, assetName) {
     const map = {
       "GC=F": {
         include: ["금", "금값", "금 선물", "gold", "xau"],
-        exclude: ["금성", "지금은", "이번엔", "현금", "입금", "송금"],
+        exclude: ["황금성", "지금은", "이번 금", "예금", "적금", "송금"],
+        context: [],
       },
       "SI=F": {
         include: ["은", "은값", "은 선물", "silver", "xag"],
-        exclude: ["지금은", "은평", "은하", "은지원", "은퇴"],
+        exclude: ["지금은", "은행", "은혜", "은지", "은상"],
+        context: [],
       },
       "CL=F": {
         include: ["wti", "국제유가", "원유", "crude oil"],
         exclude: [],
+        context: [],
       },
       "BZ=F": {
         include: ["브렌트", "brent"],
         exclude: [],
+        context: [],
       },
       "NG=F": {
         include: ["천연가스", "natural gas", "henry hub"],
         exclude: [],
+        context: [],
       },
       "PL=F": {
         include: ["백금", "platinum"],
         exclude: [],
+        context: [],
       },
       "PA=F": {
         include: ["팔라듐", "palladium"],
         exclude: [],
+        context: [],
       },
     };
 
     return map[upper] || {
       include: [String(assetName || "").toLowerCase()],
       exclude: [],
+      context: [],
     };
   }
 
   if (market === "CRYPTO") {
+    const cryptoContext = ["가상자산", "암호화폐", "코인", "토큰", "블록체인", "거래소", "메인넷", "알트코인"];
     const map = {
-      BTC: { include: ["비트코인", "bitcoin", "btc"], exclude: [] },
-      ETH: { include: ["이더리움", "ethereum", "eth"], exclude: [] },
-      XRP: { include: ["리플", "xrp"], exclude: [] },
-      SOL: { include: ["솔라나", "solana", "sol"], exclude: [] },
-      DOGE: { include: ["도지", "dogecoin", "doge"], exclude: [] },
+      BTC: { include: ["비트코인", "bitcoin", "btc"], exclude: [], context: cryptoContext },
+      ETH: { include: ["이더리움", "ethereum", "eth"], exclude: [], context: cryptoContext },
+      XRP: { include: ["리플", "xrp", "ripple"], exclude: [], context: cryptoContext },
+      SOL: { include: ["솔라나", "solana", "sol"], exclude: ["신한", "은행"], context: cryptoContext },
+      DOGE: { include: ["도지코인", "dogecoin", "doge"], exclude: [], context: cryptoContext },
+      TRX: { include: ["트론", "tron", "trx"], exclude: ["비아트론"], context: cryptoContext },
+      TON: { include: ["톤코인", "toncoin", "ton"], exclude: [], context: cryptoContext },
     };
 
     return map[upper] || {
       include: [String(assetName || "").toLowerCase(), upper.toLowerCase()],
       exclude: [],
+      context: cryptoContext,
     };
   }
 
   return {
-    include: [
-      String(assetName || "").toLowerCase(),
-      upper.toLowerCase(),
-    ].filter(Boolean),
+    include: [String(assetName || "").toLowerCase(), upper.toLowerCase()].filter(Boolean),
     exclude: [],
+    context: [],
   };
 }
 
@@ -90,7 +100,14 @@ function isRelevantNews(item, filters) {
     text.includes(String(keyword).toLowerCase())
   );
 
-  return hasInclude && !hasExclude;
+  const hasContext =
+    !Array.isArray(filters.context) ||
+    filters.context.length === 0 ||
+    filters.context.some((keyword) =>
+      text.includes(String(keyword).toLowerCase())
+    );
+
+  return hasInclude && hasContext && !hasExclude;
 }
 
 export default function AssetNewsList({
