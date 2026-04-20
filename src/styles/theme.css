@@ -348,22 +348,18 @@ select {
 }
 
 :root[data-theme="light"] .marketTabs button.active {
-  background:
-    radial-gradient(circle at 18% 20%, rgba(149, 216, 255, 0.55), transparent 42%),
-    linear-gradient(135deg, rgba(78, 156, 255, 0.28), rgba(123, 176, 255, 0.16)) !important;
+  background: transparent !important;
   color: #0f3766 !important;
-  border-color: rgba(46, 134, 255, 0.34) !important;
-  box-shadow:
-    0 16px 30px rgba(46, 134, 255, 0.16),
-    0 0 0 1px rgba(46, 134, 255, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.94) !important;
-  transform: translateY(-1px);
+  border-color: transparent !important;
+  box-shadow: none !important;
+  transform: none;
 }
 
 :root[data-theme="light"] .marketTabs button:hover {
   color: var(--text-strong) !important;
-  border-color: rgba(46, 134, 255, 0.22) !important;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(236, 244, 255, 0.96)) !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 :root[data-theme="light"] .rankingRefreshBadge {
@@ -410,8 +406,9 @@ select {
 :root[data-theme="light"] .newsPager button:hover,
 :root[data-theme="light"] .newsMoreBtn:hover {
   color: var(--text-strong) !important;
-  border-color: rgba(46, 134, 255, 0.24) !important;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(235, 244, 255, 0.96)) !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 :root[data-theme="light"] .newsTabs button.active,
@@ -419,15 +416,26 @@ select {
 :root[data-theme="light"] .newsPager button.active,
 :root[data-theme="light"] .newsMoreBtn {
   color: #10345f !important;
-  border-color: rgba(46, 134, 255, 0.30) !important;
-  background:
-    radial-gradient(circle at 16% 20%, rgba(160, 223, 255, 0.52), transparent 40%),
-    linear-gradient(135deg, rgba(78, 156, 255, 0.22), rgba(134, 178, 255, 0.14)) !important;
-  box-shadow:
-    0 14px 28px rgba(46, 134, 255, 0.14),
-    0 0 0 1px rgba(46, 134, 255, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.94) !important;
-  transform: translateY(-1px);
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none;
+}
+
+:root[data-theme="light"] .marketTabs button,
+:root[data-theme="light"] .newsTabs button,
+:root[data-theme="light"] .newsCategoryChip,
+:root[data-theme="light"] .newsMoreBtn {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme="light"] .marketTabs button::after,
+:root[data-theme="light"] .newsTabs button::after,
+:root[data-theme="light"] .newsCategoryChip::after,
+:root[data-theme="light"] .newsMoreBtn::after {
+  background: rgba(78, 156, 255, 0.88) !important;
 }
 
 :root[data-theme="light"] .newsCategoryChipAccent,

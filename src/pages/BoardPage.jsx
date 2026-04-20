@@ -230,24 +230,25 @@ useEffect(() => {
             </div>
             </section>
 
-            <div className="boardBottom">
-              <div className="boardPager">
-                {Array.from({ length: totalPages }).map((_, idx) => {
-                  const page = idx + 1;
-                  return (
-                    <button
-                      key={page}
-                      type="button"
-                      className={page === currentPage ? "active" : ""}
-                      onClick={() => setCurrentPage(page)}
-                    >
-                      {page}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
           </section>
+
+          <div className="boardBottom">
+            <div className="boardPager">
+              {Array.from({ length: totalPages }).map((_, idx) => {
+                const page = idx + 1;
+                return (
+                  <button
+                    key={page}
+                    type="button"
+                    className={page === currentPage ? "active" : ""}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </main>
     </>

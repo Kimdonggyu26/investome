@@ -73,58 +73,89 @@
 }
 
 .newsTabs button {
-  min-height: 40px;
-  padding: 0 16px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015));
-  color: rgba(255,255,255,0.62);
+  min-height: 34px;
+  padding: 0 8px 8px;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.54);
   cursor: pointer;
   font-size: 13px;
   font-weight: 800;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+  box-shadow: none;
   transition: .18s ease;
+  position: relative;
 }
 
 .newsTabs button:hover {
-  transform: translateY(-1px);
-  border-color: rgba(74,168,255,0.20);
   color: var(--text-strong);
-  background: linear-gradient(180deg, rgba(74,168,255,0.07), rgba(255,255,255,0.02));
-  box-shadow: 0 10px 20px rgba(74,168,255,0.06);
 }
 
 .newsTabs button.active {
   color: var(--text-strong);
-  border-color: rgba(74,168,255,0.24);
-  background: linear-gradient(180deg, rgba(17,29,46,0.96), rgba(11,18,28,0.92));
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.05),
-    0 12px 22px rgba(74,168,255,0.08),
-    0 0 0 1px rgba(74,168,255,0.10);
+}
+
+.newsTabs button::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(74,168,255,0);
+  transform: scaleX(0.4);
+  opacity: 0;
+  transition: .18s ease;
+}
+
+.newsTabs button.active::after,
+.newsTabs button:hover::after {
+  background: rgba(74,168,255,0.9);
+  transform: scaleX(1);
+  opacity: 1;
 }
 
 .newsMoreBtn {
-  height: 42px;
-  padding: 0 16px;
-  border-radius: 14px;
+  height: 34px;
+  padding: 0 0 8px;
+  border-radius: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
   font-weight: 800;
-  color: var(--text-strong);
-  border: 1px solid rgba(74,168,255,0.22);
-  background: linear-gradient(135deg, rgba(74,168,255,0.16), rgba(124,77,255,0.10));
-  box-shadow: 0 12px 22px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.7);
+  border: none;
+  background: transparent;
+  box-shadow: none;
   transition: .18s ease;
   text-decoration: none;
+  position: relative;
 }
 
 .newsMoreBtn:hover {
-  transform: translateY(-1px);
-  border-color: rgba(74,168,255,0.30);
-  background: rgba(74,168,255,0.16);
+  color: var(--text-strong);
+}
+
+.newsMoreBtn::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(74,168,255,0);
+  transform: scaleX(0.4);
+  opacity: 0;
+  transition: .18s ease;
+}
+
+.newsMoreBtn:hover::after {
+  background: rgba(74,168,255,0.9);
+  transform: scaleX(1);
+  opacity: 1;
 }
 
 .newsCategoryRow {
@@ -150,17 +181,18 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  min-height: 44px;
-  padding: 0 15px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015));
-  color: rgba(255,255,255,0.66);
+  min-height: 34px;
+  padding: 0 2px 8px;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.6);
   cursor: pointer;
   font-size: 13px;
   font-weight: 800;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+  box-shadow: none;
   transition: .18s ease;
+  position: relative;
 }
 
 .newsCategoryChipAccent {
@@ -178,19 +210,32 @@
 }
 
 .newsCategoryChip:hover {
-  transform: translateY(-1px);
-  border-color: rgba(74,168,255,0.26);
   color: var(--text-strong);
-  background: linear-gradient(180deg, rgba(74,168,255,0.07), rgba(255,255,255,0.02));
 }
 
 .newsCategoryChip.active {
-  background: linear-gradient(180deg, rgba(17,29,46,0.96), rgba(11,18,28,0.92));
   color: var(--text-strong);
-  border-color: rgba(74,168,255,0.22);
-  box-shadow:
-    0 12px 22px rgba(74,168,255,0.08),
-    0 0 0 1px rgba(74,168,255,0.10);
+}
+
+.newsCategoryChip::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(74,168,255,0);
+  transform: scaleX(0.38);
+  opacity: 0;
+  transition: .18s ease;
+}
+
+.newsCategoryChip.active::after,
+.newsCategoryChip:hover::after {
+  background: rgba(74,168,255,0.9);
+  transform: scaleX(1);
+  opacity: 1;
 }
 
 .newsCategoryChip.active .newsCategoryChipAccent {
