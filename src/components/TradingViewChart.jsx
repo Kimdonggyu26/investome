@@ -10,6 +10,9 @@ export default function TradingViewChart({ symbol, title }) {
 
     containerRef.current.innerHTML = "";
 
+    const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 1200;
+    const widgetHeight = viewportWidth <= 640 ? 380 : viewportWidth <= 980 ? 440 : 520;
+
     const widgetRoot = document.createElement("div");
     widgetRoot.className = "tvInner tradingview-widget-container__widget";
 
@@ -18,7 +21,8 @@ export default function TradingViewChart({ symbol, title }) {
     script.async = true;
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
     script.text = JSON.stringify({
-      autosize: true,
+      width: "100%",
+      height: widgetHeight,
       symbol,
       interval: "D",
       timezone: "Asia/Seoul",
