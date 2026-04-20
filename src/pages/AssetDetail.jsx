@@ -30,7 +30,7 @@ function formatSignedKRW(value) {
 }
 
 function formatCapKRW(value) {
-  if (typeof value !== "number" || !Number.isFinite(value)) return "-";
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) return "-";
 
   const jo = 1_000_000_000_000;
   const eok = 100_000_000;
@@ -326,7 +326,7 @@ export default function AssetDetail() {
   const preferredName = getPreferredName(asset, symbol);
   const preferredDisplayNameEN = getDisplayNameEN(asset, symbol);
   const marketLabel = getMarketLabel(market);
-  const showCap = asset.capKRW != null;
+  const showCap = typeof asset.capKRW === "number" && Number.isFinite(asset.capKRW) && asset.capKRW > 0;
   const isKoreanMarket = market === "KOSPI" || market === "KOSDAQ";
   const watched = isWatched(market, symbol);
   const changeAmount = calcChangeAmount(asset.priceKRW, asset.changePct);
