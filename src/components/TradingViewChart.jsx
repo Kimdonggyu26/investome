@@ -26,6 +26,8 @@ export default function TradingViewChart({ symbol, title }) {
       hotlist: "false",
       calendar: "false",
       hide_side_toolbar: "true",
+      hide_right_toolbar: "true",
+      hide_right_toolbar_tabs: "true",
       locale: "kr",
       autosize: "1",
       tvwidgetsymbol: symbol,
