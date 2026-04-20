@@ -184,6 +184,7 @@ select {
 :root[data-theme="light"] .assetPanel,
 :root[data-theme="light"] .rankingCard,
 :root[data-theme="light"] .boardHero,
+:root[data-theme="light"] .boardContentShell,
 :root[data-theme="light"] .boardToolbar,
 :root[data-theme="light"] .boardTableWrap,
 :root[data-theme="light"] .newsPageHero,
@@ -214,6 +215,12 @@ select {
 :root[data-theme="light"] .watchlistPanelItem {
   background: rgba(255, 255, 255, 0.74) !important;
   border-color: rgba(17, 24, 39, 0.08) !important;
+}
+
+:root[data-theme="light"] .boardContentShell .boardToolbar {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
 }
 
 :root[data-theme="light"] .boardSubjectText,

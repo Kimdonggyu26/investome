@@ -129,7 +129,8 @@ useEffect(() => {
             </button>
           </section>
 
-          <section className="boardToolbar">
+          <section className="boardContentShell">
+            <section className="boardToolbar">
             <div className="boardTabs">
               <button
                 type="button"
@@ -173,9 +174,9 @@ useEffect(() => {
 
               <button type="button">검색</button>
             </div>
-          </section>
+            </section>
 
-          <section className="boardTableWrap">
+            <section className="boardTableWrap">
             <div className="boardTableHead">
               <div>번호</div>
               <div>제목</div>
@@ -227,25 +228,26 @@ useEffect(() => {
                 <div className="boardEmpty">검색 결과가 없습니다.</div>
               )}
             </div>
-          </section>
+            </section>
 
-          <div className="boardBottom">
-            <div className="boardPager">
-              {Array.from({ length: totalPages }).map((_, idx) => {
-                const page = idx + 1;
-                return (
-                  <button
-                    key={page}
-                    type="button"
-                    className={page === currentPage ? "active" : ""}
-                    onClick={() => setCurrentPage(page)}
-                  >
-                    {page}
-                  </button>
-                );
-              })}
+            <div className="boardBottom">
+              <div className="boardPager">
+                {Array.from({ length: totalPages }).map((_, idx) => {
+                  const page = idx + 1;
+                  return (
+                    <button
+                      key={page}
+                      type="button"
+                      className={page === currentPage ? "active" : ""}
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          </section>
         </div>
       </main>
     </>

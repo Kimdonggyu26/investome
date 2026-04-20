@@ -73,44 +73,50 @@
 }
 
 .newsTabs button {
-  padding: 8px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-  color: rgba(255,255,255,0.72);
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015));
+  color: rgba(255,255,255,0.62);
   cursor: pointer;
   font-size: 13px;
-  font-weight: 700;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+  font-weight: 800;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
   transition: .18s ease;
 }
 
 .newsTabs button:hover {
-  border-color: rgba(74,168,255,0.28);
+  transform: translateY(-1px);
+  border-color: rgba(74,168,255,0.20);
   color: var(--text-strong);
-  box-shadow: 0 0 16px rgba(74,168,255,0.07);
+  background: linear-gradient(180deg, rgba(74,168,255,0.07), rgba(255,255,255,0.02));
+  box-shadow: 0 10px 20px rgba(74,168,255,0.06);
 }
 
 .newsTabs button.active {
   color: var(--text-strong);
   border-color: rgba(74,168,255,0.24);
-  background: linear-gradient(135deg, rgba(74,168,255,0.22), rgba(74,168,255,0.12));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 22px rgba(74,168,255,0.10);
+  background: linear-gradient(180deg, rgba(17,29,46,0.96), rgba(11,18,28,0.92));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.05),
+    0 12px 22px rgba(74,168,255,0.08),
+    0 0 0 1px rgba(74,168,255,0.10);
 }
 
 .newsMoreBtn {
-  height: 40px;
+  height: 42px;
   padding: 0 16px;
-  border-radius: 999px;
+  border-radius: 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
   font-weight: 800;
   color: var(--text-strong);
-  border: 1px solid rgba(74,168,255,0.18);
-  background: linear-gradient(135deg, rgba(74,168,255,0.18), rgba(74,168,255,0.10));
-  box-shadow: 0 10px 20px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.05);
+  border: 1px solid rgba(74,168,255,0.22);
+  background: linear-gradient(135deg, rgba(74,168,255,0.16), rgba(124,77,255,0.10));
+  box-shadow: 0 12px 22px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.05);
   transition: .18s ease;
   text-decoration: none;
 }
@@ -144,15 +150,16 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 15px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.02));
-  color: rgba(255,255,255,0.72);
+  min-height: 44px;
+  padding: 0 15px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015));
+  color: rgba(255,255,255,0.66);
   cursor: pointer;
   font-size: 13px;
-  font-weight: 700;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+  font-weight: 800;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
   transition: .18s ease;
 }
 
@@ -174,13 +181,16 @@
   transform: translateY(-1px);
   border-color: rgba(74,168,255,0.26);
   color: var(--text-strong);
+  background: linear-gradient(180deg, rgba(74,168,255,0.07), rgba(255,255,255,0.02));
 }
 
 .newsCategoryChip.active {
-  background: linear-gradient(135deg, rgba(74,168,255,0.20), rgba(74,168,255,0.12));
+  background: linear-gradient(180deg, rgba(17,29,46,0.96), rgba(11,18,28,0.92));
   color: var(--text-strong);
   border-color: rgba(74,168,255,0.22);
-  box-shadow: 0 10px 22px rgba(74,168,255,0.08);
+  box-shadow:
+    0 12px 22px rgba(74,168,255,0.08),
+    0 0 0 1px rgba(74,168,255,0.10);
 }
 
 .newsCategoryChip.active .newsCategoryChipAccent {
@@ -590,18 +600,21 @@
 [data-theme="light"] .newsCategoryChip,
 [data-theme="light"] .newsPager button,
 [data-theme="light"] .newsMoreBtn{
-  border-color: rgba(184,205,233,0.48);
-  background: linear-gradient(180deg, #ffffff, #eef5ff);
-  color: #466381;
-  box-shadow: none;
+  border-color: rgba(184,205,233,0.44);
+  background: linear-gradient(180deg, #ffffff, #f4f8ff);
+  color: #5d7594;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.86);
 }
 
 [data-theme="light"] .newsTabs button.active,
 [data-theme="light"] .newsCategoryChip.active,
 [data-theme="light"] .newsPager button.active{
   color: #0f4c93;
-  background: linear-gradient(180deg, #dff0ff, #cfe6ff);
-  border-color: rgba(105, 162, 233, 0.38);
+  background: linear-gradient(180deg, #eef7ff, #d9ebff);
+  border-color: rgba(105, 162, 233, 0.42);
+  box-shadow:
+    0 10px 18px rgba(109, 151, 214, 0.14),
+    0 0 0 1px rgba(120,170,236,0.14);
 }
 
 [data-theme="light"] .newsCategoryChipAccent{

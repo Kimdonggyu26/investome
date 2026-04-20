@@ -84,6 +84,7 @@ function formatDateLabel(dateValue) {
 export default function FxRates() {
   const [fx, setFx] = useState(null);
   const [err, setErr] = useState(null);
+  const todayLabel = formatDateLabel(new Date());
 
   useEffect(() => {
     let mounted = true;
@@ -124,7 +125,7 @@ export default function FxRates() {
           <div className="fxSub">원화 기준 주요 환율 현황</div>
         </div>
 
-        <div className="fxUpdated">{formatDateLabel(fx?.updatedDate) || "불러오는 중..."}</div>
+        <div className="fxUpdated">{todayLabel}</div>
       </div>
 
       {err && (

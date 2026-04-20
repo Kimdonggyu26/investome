@@ -76,6 +76,20 @@ function domainFromLink(link) {
   }
 }
 
+function isGoogleNewsSource(value) {
+  return /(^|\b)news\.google\.com$/i.test(String(value || "").trim());
+}
+
+function displaySource(item) {
+  const source = String(item?.source || "").trim();
+  if (source && !isGoogleNewsSource(source)) return source;
+
+  const domain = domainFromLink(item?.link);
+  if (domain && !isGoogleNewsSource(domain)) return domain;
+
+  return "";
+}
+
 function NewsSkeleton() {
   return (
     <div className="newsSkeletonWrap">
@@ -258,7 +272,7 @@ export default function NewsList({
                 <div className="newsFeaturedBadge">대표 기사</div>
                 <div className="newsFeaturedTitle">{featured.title}</div>
                 <div className="newsFeaturedMeta">
-                  {featured.source ? <span>{featured.source}</span> : null}
+                  {displaySource(featured) ? <span>{displaySource(featured)}</span> : null}
                   <span>{relativeLabel(featured.pubDate)}</span>
                 </div>
               </div>
@@ -281,10 +295,11 @@ export default function NewsList({
                       <span className="newsItemFreshness">{relativeLabel(item.pubDate)}</span>
                     </div>
                     <div className="newsItemTitle">{item.title}</div>
-                    <div className="newsItemMeta">
-                      {item.source ? <span>{item.source}</span> : null}
-                      {domainFromLink(item.link) ? <span>{domainFromLink(item.link)}</span> : null}
-                    </div>
+                    {displaySource(item) ? (
+                      <div className="newsItemMeta">
+                        <span>{displaySource(item)}</span>
+                      </div>
+                    ) : null}
                   </div>
                 </a>
               ))}
