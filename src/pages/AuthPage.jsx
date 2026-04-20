@@ -5,6 +5,7 @@ import TopTickerBar from "../components/TopTickerBar";
 import { useTicker } from "../hooks/useTicker";
 import "../styles/AuthPage.css";
 import { apiUrl } from "../lib/apiClient";
+import { storeAuthSession } from "../utils/auth";
 
 function validateSignup({ nickname, email, password, passwordConfirm }) {
   return {
@@ -61,6 +62,7 @@ export default function AuthPage() {
           body: JSON.stringify({
             email: form.email,
             password: form.password,
+            keepLogin,
           }),
         });
 
@@ -69,12 +71,7 @@ export default function AuthPage() {
         }
 
         const data = await res.json();
-
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("investome_user", JSON.stringify(data));
-        localStorage.setItem("investome_logged_in", "true");
-        localStorage.setItem("investome_keep_login", keepLogin ? "true" : "false");
-
+        storeAuthSession(data, keepLogin);
         window.dispatchEvent(new Event("investome-auth-changed"));
         navigate("/mypage");
       } catch (err) {

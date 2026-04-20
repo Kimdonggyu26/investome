@@ -1,13 +1,5 @@
 import { apiUrl } from "../lib/apiClient";
-import { clearAuth } from "../utils/auth";
-
-function getAuthHeaders() {
-  const token = localStorage.getItem("accessToken");
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
+import { clearAuth, getAuthHeaders } from "../utils/auth";
 
 async function readErrorMessage(res, fallback) {
   let text = "";

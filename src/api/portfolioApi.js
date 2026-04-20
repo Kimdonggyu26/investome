@@ -1,4 +1,5 @@
 import { apiUrl } from "../lib/apiClient";
+import { getAuthHeaders } from "../utils/auth";
 
 function localApiUrl(path) {
   return path.startsWith("/") ? path : `/${path}`;
@@ -64,14 +65,6 @@ export async function fetchPortfolioQuotes(items) {
   });
 
   return map;
-}
-
-function getAuthHeaders() {
-  const token = localStorage.getItem("accessToken");
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
 }
 
 export async function fetchMyPagePortfolio() {

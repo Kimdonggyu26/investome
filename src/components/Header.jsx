@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { SEARCH_ASSETS } from "../data/searchAssets";
 import { useTheme } from "../contexts/ThemeContext.jsx";
+import { getAuthUser, isLoggedIn, logoutAuth } from "../utils/auth";
 import "../styles/Header.css";
 
 function normalize(text = "") {
@@ -93,18 +94,7 @@ export default function Header() {
 
   useEffect(() => {
     const syncAuth = () => {
-      const loggedIn = localStorage.getItem("investome_logged_in") === "true";
-      const userRaw = localStorage.getItem("investome_user");
-
-      if (loggedIn && userRaw) {
-        try {
-          setAuthUser(JSON.parse(userRaw));
-        } catch {
-          setAuthUser(null);
-        }
-      } else {
-        setAuthUser(null);
-      }
+      setAuthUser(isLoggedIn() ? getAuthUser() : null);
     };
 
     syncAuth();
@@ -204,13 +194,9 @@ export default function Header() {
     }
   }
 
-  function handleLogout() {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("investome_logged_in");
-    localStorage.removeItem("investome_user");
-    localStorage.removeItem("investome_keep_login");
+  async function handleLogout() {
+    await logoutAuth();
     setAuthUser(null);
-    window.dispatchEvent(new Event("investome-auth-changed"));
     navigate("/");
   }
 
