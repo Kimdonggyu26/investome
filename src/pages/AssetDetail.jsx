@@ -145,7 +145,9 @@ function getNewsQuery({ market, symbol, koreanName, englishName }) {
       XRP: '"XRP" OR "리플" OR "Ripple"',
     };
 
-    return cryptoMap[String(symbol || "").toUpperCase()] || parts.map((value) => `"${value}"`).join(" OR ");
+    return koreanName
+      ? `"${koreanName}"`
+      : cryptoMap[String(symbol || "").toUpperCase()] || (englishName ? `"${englishName}"` : `"${symbol}"`);
   }
 
   if (market === "COMMODITIES") {
