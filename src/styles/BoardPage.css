@@ -72,21 +72,45 @@
 }
 
 .boardTabs button{
-  height: 38px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.03);
-  color: rgba(255,255,255,0.72);
+  height: 34px;
+  padding: 0 2px 8px;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.34);
   font-size: 13px;
   font-weight: 800;
   cursor: pointer;
+  position: relative;
 }
 
 .boardTabs button.active{
   color: white;
-  background: linear-gradient(135deg, rgba(14,165,255,0.22), rgba(124,77,255,0.16));
-  border-color: rgba(255,255,255,0.12);
+}
+
+.boardTabs button::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:2px;
+  border-radius:999px;
+  background:rgba(74,168,255,0);
+  transform:scaleX(0.36);
+  opacity:0;
+  transition:all .18s ease;
+}
+
+.boardTabs button:hover{
+  color: rgba(255,255,255,0.82);
+}
+
+.boardTabs button:hover::after,
+.boardTabs button.active::after{
+  background:rgba(74,168,255,0.9);
+  transform:scaleX(1);
+  opacity:1;
 }
 
 .boardSearch{

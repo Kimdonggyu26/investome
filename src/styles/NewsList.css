@@ -78,7 +78,7 @@
   border-radius: 0;
   border: none;
   background: transparent;
-  color: rgba(255,255,255,0.54);
+  color: rgba(255,255,255,0.34);
   cursor: pointer;
   font-size: 13px;
   font-weight: 800;
@@ -186,7 +186,7 @@
   border-radius: 0;
   border: none;
   background: transparent;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.34);
   cursor: pointer;
   font-size: 13px;
   font-weight: 800;

@@ -431,6 +431,12 @@ select {
   box-shadow: none !important;
 }
 
+:root[data-theme="light"] .marketTabs button,
+:root[data-theme="light"] .newsTabs button,
+:root[data-theme="light"] .newsCategoryChip {
+  color: #9fb0c6 !important;
+}
+
 :root[data-theme="light"] .marketTabs button::after,
 :root[data-theme="light"] .newsTabs button::after,
 :root[data-theme="light"] .newsCategoryChip::after,
@@ -624,6 +630,23 @@ select {
   border-color: rgba(31, 89, 170, 0.14) !important;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 255, 0.94)) !important;
   box-shadow: 0 8px 18px rgba(29, 53, 87, 0.08), inset 0 1px 0 rgba(255,255,255,0.90) !important;
+}
+
+:root[data-theme="light"] .boardTabs button {
+  color: #a6b6ca !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme="light"] .boardTabs button.active {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme="light"] .boardTabs button::after {
+  background: rgba(78, 156, 255, 0.88) !important;
 }
 
 :root[data-theme="light"] .boardTableWrap {
