@@ -235,7 +235,7 @@ export default function NewsList({
               onClick={() => setCategory(c.key)}
             >
               <span className="newsCategoryChipAccent">{c.accent}</span>
-              <span>{c.label}</span>
+              <span className="newsCategoryChipLabel">{c.label}</span>
             </button>
           ))}
         </div>
