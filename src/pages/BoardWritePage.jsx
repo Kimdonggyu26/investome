@@ -8,7 +8,7 @@ import {
   fetchBoardPost,
   updateBoardPost,
 } from "../api/boardApi";
-import { getAuthNickname, isLoggedIn } from "../utils/auth";
+import { getAuthNickname, getAuthUser, isLoggedIn } from "../utils/auth";
 import "../styles/BoardWritePage.css";
 
 function readFileAsDataURL(file) {
@@ -23,11 +23,13 @@ function readFileAsDataURL(file) {
 export default function BoardWritePage() {
   const navigate = useNavigate();
   const { postId } = useParams();
-  const isEditMode = !!postId;
+  const isEditMode = Boolean(postId);
   const { prices, changes, loading, error } = useTicker();
   const fileInputRef = useRef(null);
 
   const loggedIn = isLoggedIn();
+  const authUser = getAuthUser();
+  const isAdmin = authUser?.role === "ADMIN";
   const nickname = getAuthNickname("사용자");
 
   const [form, setForm] = useState({
@@ -37,7 +39,6 @@ export default function BoardWritePage() {
     imageData: "",
     imageName: "",
   });
-
   const [submitError, setSubmitError] = useState("");
   const [isDragging, setIsDragging] = useState(false);
 
@@ -64,7 +65,7 @@ export default function BoardWritePage() {
         alert("게시글을 불러오지 못했어요.");
         navigate("/board");
       });
-  }, [isEditMode, postId, navigate]);       
+  }, [isEditMode, navigate, postId]);
 
   function updateField(key, value) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -81,7 +82,6 @@ export default function BoardWritePage() {
     try {
       setSubmitError("");
       const imageData = await readFileAsDataURL(file);
-
       setForm((prev) => ({
         ...prev,
         imageData,
@@ -92,57 +92,55 @@ export default function BoardWritePage() {
     }
   }
 
-  function handleInputFileChange(e) {
-    const file = e.target.files?.[0];
+  function handleInputFileChange(event) {
+    const file = event.target.files?.[0];
     handleFile(file);
   }
 
-  function handleDrop(e) {
-    e.preventDefault();
-    e.stopPropagation();
+  function handleDrop(event) {
+    event.preventDefault();
+    event.stopPropagation();
     setIsDragging(false);
-
-    const file = e.dataTransfer.files?.[0];
-    handleFile(file);
+    handleFile(event.dataTransfer.files?.[0]);
   }
 
-    async function handleSubmit(e) {
-      e.preventDefault();
+  async function handleSubmit(event) {
+    event.preventDefault();
 
-      try {
-        setSubmitError("");
+    try {
+      setSubmitError("");
 
-        if (!loggedIn) {
-          throw new Error("로그인 후 게시글을 작성할 수 있어요.");
-        }
-
-        if (!form.title.trim()) {
-          throw new Error("제목을 입력해 주세요.");
-        }
-
-        if (!form.content.trim()) {
-          throw new Error("내용을 입력해 주세요.");
-        }
-
-        const payload = {
-          category: "free",
-          title: form.title,
-          content: form.content,
-          imageData: form.imageData,
-          imageName: form.imageName,
-        };
-
-        if (isEditMode) {
-          await updateBoardPost(postId, payload);
-          navigate(`/board/${postId}`);
-        } else {
-          const created = await createBoardPost(payload);
-          navigate(`/board/${created.id}`);
-        }
-      } catch (err) {
-        setSubmitError(err.message || "글 등록 중 오류가 발생했습니다.");
+      if (!loggedIn) {
+        throw new Error("로그인 후 게시글을 작성할 수 있어요.");
       }
+
+      if (!form.title.trim()) {
+        throw new Error("제목을 입력해주세요.");
+      }
+
+      if (!form.content.trim()) {
+        throw new Error("내용을 입력해주세요.");
+      }
+
+      const payload = {
+        category: isAdmin && form.category === "notice" ? "notice" : "free",
+        title: form.title,
+        content: form.content,
+        imageData: form.imageData,
+        imageName: form.imageName,
+      };
+
+      if (isEditMode) {
+        await updateBoardPost(postId, payload);
+        navigate(`/board/${postId}`);
+      } else {
+        const created = await createBoardPost(payload);
+        navigate(`/board/${created.id}`);
+      }
+    } catch (err) {
+      setSubmitError(err.message || "글 등록 중 오류가 발생했습니다.");
     }
+  }
 
   if (!loggedIn) {
     return (
@@ -159,9 +157,9 @@ export default function BoardWritePage() {
           <div className="container">
             <section className="boardWriteLockedCard">
               <div className="boardWriteLockedBadge">MEMBERS ONLY</div>
-              <h1 className="boardWriteLockedTitle">로그인 후 게시글 작성이 가능해요</h1>
+              <h1 className="boardWriteLockedTitle">로그인 후 게시글을 작성할 수 있어요</h1>
               <p className="boardWriteLockedText">
-                게시글 작성, 사진 업로드, 댓글 기능은
+                게시글 작성, 이미지 업로드, 댓글 기능은
                 <br />
                 로그인한 사용자만 이용할 수 있어요.
               </p>
@@ -201,7 +199,9 @@ export default function BoardWritePage() {
             <div className="boardWriteHead">
               <div>
                 <div className="boardWriteEyebrow">WRITE POST</div>
-                <h1 className="boardWriteTitle">게시글 작성</h1>
+                <h1 className="boardWriteTitle">
+                  {isEditMode ? "게시글 수정" : "게시글 작성"}
+                </h1>
               </div>
 
               <button
@@ -217,7 +217,11 @@ export default function BoardWritePage() {
               <div className="boardWriteGrid">
                 <label>
                   <span>카테고리</span>
-                  <input type="text" value="자유" disabled />
+                  <input
+                    type="text"
+                    value={form.category === "notice" ? "공지" : "자유"}
+                    disabled
+                  />
                 </label>
 
                 <label>
@@ -225,13 +229,38 @@ export default function BoardWritePage() {
                   <input type="text" value={nickname} disabled />
                 </label>
 
+                {isAdmin ? (
+                  <div className="full">
+                    <div className="boardNoticeToggle">
+                      <div className="boardNoticeToggleText">
+                        <strong>공지로 등록하기</strong>
+                        <span>켜두면 게시판 상단에 고정되고 공지 배지가 붙어요.</span>
+                      </div>
+
+                      <button
+                        type="button"
+                        className={`boardNoticeToggleBtn ${form.category === "notice" ? "isActive" : ""}`}
+                        onClick={() =>
+                          updateField(
+                            "category",
+                            form.category === "notice" ? "free" : "notice"
+                          )
+                        }
+                        aria-pressed={form.category === "notice"}
+                      >
+                        <span className="boardNoticeToggleKnob" />
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+
                 <label className="full">
                   <span>제목</span>
                   <input
                     type="text"
                     value={form.title}
-                    placeholder="제목을 입력해 주세요."
-                    onChange={(e) => updateField("title", e.target.value)}
+                    placeholder="제목을 입력해주세요."
+                    onChange={(event) => updateField("title", event.target.value)}
                   />
                 </label>
 
@@ -239,8 +268,8 @@ export default function BoardWritePage() {
                   <span>내용</span>
                   <textarea
                     value={form.content}
-                    placeholder="내용을 입력해 주세요."
-                    onChange={(e) => updateField("content", e.target.value)}
+                    placeholder="내용을 입력해주세요."
+                    onChange={(event) => updateField("content", event.target.value)}
                   />
                 </label>
 
@@ -249,19 +278,19 @@ export default function BoardWritePage() {
 
                   <div
                     className={`boardDropZone ${isDragging ? "isDragging" : ""}`}
-                    onDragEnter={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
+                    onDragEnter={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
                       setIsDragging(true);
                     }}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
+                    onDragOver={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
                       setIsDragging(true);
                     }}
-                    onDragLeave={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
+                    onDragLeave={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
                       setIsDragging(false);
                     }}
                     onDrop={handleDrop}
@@ -275,7 +304,7 @@ export default function BoardWritePage() {
                       hidden
                     />
 
-                    <div className="boardDropZoneIcon">＋</div>
+                    <div className="boardDropZoneIcon">+</div>
                     <div className="boardDropZoneTitle">
                       클릭하거나 드래그해서 이미지를 올려보세요
                     </div>
@@ -300,16 +329,14 @@ export default function BoardWritePage() {
                           }))
                         }
                       >
-                        삭제
+                        제거
                       </button>
                     </div>
                   </div>
                 ) : null}
               </div>
 
-              {submitError ? (
-                <div className="boardWriteError">{submitError}</div>
-              ) : null}
+              {submitError ? <div className="boardWriteError">{submitError}</div> : null}
 
               <div className="boardWriteActions">
                 <button
@@ -321,7 +348,7 @@ export default function BoardWritePage() {
                 </button>
 
                 <button type="submit" className="boardWriteSubmitBtn">
-                  등록하기
+                  {isEditMode ? "수정하기" : "등록하기"}
                 </button>
               </div>
             </form>

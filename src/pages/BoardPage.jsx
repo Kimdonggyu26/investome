@@ -54,15 +54,7 @@ useEffect(() => {
   const filteredPosts = useMemo(() => {
     let next = [...posts];
 
-    if (tab === "popular") {
-      next.sort(
-        (a, b) =>
-          (b.likes || 0) - (a.likes || 0) ||
-          (b.views || 0) - (a.views || 0) ||
-          (b.commentCount || 0) - (a.commentCount || 0) ||
-          (b.no || 0) - (a.no || 0)
-      );
-    } else if (tab === "notice") {
+    if (tab === "notice") {
       next = next.filter((post) => post.category === "notice");
     }
 
@@ -81,7 +73,24 @@ useEffect(() => {
       });
     }
 
-    return next;
+    const sortByRecent = (a, b) =>
+      (b.id || 0) - (a.id || 0);
+
+    const sortByPopular = (a, b) =>
+      (b.likes || 0) - (a.likes || 0) ||
+      (b.views || 0) - (a.views || 0) ||
+      (b.commentCount || 0) - (a.commentCount || 0) ||
+      sortByRecent(a, b);
+
+    const notices = next
+      .filter((post) => post.category === "notice")
+      .sort(sortByRecent);
+
+    const regularPosts = next
+      .filter((post) => post.category !== "notice")
+      .sort(tab === "popular" ? sortByPopular : sortByRecent);
+
+    return [...notices, ...regularPosts];
   }, [posts, tab, keyword, searchType]);
 
   const totalPages = Math.max(1, Math.ceil(filteredPosts.length / POSTS_PER_PAGE));
@@ -189,7 +198,9 @@ useEffect(() => {
             <div className="boardTableBody">
               {pagePosts.map((post) => (
                 <div className="boardRow" key={post.id ?? post.no}>
-                  <div className="boardNo">{post.no}</div>
+                  <div className="boardNo">
+                    {post.category === "notice" ? "공지" : post.no}
+                  </div>
 
                   <div className="boardSubject">
                     <button
