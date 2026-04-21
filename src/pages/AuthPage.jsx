@@ -52,6 +52,12 @@ export default function AuthPage() {
   async function handleSubmit(e) {
     e.preventDefault();
 
+    const submitted = new FormData(e.currentTarget);
+    const submittedNickname = String(submitted.get("nickname") || "").trim();
+    const submittedEmail = String(submitted.get("email") || "").trim();
+    const submittedPassword = String(submitted.get("password") || "");
+    const submittedPasswordConfirm = String(submitted.get("passwordConfirm") || "");
+
     if (isLogin) {
       try {
         const res = await fetch(apiUrl("/api/auth/login"), {
@@ -60,8 +66,8 @@ export default function AuthPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            email: form.email,
-            password: form.password,
+            email: submittedEmail,
+            password: submittedPassword,
             keepLogin,
           }),
         });
@@ -74,13 +80,25 @@ export default function AuthPage() {
         storeAuthSession(data, keepLogin);
         window.dispatchEvent(new Event("investome-auth-changed"));
         navigate("/mypage");
-      } catch (err) {
+      } catch {
         alert("이메일 또는 비밀번호가 올바르지 않습니다.");
       }
       return;
     }
 
-    if (!isSignupValid) {
+    const nextSignupState = {
+      nickname: submittedNickname,
+      email: submittedEmail,
+      password: submittedPassword,
+      passwordConfirm: submittedPasswordConfirm,
+    };
+
+    setForm(nextSignupState);
+
+    const nextSignupErrors = validateSignup(nextSignupState);
+    const signupValid = Object.values(nextSignupErrors).every((value) => value === "");
+
+    if (!signupValid) {
       alert("회원가입 입력값을 다시 확인해주세요.");
       return;
     }
@@ -92,9 +110,9 @@ export default function AuthPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: form.email,
-          password: form.password,
-          nickname: form.nickname,
+          email: submittedEmail,
+          password: submittedPassword,
+          nickname: submittedNickname,
         }),
       });
 
@@ -103,7 +121,7 @@ export default function AuthPage() {
         throw new Error(message || "회원가입에 실패했습니다.");
       }
 
-      alert("회원가입이 완료됐어요. 로그인해주세요.");
+      alert("회원가입이 완료되었어요. 로그인해주세요.");
       navigate("/login");
     } catch (err) {
       alert(err.message || "회원가입에 실패했습니다.");
@@ -142,7 +160,7 @@ export default function AuthPage() {
               <h1 className="authTitle">{isLogin ? "로그인" : "회원가입"}</h1>
               <p className="authSub">
                 {isLogin
-                  ? "계정으로 로그인하면 관심종목, 포트폴리오, 게시판 활동을 편하게 관리할 수 있어요."
+                  ? "계정으로 로그인하면 관심종목, 포트폴리오, 게시판 활동을 한곳에서 관리할 수 있어요."
                   : "빠르게 가입하고 관심종목, 포트폴리오, 게시판 기능을 바로 이용해보세요."}
               </p>
             </div>
@@ -153,6 +171,8 @@ export default function AuthPage() {
                   <label>닉네임</label>
                   <input
                     type="text"
+                    name="nickname"
+                    autoComplete="nickname"
                     placeholder="닉네임을 입력해주세요"
                     value={form.nickname}
                     onChange={(e) => updateField("nickname", e.target.value)}
@@ -167,6 +187,8 @@ export default function AuthPage() {
                 <label>이메일</label>
                 <input
                   type="email"
+                  name="email"
+                  autoComplete="email"
                   placeholder="example@email.com"
                   value={form.email}
                   onChange={(e) => updateField("email", e.target.value)}
@@ -181,6 +203,8 @@ export default function AuthPage() {
                 <div className="authInputWrap">
                   <input
                     type={showPassword ? "text" : "password"}
+                    name="password"
+                    autoComplete={isLogin ? "current-password" : "new-password"}
                     placeholder="비밀번호를 입력해주세요"
                     value={form.password}
                     onChange={(e) => updateField("password", e.target.value)}
@@ -204,6 +228,8 @@ export default function AuthPage() {
                   <div className="authInputWrap">
                     <input
                       type={showPasswordConfirm ? "text" : "password"}
+                      name="passwordConfirm"
+                      autoComplete="new-password"
                       placeholder="비밀번호를 다시 입력해주세요"
                       value={form.passwordConfirm}
                       onChange={(e) => updateField("passwordConfirm", e.target.value)}
@@ -226,6 +252,7 @@ export default function AuthPage() {
                 <label className="authCheckRow">
                   <input
                     type="checkbox"
+                    name="keepLogin"
                     checked={keepLogin}
                     onChange={(e) => setKeepLogin(e.target.checked)}
                   />
