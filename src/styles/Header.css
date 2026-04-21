@@ -10,7 +10,7 @@
 .headerInner {
   min-height: 78px;
   display: grid;
-  grid-template-columns: auto auto minmax(280px, 1fr) auto;
+  grid-template-columns: auto auto minmax(220px, 1fr) auto;
   align-items: center;
   gap: 18px;
   padding: 14px 0;
@@ -96,7 +96,7 @@
 .headerSearchWrap {
   position: relative;
   width: 100%;
-  max-width: 430px;
+  max-width: 360px;
   justify-self: start;
 }
 
@@ -165,6 +165,8 @@
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
 .loginBtn {
@@ -324,6 +326,7 @@
 .themeToggleLabel {
   font-size: 13px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 @media (max-width: 1180px) {
@@ -416,19 +419,21 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
+  min-width: 0;
 }
 
 .authUserInfo {
   height: 42px;
-  padding: 0 12px;
+  padding: 0 10px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   border: 1px solid var(--border-soft);
   background: var(--surface);
+  flex-shrink: 0;
 }
 
 .authUserBadge {
@@ -448,11 +453,12 @@
   font-size: 13px;
   font-weight: 900;
   color: var(--text);
+  white-space: nowrap;
 }
 
 .headerGhostBtn {
   height: 42px;
-  padding: 0 14px;
+  padding: 0 12px;
   border-radius: 999px;
   border: 1px solid var(--border-soft);
   background: var(--surface);
@@ -465,6 +471,8 @@
   align-items: center;
   justify-content: center;
   transition: .18s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .headerGhostBtn:hover {
