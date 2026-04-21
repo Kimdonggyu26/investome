@@ -471,3 +471,208 @@
   background: var(--surface-strong);
   border-color: var(--border-strong);
 }
+
+.notificationWrap {
+  position: relative;
+}
+
+.notificationBtn {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: var(--surface);
+  color: var(--text-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+.notificationBtn:hover,
+.notificationBtn.active {
+  background: var(--surface-strong);
+  border-color: var(--border-strong);
+  box-shadow: var(--glow);
+}
+
+.notificationBell {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.notificationBadge {
+  position: absolute;
+  top: -4px;
+  right: -3px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff6d8d, #ff4f72);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 18px rgba(255, 89, 126, 0.24);
+}
+
+.notificationDropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: min(360px, calc(100vw - 24px));
+  border-radius: 22px;
+  border: 1px solid var(--border-soft);
+  background: var(--dropdown-bg);
+  box-shadow: var(--overlay-shadow);
+  overflow: hidden;
+  backdrop-filter: blur(14px);
+  z-index: 50;
+}
+
+.notificationHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 16px 14px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.notificationHead strong {
+  display: block;
+  color: var(--text-strong);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.notificationHead span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.notificationReadAllBtn {
+  flex-shrink: 0;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.notificationReadAllBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.notificationList {
+  max-height: 420px;
+  overflow: auto;
+  padding: 8px;
+}
+
+.notificationItem {
+  width: 100%;
+  display: block;
+  padding: 14px;
+  border: none;
+  border-radius: 16px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background .18s ease, transform .18s ease;
+}
+
+.notificationItem:hover {
+  background: var(--surface-strong);
+}
+
+.notificationItem.isUnread {
+  background: rgba(73, 155, 255, 0.08);
+}
+
+.notificationItemTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.notificationItemTop time {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.notificationType {
+  min-height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+
+.notificationType.type-post_comment,
+.notificationType.type-comment_reply {
+  background: rgba(77, 124, 255, 0.12);
+  color: #4d7cff;
+}
+
+.notificationType.type-watchlist_volatility {
+  background: rgba(0, 190, 139, 0.12);
+  color: #0a9d7b;
+}
+
+.notificationType.type-popular_post {
+  background: rgba(255, 145, 77, 0.14);
+  color: #e97d24;
+}
+
+.notificationType.type-portfolio_threshold {
+  background: rgba(124, 77, 255, 0.14);
+  color: #6c4dff;
+}
+
+.notificationType.type-notice_post {
+  background: rgba(0, 174, 239, 0.14);
+  color: #0b8fd8;
+}
+
+.notificationItem strong {
+  display: block;
+  color: var(--text-strong);
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.4;
+}
+
+.notificationItem p {
+  margin: 6px 0 0;
+  color: var(--muted-strong);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.notificationEmpty {
+  padding: 28px 18px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
