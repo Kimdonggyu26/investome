@@ -493,10 +493,6 @@ export default function Header() {
                   <span className="authUserName">{authUser.nickname || "사용자"}</span>
                 </div>
 
-                <Link to="/mypage" className="headerGhostBtn">
-                  마이페이지
-                </Link>
-
                 <button type="button" className="headerGhostBtn" onClick={handleLogout}>
                   로그아웃
                 </button>
