@@ -24,35 +24,29 @@ export default function AuthPage() {
 
   const { prices, changes, loading, error } = useTicker();
 
-  const [form, setForm] = useState({
+  const [signupForm, setSignupForm] = useState({
     nickname: "",
     email: "",
     password: "",
     passwordConfirm: "",
   });
-
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [keepLogin, setKeepLogin] = useState(false);
 
-  const signupErrors = useMemo(() => validateSignup(form), [form]);
+  const signupErrors = useMemo(() => validateSignup(signupForm), [signupForm]);
 
-  const isSignupValid = useMemo(
-    () => Object.values(signupErrors).every((value) => value === ""),
-    [signupErrors]
-  );
-
-  function updateField(field, value) {
-    setForm((prev) => ({
+  function updateSignupField(field, value) {
+    setSignupForm((prev) => ({
       ...prev,
       [field]: value,
     }));
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  async function handleSubmit(event) {
+    event.preventDefault();
 
-    const submitted = new FormData(e.currentTarget);
+    const submitted = new FormData(event.currentTarget);
     const submittedNickname = String(submitted.get("nickname") || "").trim();
     const submittedEmail = String(submitted.get("email") || "").trim();
     const submittedPassword = String(submitted.get("password") || "");
@@ -93,7 +87,7 @@ export default function AuthPage() {
       passwordConfirm: submittedPasswordConfirm,
     };
 
-    setForm(nextSignupState);
+    setSignupForm(nextSignupState);
 
     const nextSignupErrors = validateSignup(nextSignupState);
     const signupValid = Object.values(nextSignupErrors).every((value) => value === "");
@@ -121,7 +115,7 @@ export default function AuthPage() {
         throw new Error(message || "회원가입에 실패했습니다.");
       }
 
-      alert("회원가입이 완료되었어요. 로그인해주세요.");
+      alert("회원가입이 완료됐어요. 로그인해주세요.");
       navigate("/login");
     } catch (err) {
       alert(err.message || "회원가입에 실패했습니다.");
@@ -165,7 +159,7 @@ export default function AuthPage() {
               </p>
             </div>
 
-            <form className="authForm" onSubmit={handleSubmit}>
+            <form className="authForm" onSubmit={handleSubmit} autoComplete="on">
               {!isLogin && (
                 <div className="authField">
                   <label>닉네임</label>
@@ -174,10 +168,10 @@ export default function AuthPage() {
                     name="nickname"
                     autoComplete="nickname"
                     placeholder="닉네임을 입력해주세요"
-                    value={form.nickname}
-                    onChange={(e) => updateField("nickname", e.target.value)}
+                    value={signupForm.nickname}
+                    onChange={(e) => updateSignupField("nickname", e.target.value)}
                   />
-                  {form.nickname && signupErrors.nickname && (
+                  {signupForm.nickname && signupErrors.nickname && (
                     <div className="authFieldError">{signupErrors.nickname}</div>
                   )}
                 </div>
@@ -185,30 +179,52 @@ export default function AuthPage() {
 
               <div className="authField">
                 <label>이메일</label>
-                <input
-                  type="email"
-                  name="email"
-                  autoComplete="email"
-                  placeholder="example@email.com"
-                  value={form.email}
-                  onChange={(e) => updateField("email", e.target.value)}
-                />
-                {!isLogin && form.email && signupErrors.email && (
-                  <div className="authFieldError">{signupErrors.email}</div>
+                {isLogin ? (
+                  <input
+                    type="email"
+                    name="email"
+                    autoComplete="username email"
+                    placeholder="example@email.com"
+                    defaultValue=""
+                  />
+                ) : (
+                  <>
+                    <input
+                      type="email"
+                      name="email"
+                      autoComplete="email"
+                      placeholder="example@email.com"
+                      value={signupForm.email}
+                      onChange={(e) => updateSignupField("email", e.target.value)}
+                    />
+                    {signupForm.email && signupErrors.email && (
+                      <div className="authFieldError">{signupErrors.email}</div>
+                    )}
+                  </>
                 )}
               </div>
 
               <div className="authField">
                 <label>비밀번호</label>
                 <div className="authInputWrap">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    autoComplete={isLogin ? "current-password" : "new-password"}
-                    placeholder="비밀번호를 입력해주세요"
-                    value={form.password}
-                    onChange={(e) => updateField("password", e.target.value)}
-                  />
+                  {isLogin ? (
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      autoComplete="current-password"
+                      placeholder="비밀번호를 입력해주세요"
+                      defaultValue=""
+                    />
+                  ) : (
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      autoComplete="new-password"
+                      placeholder="비밀번호를 입력해주세요"
+                      value={signupForm.password}
+                      onChange={(e) => updateSignupField("password", e.target.value)}
+                    />
+                  )}
                   <button
                     type="button"
                     className="authToggleBtn"
@@ -217,7 +233,7 @@ export default function AuthPage() {
                     {showPassword ? "숨김" : "보기"}
                   </button>
                 </div>
-                {!isLogin && form.password && signupErrors.password && (
+                {!isLogin && signupForm.password && signupErrors.password && (
                   <div className="authFieldError">{signupErrors.password}</div>
                 )}
               </div>
@@ -231,8 +247,8 @@ export default function AuthPage() {
                       name="passwordConfirm"
                       autoComplete="new-password"
                       placeholder="비밀번호를 다시 입력해주세요"
-                      value={form.passwordConfirm}
-                      onChange={(e) => updateField("passwordConfirm", e.target.value)}
+                      value={signupForm.passwordConfirm}
+                      onChange={(e) => updateSignupField("passwordConfirm", e.target.value)}
                     />
                     <button
                       type="button"
@@ -242,7 +258,7 @@ export default function AuthPage() {
                       {showPasswordConfirm ? "숨김" : "보기"}
                     </button>
                   </div>
-                  {form.passwordConfirm && signupErrors.passwordConfirm && (
+                  {signupForm.passwordConfirm && signupErrors.passwordConfirm && (
                     <div className="authFieldError">{signupErrors.passwordConfirm}</div>
                   )}
                 </div>
