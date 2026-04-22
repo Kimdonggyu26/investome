@@ -197,7 +197,10 @@ useEffect(() => {
 
             <div className="boardTableBody">
               {pagePosts.map((post) => (
-                <div className="boardRow" key={post.id ?? post.no}>
+                <div
+                  className={`boardRow ${post.category === "notice" ? "boardRowNotice" : ""}`}
+                  key={post.id ?? post.no}
+                >
                   <div className="boardNo">
                     {post.category === "notice" ? "공지" : post.no}
                   </div>

@@ -669,6 +669,18 @@ select {
   background: rgba(46, 134, 255, 0.04) !important;
 }
 
+:root[data-theme="light"] .boardRowNotice {
+  background:
+    linear-gradient(180deg, rgba(92, 178, 255, 0.20), rgba(137, 171, 255, 0.14)),
+    rgba(255,255,255,0.90) !important;
+}
+
+:root[data-theme="light"] .boardRowNotice:hover {
+  background:
+    linear-gradient(180deg, rgba(92, 178, 255, 0.24), rgba(137, 171, 255, 0.18)),
+    rgba(255,255,255,0.94) !important;
+}
+
 :root[data-theme="light"] .boardSubjectText {
   color: var(--text-strong) !important;
 }
