@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
 import { useTicker } from "../hooks/useTicker";
 import { fetchBoardPosts } from "../api/boardApi";
+import { stripBoardContent } from "../utils/boardContent";
 import "../styles/BoardPage.css";
 
 const POSTS_PER_PAGE = 10;
@@ -63,7 +64,7 @@ useEffect(() => {
     if (q) {
       next = next.filter((post) => {
         const title = String(post.title || "").toLowerCase();
-        const content = String(post.content || "").toLowerCase();
+        const content = stripBoardContent(post.content).toLowerCase();
         const author = String(post.author || "").toLowerCase();
 
         if (searchType === "title") return title.includes(q);
@@ -226,8 +227,8 @@ useEffect(() => {
                       ) : null}
                     </button>
 
-                    {post.content ? (
-                      <div className="boardExcerpt">{post.content}</div>
+                    {stripBoardContent(post.content) ? (
+                      <div className="boardExcerpt">{stripBoardContent(post.content)}</div>
                     ) : null}
                   </div>
 

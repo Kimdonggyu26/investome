@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
+import RichTextEditor from "../components/RichTextEditor";
 import { useTicker } from "../hooks/useTicker";
 import {
   createBoardPost,
@@ -9,6 +10,7 @@ import {
   updateBoardPost,
 } from "../api/boardApi";
 import { getAuthNickname, getAuthUser, isLoggedIn } from "../utils/auth";
+import { hasBoardContent } from "../utils/boardContent";
 import "../styles/BoardWritePage.css";
 
 function readFileAsDataURL(file) {
@@ -93,8 +95,7 @@ export default function BoardWritePage() {
   }
 
   function handleInputFileChange(event) {
-    const file = event.target.files?.[0];
-    handleFile(file);
+    handleFile(event.target.files?.[0]);
   }
 
   function handleDrop(event) {
@@ -118,13 +119,13 @@ export default function BoardWritePage() {
         throw new Error("제목을 입력해주세요.");
       }
 
-      if (!form.content.trim()) {
+      if (!hasBoardContent(form.content)) {
         throw new Error("내용을 입력해주세요.");
       }
 
       const payload = {
         category: isAdmin && form.category === "notice" ? "notice" : "free",
-        title: form.title,
+        title: form.title.trim(),
         content: form.content,
         imageData: form.imageData,
         imageName: form.imageName,
@@ -157,9 +158,9 @@ export default function BoardWritePage() {
           <div className="container">
             <section className="boardWriteLockedCard">
               <div className="boardWriteLockedBadge">MEMBERS ONLY</div>
-              <h1 className="boardWriteLockedTitle">로그인 후 게시글을 작성할 수 있어요</h1>
+              <h1 className="boardWriteLockedTitle">로그인 후 게시글을 작성할 수 있어요.</h1>
               <p className="boardWriteLockedText">
-                게시글 작성, 이미지 업로드, 댓글 기능은
+                게시글 작성, 이미지 업로드 같은 기능은
                 <br />
                 로그인한 사용자만 이용할 수 있어요.
               </p>
@@ -234,7 +235,7 @@ export default function BoardWritePage() {
                     <div className="boardNoticeToggle">
                       <div className="boardNoticeToggleText">
                         <strong>공지로 등록하기</strong>
-                        <span>켜두면 게시판 상단에 고정되고 공지 배지가 붙어요.</span>
+                        <span>게시판 최상단에 고정되고 공지 배지가 붙어요.</span>
                       </div>
 
                       <button
@@ -264,14 +265,13 @@ export default function BoardWritePage() {
                   />
                 </label>
 
-                <label className="full">
+                <div className="full boardEditorField">
                   <span>내용</span>
-                  <textarea
+                  <RichTextEditor
                     value={form.content}
-                    placeholder="내용을 입력해주세요."
-                    onChange={(event) => updateField("content", event.target.value)}
+                    onChange={(nextValue) => updateField("content", nextValue)}
                   />
-                </label>
+                </div>
 
                 <div className="full">
                   <span className="boardWriteFieldLabel">사진 업로드</span>
@@ -308,9 +308,7 @@ export default function BoardWritePage() {
                     <div className="boardDropZoneTitle">
                       클릭하거나 드래그해서 이미지를 올려보세요
                     </div>
-                    <div className="boardDropZoneSub">
-                      JPG, PNG, WEBP 업로드 가능
-                    </div>
+                    <div className="boardDropZoneSub">JPG, PNG, WEBP 업로드 가능</div>
                   </div>
                 </div>
 

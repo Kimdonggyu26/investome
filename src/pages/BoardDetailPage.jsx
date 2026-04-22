@@ -9,6 +9,7 @@ import {
   toggleBoardPostLike,
 } from "../api/boardApi";
 import { clearAuth, getAuthUser, isLoggedIn } from "../utils/auth";
+import { sanitizeBoardContent } from "../utils/boardContent";
 import "../styles/BoardDetailPage.css";
 
 function formatBoardDateTime(dateValue) {
@@ -23,6 +24,7 @@ function formatBoardDateTime(dateValue) {
 }
 
 function categoryLabel(category) {
+  if (category === "notice") return "공지게시판";
   if (category === "free") return "자유게시판";
   return category || "게시판";
 }
@@ -111,8 +113,8 @@ export default function BoardDetailPage() {
     }
   }
 
-  async function handleCommentSubmit(e) {
-    e.preventDefault();
+  async function handleCommentSubmit(event) {
+    event.preventDefault();
     setCommentError("");
 
     if (!loggedIn) {
@@ -154,7 +156,7 @@ export default function BoardDetailPage() {
 
     try {
       await deleteBoardPost(postId);
-      alert("게시글이 삭제되었어요.");
+      alert("게시글을 삭제했어요.");
       navigate("/board");
     } catch (err) {
       if (err.message?.includes("로그인이 만료")) {
@@ -288,7 +290,10 @@ export default function BoardDetailPage() {
               </div>
             ) : null}
 
-            <div className="boardDetailContent">{post.content}</div>
+            <div
+              className="boardDetailContent boardRichContent"
+              dangerouslySetInnerHTML={{ __html: sanitizeBoardContent(post.content) }}
+            />
 
             <div className="boardDetailActionRow">
               <button
@@ -333,10 +338,10 @@ export default function BoardDetailPage() {
                     : "로그인 후 댓글을 작성할 수 있어요."
                 }
                 value={commentForm.content}
-                onChange={(e) =>
+                onChange={(event) =>
                   setCommentForm((prev) => ({
                     ...prev,
-                    content: e.target.value,
+                    content: event.target.value,
                   }))
                 }
                 disabled={!loggedIn}
