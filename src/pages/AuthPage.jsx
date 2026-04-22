@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
@@ -30,14 +30,27 @@ export default function AuthPage() {
     password: "",
     passwordConfirm: "",
   });
+  const [loginForm, setLoginForm] = useState({
+    email: "",
+    password: "",
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [keepLogin, setKeepLogin] = useState(false);
+  const loginEmailRef = useRef(null);
+  const loginPasswordRef = useRef(null);
 
   const signupErrors = useMemo(() => validateSignup(signupForm), [signupForm]);
 
   function updateSignupField(field, value) {
     setSignupForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  }
+
+  function updateLoginField(field, value) {
+    setLoginForm((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -53,6 +66,13 @@ export default function AuthPage() {
     const submittedPasswordConfirm = String(submitted.get("passwordConfirm") || "");
 
     if (isLogin) {
+      const submittedLoginEmail = String(
+        loginEmailRef.current?.value ?? submittedEmail ?? loginForm.email ?? ""
+      ).trim();
+      const submittedLoginPassword = String(
+        loginPasswordRef.current?.value ?? submittedPassword ?? loginForm.password ?? ""
+      );
+
       try {
         const res = await fetch(apiUrl("/api/auth/login"), {
           method: "POST",
@@ -60,8 +80,8 @@ export default function AuthPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            email: submittedEmail,
-            password: submittedPassword,
+            email: submittedLoginEmail,
+            password: submittedLoginPassword,
             keepLogin,
           }),
         });
@@ -115,7 +135,7 @@ export default function AuthPage() {
         throw new Error(message || "회원가입에 실패했습니다.");
       }
 
-      alert("회원가입이 완료됐어요. 로그인해주세요.");
+      alert("회원가입이 완료됐어요. 로그인해 주세요.");
       navigate("/login");
     } catch (err) {
       alert(err.message || "회원가입에 실패했습니다.");
@@ -159,7 +179,12 @@ export default function AuthPage() {
               </p>
             </div>
 
-            <form className="authForm" onSubmit={handleSubmit} autoComplete="on">
+            <form
+              key={isLogin ? "login-form" : "signup-form"}
+              className="authForm"
+              onSubmit={handleSubmit}
+              autoComplete="on"
+            >
               {!isLogin && (
                 <div className="authField">
                   <label>닉네임</label>
@@ -181,11 +206,14 @@ export default function AuthPage() {
                 <label>이메일</label>
                 {isLogin ? (
                   <input
+                    ref={loginEmailRef}
                     type="email"
                     name="email"
                     autoComplete="username email"
                     placeholder="example@email.com"
-                    defaultValue=""
+                    value={loginForm.email}
+                    onChange={(e) => updateLoginField("email", e.target.value)}
+                    onInput={(e) => updateLoginField("email", e.target.value)}
                   />
                 ) : (
                   <>
@@ -209,11 +237,14 @@ export default function AuthPage() {
                 <div className="authInputWrap">
                   {isLogin ? (
                     <input
+                      ref={loginPasswordRef}
                       type={showPassword ? "text" : "password"}
                       name="password"
                       autoComplete="current-password"
                       placeholder="비밀번호를 입력해주세요"
-                      defaultValue=""
+                      value={loginForm.password}
+                      onChange={(e) => updateLoginField("password", e.target.value)}
+                      onInput={(e) => updateLoginField("password", e.target.value)}
                     />
                   ) : (
                     <input
