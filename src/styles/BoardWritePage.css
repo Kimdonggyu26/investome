@@ -224,6 +224,10 @@
   gap: 4px;
 }
 
+.boardNoticeToggleText span{
+  display: none;
+}
+
 .boardNoticeToggleText strong{
   color: rgba(255,255,255,0.96);
   font-size: 15px;
