@@ -549,6 +549,13 @@
   justify-content: center;
 }
 
+.communityError {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ff8fb2;
+}
+
 .communityList {
   display: grid;
   gap: 12px;
@@ -1548,6 +1555,10 @@
   background: linear-gradient(180deg, #eef6ff, #dcecff);
   color: #2d5d96;
   box-shadow: 0 10px 22px rgba(112, 142, 185, 0.12);
+}
+
+[data-theme="light"] .communityError {
+  color: #d24f72;
 }
 
 [data-theme="light"] .communityContent {

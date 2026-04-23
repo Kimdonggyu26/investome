@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { getAuthNickname, isLoggedIn } from "../utils/auth";
 
+const COMMUNITY_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const COMMUNITY_LIMIT_COUNT = 5;
+const COMMUNITY_COOLDOWN_MS = 30 * 1000;
+
 function formatTime(value) {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "";
@@ -37,6 +41,31 @@ function getTodayComments(storageKey) {
   }
 }
 
+function getRateLimitKey(storageKey, nickname) {
+  return `${storageKey}-rate-limit-${String(nickname || "").trim().toLowerCase()}`;
+}
+
+function readRateLimitState(storageKey, nickname) {
+  try {
+    const saved = localStorage.getItem(getRateLimitKey(storageKey, nickname));
+    const parsed = saved ? JSON.parse(saved) : [];
+    if (!Array.isArray(parsed)) return [];
+
+    const cutoff = Date.now() - COMMUNITY_LIMIT_WINDOW_MS;
+    return parsed.filter((timestamp) => Number.isFinite(timestamp) && timestamp >= cutoff);
+  } catch {
+    return [];
+  }
+}
+
+function writeRateLimitState(storageKey, nickname, values) {
+  try {
+    localStorage.setItem(getRateLimitKey(storageKey, nickname), JSON.stringify(values));
+  } catch {
+    // noop
+  }
+}
+
 export default function AssetCommunity({ market, symbol, assetName }) {
   const storageKey = useMemo(
     () => `investome-community-${market}-${symbol}`,
@@ -48,6 +77,7 @@ export default function AssetCommunity({ market, symbol, assetName }) {
 
   const [content, setContent] = useState("");
   const [comments, setComments] = useState([]);
+  const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
     const next = getTodayComments(storageKey);
@@ -64,21 +94,37 @@ export default function AssetCommunity({ market, symbol, assetName }) {
     }
   }, [storageKey, comments]);
 
-  function handleSubmit(e) {
-    e.preventDefault();
+  function handleSubmit(event) {
+    event.preventDefault();
+    setSubmitError("");
 
     if (!loggedIn) return;
 
     const trimmed = content.trim();
     if (!trimmed) return;
 
+    const now = Date.now();
+    const recentAttempts = readRateLimitState(storageKey, nickname);
+    const latestAttempt = recentAttempts.at(-1) || 0;
+
+    if (now - latestAttempt < COMMUNITY_COOLDOWN_MS) {
+      setSubmitError("의견은 30초 간격으로 남길 수 있어요.");
+      return;
+    }
+
+    if (recentAttempts.length >= COMMUNITY_LIMIT_COUNT) {
+      setSubmitError("의견 등록이 너무 많아요. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
     const next = {
-      id: Date.now(),
+      id: now,
       nickname,
       content: trimmed,
       createdAt: new Date().toISOString(),
     };
 
+    writeRateLimitState(storageKey, nickname, [...recentAttempts, now]);
     setComments((prev) => [next, ...prev.filter((item) => isToday(item.createdAt))]);
     setContent("");
   }
@@ -106,9 +152,14 @@ export default function AssetCommunity({ market, symbol, assetName }) {
             className="communityTextarea"
             placeholder={`${assetName}에 대한 의견을 남겨보세요`}
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(event) => {
+              setContent(event.target.value);
+              if (submitError) setSubmitError("");
+            }}
             maxLength={300}
           />
+
+          {submitError ? <div className="communityError">{submitError}</div> : null}
 
           <button type="submit" className="btn primary communitySubmit">
             등록

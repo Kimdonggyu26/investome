@@ -2,10 +2,13 @@ import { useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
+import TurnstileWidget from "../components/TurnstileWidget";
 import { useTicker } from "../hooks/useTicker";
 import "../styles/AuthPage.css";
 import { apiUrl } from "../lib/apiClient";
 import { storeAuthSession } from "../utils/auth";
+
+const TURNSTILE_SITE_KEY = (import.meta.env.VITE_TURNSTILE_SITE_KEY || "").trim();
 
 function validateSignup({ nickname, email, password, passwordConfirm }) {
   return {
@@ -15,6 +18,20 @@ function validateSignup({ nickname, email, password, passwordConfirm }) {
     passwordConfirm:
       password === passwordConfirm ? "" : "비밀번호 확인이 일치하지 않습니다.",
   };
+}
+
+async function readAuthError(res, fallback) {
+  const text = await res.text().catch(() => "");
+
+  try {
+    const parsed = text ? JSON.parse(text) : null;
+    if (parsed?.message) return parsed.message;
+    if (parsed?.error) return String(parsed.error);
+  } catch {
+    // plain text response
+  }
+
+  return text || fallback;
 }
 
 export default function AuthPage() {
@@ -37,6 +54,9 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [keepLogin, setKeepLogin] = useState(false);
+  const [loginTurnstileToken, setLoginTurnstileToken] = useState("");
+  const [signupTurnstileToken, setSignupTurnstileToken] = useState("");
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
   const loginEmailRef = useRef(null);
   const loginPasswordRef = useRef(null);
 
@@ -56,6 +76,10 @@ export default function AuthPage() {
     }));
   }
 
+  function resetTurnstile() {
+    setTurnstileResetKey((prev) => prev + 1);
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
 
@@ -64,6 +88,16 @@ export default function AuthPage() {
     const submittedEmail = String(submitted.get("email") || "").trim();
     const submittedPassword = String(submitted.get("password") || "");
     const submittedPasswordConfirm = String(submitted.get("passwordConfirm") || "");
+
+    if (TURNSTILE_SITE_KEY && isLogin && !loginTurnstileToken) {
+      alert("보안 확인을 완료해주세요.");
+      return;
+    }
+
+    if (TURNSTILE_SITE_KEY && !isLogin && !signupTurnstileToken) {
+      alert("보안 확인을 완료해주세요.");
+      return;
+    }
 
     if (isLogin) {
       const submittedLoginEmail = String(
@@ -83,19 +117,21 @@ export default function AuthPage() {
             email: submittedLoginEmail,
             password: submittedLoginPassword,
             keepLogin,
+            turnstileToken: loginTurnstileToken,
           }),
         });
 
         if (!res.ok) {
-          throw new Error("로그인에 실패했습니다.");
+          throw new Error(await readAuthError(res, "로그인에 실패했습니다."));
         }
 
         const data = await res.json();
         storeAuthSession(data, keepLogin);
         window.dispatchEvent(new Event("investome-auth-changed"));
         navigate("/mypage");
-      } catch {
-        alert("이메일 또는 비밀번호가 올바르지 않습니다.");
+      } catch (error) {
+        alert(error.message || "이메일 또는 비밀번호가 올바르지 않습니다.");
+        resetTurnstile();
       }
       return;
     }
@@ -127,18 +163,19 @@ export default function AuthPage() {
           email: submittedEmail,
           password: submittedPassword,
           nickname: submittedNickname,
+          turnstileToken: signupTurnstileToken,
         }),
       });
 
       if (!res.ok) {
-        const message = await res.text();
-        throw new Error(message || "회원가입에 실패했습니다.");
+        throw new Error(await readAuthError(res, "회원가입에 실패했습니다."));
       }
 
       alert("회원가입이 완료됐어요. 로그인해 주세요.");
       navigate("/login");
-    } catch (err) {
-      alert(err.message || "회원가입에 실패했습니다.");
+    } catch (error) {
+      alert(error.message || "회원가입에 실패했습니다.");
+      resetTurnstile();
     }
   }
 
@@ -194,7 +231,7 @@ export default function AuthPage() {
                     autoComplete="nickname"
                     placeholder="닉네임을 입력해주세요"
                     value={signupForm.nickname}
-                    onChange={(e) => updateSignupField("nickname", e.target.value)}
+                    onChange={(event) => updateSignupField("nickname", event.target.value)}
                   />
                   {signupForm.nickname && signupErrors.nickname && (
                     <div className="authFieldError">{signupErrors.nickname}</div>
@@ -212,8 +249,8 @@ export default function AuthPage() {
                     autoComplete="username email"
                     placeholder="example@email.com"
                     value={loginForm.email}
-                    onChange={(e) => updateLoginField("email", e.target.value)}
-                    onInput={(e) => updateLoginField("email", e.target.value)}
+                    onChange={(event) => updateLoginField("email", event.target.value)}
+                    onInput={(event) => updateLoginField("email", event.target.value)}
                   />
                 ) : (
                   <>
@@ -223,7 +260,7 @@ export default function AuthPage() {
                       autoComplete="email"
                       placeholder="example@email.com"
                       value={signupForm.email}
-                      onChange={(e) => updateSignupField("email", e.target.value)}
+                      onChange={(event) => updateSignupField("email", event.target.value)}
                     />
                     {signupForm.email && signupErrors.email && (
                       <div className="authFieldError">{signupErrors.email}</div>
@@ -243,8 +280,8 @@ export default function AuthPage() {
                       autoComplete="current-password"
                       placeholder="비밀번호를 입력해주세요"
                       value={loginForm.password}
-                      onChange={(e) => updateLoginField("password", e.target.value)}
-                      onInput={(e) => updateLoginField("password", e.target.value)}
+                      onChange={(event) => updateLoginField("password", event.target.value)}
+                      onInput={(event) => updateLoginField("password", event.target.value)}
                     />
                   ) : (
                     <input
@@ -253,9 +290,10 @@ export default function AuthPage() {
                       autoComplete="new-password"
                       placeholder="비밀번호를 입력해주세요"
                       value={signupForm.password}
-                      onChange={(e) => updateSignupField("password", e.target.value)}
+                      onChange={(event) => updateSignupField("password", event.target.value)}
                     />
                   )}
+
                   <button
                     type="button"
                     className="authToggleBtn"
@@ -279,7 +317,9 @@ export default function AuthPage() {
                       autoComplete="new-password"
                       placeholder="비밀번호를 다시 입력해주세요"
                       value={signupForm.passwordConfirm}
-                      onChange={(e) => updateSignupField("passwordConfirm", e.target.value)}
+                      onChange={(event) =>
+                        updateSignupField("passwordConfirm", event.target.value)
+                      }
                     />
                     <button
                       type="button"
@@ -295,13 +335,21 @@ export default function AuthPage() {
                 </div>
               )}
 
+              {TURNSTILE_SITE_KEY ? (
+                <TurnstileWidget
+                  siteKey={TURNSTILE_SITE_KEY}
+                  resetKey={`${isLogin ? "login" : "signup"}-${turnstileResetKey}`}
+                  onTokenChange={isLogin ? setLoginTurnstileToken : setSignupTurnstileToken}
+                />
+              ) : null}
+
               {isLogin && (
                 <label className="authCheckRow">
                   <input
                     type="checkbox"
                     name="keepLogin"
                     checked={keepLogin}
-                    onChange={(e) => setKeepLogin(e.target.checked)}
+                    onChange={(event) => setKeepLogin(event.target.checked)}
                   />
                   <span>로그인 상태 유지</span>
                 </label>

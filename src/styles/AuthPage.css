@@ -193,6 +193,12 @@
   accent-color: #38bdf8;
 }
 
+.authTurnstile{
+  margin-top: 4px;
+  display: flex;
+  justify-content: center;
+}
+
 .authSubmitBtn {
   margin-top: 2px;
   height: 52px;
