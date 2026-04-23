@@ -196,10 +196,19 @@ export default function BoardPage() {
 
               <div className="boardTableBody">
                 {pagePosts.map((post) => (
-                  <div
-                    className={`boardRow ${post.category === "notice" ? "boardRowNotice" : ""}`}
-                    key={post.id ?? post.no}
-                  >
+                <div
+                  className={`boardRow ${post.category === "notice" ? "boardRowNotice" : ""}`}
+                  key={post.id ?? post.no}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigate(`/board/${post.id}`)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      navigate(`/board/${post.id}`);
+                    }
+                  }}
+                >
                     <div className="boardNo">
                       {post.category === "notice" ? "공지" : post.no}
                     </div>
@@ -208,7 +217,10 @@ export default function BoardPage() {
                       <button
                         type="button"
                         className="boardSubjectBtn"
-                        onClick={() => navigate(`/board/${post.id}`)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          navigate(`/board/${post.id}`);
+                        }}
                       >
                         {post.category === "notice" ? (
                           <span className="boardNoticeBadge">공지</span>
