@@ -238,6 +238,7 @@ export default function AssetDetail() {
   const { prices, changes, loading, error } = useTicker();
   const [asset, setAsset] = useState(getFallbackAsset(market, symbol));
   const [assetLoading, setAssetLoading] = useState(true);
+  const [watchPromptOpen, setWatchPromptOpen] = useState(false);
   const { watchlist, isWatched, toggleWatchlist } = useWatchlist();
 
   useEffect(() => {
@@ -353,6 +354,11 @@ export default function AssetDetail() {
       iconUrl: asset.iconUrl,
       coinId: asset.coinId,
     });
+
+    if (result?.requiresLogin) {
+      setWatchPromptOpen(true);
+      return;
+    }
 
     if (result?.requiresLogin) {
       alert("관심종목은 로그인 후 이용할 수 있어요.");
@@ -563,6 +569,42 @@ export default function AssetDetail() {
           </div>
         </div>
       </main>
+
+      {watchPromptOpen ? (
+        <div
+          className="assetWatchPromptBackdrop"
+          onClick={() => setWatchPromptOpen(false)}
+        >
+          <div
+            className="assetWatchPrompt"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="assetWatchPromptTitle">로그인이 필요해요</div>
+            <div className="assetWatchPromptText">
+              관심종목 추가는 로그인 후 이용할 수 있어요.
+            </div>
+            <div className="assetWatchPromptActions">
+              <button
+                type="button"
+                className="btn assetWatchPromptGhost"
+                onClick={() => setWatchPromptOpen(false)}
+              >
+                닫기
+              </button>
+              <button
+                type="button"
+                className="btn assetWatchPromptPrimary"
+                onClick={() => {
+                  setWatchPromptOpen(false);
+                  navigate("/login");
+                }}
+              >
+                로그인
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }
