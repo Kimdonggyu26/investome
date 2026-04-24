@@ -504,11 +504,11 @@ export default function Header() {
               로그인
             </Link>
           )}
-          <div className="headerNewsSlot">
-            <SidebarNewsTicker compact />
-          </div>
         </div>
 
+        <div className="headerRightRail">
+          <SidebarNewsTicker compact />
+        </div>
       </div>
     </header>
   );

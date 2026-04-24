@@ -14,6 +14,8 @@
   align-items: center;
   gap: 18px;
   padding: 14px 0;
+  position: relative;
+  overflow: visible;
 }
 
 .brand {
@@ -170,13 +172,16 @@
   overflow: visible;
 }
 
-.headerNewsSlot {
-  width: 280px;
-  flex: 0 0 280px;
-  margin-left: 6px;
+.headerRightRail {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 12px);
+  transform: translateY(-50%);
+  width: 220px;
+  z-index: 2;
 }
 
-.headerNewsSlot .sideNewsTicker {
+.headerRightRail .sideNewsTicker {
   margin: 0;
   border-radius: 20px;
   border: 1px solid var(--border-soft);
@@ -186,11 +191,11 @@
     inset 0 1px 0 rgba(255,255,255,0.4);
 }
 
-.headerNewsSlot .sideNewsTicker.compact {
+.headerRightRail .sideNewsTicker.compact {
   padding: 10px 12px;
 }
 
-.headerNewsSlot .sideNewsTickerHeader {
+.headerRightRail .sideNewsTickerHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -198,14 +203,14 @@
   margin-bottom: 8px;
 }
 
-.headerNewsSlot .sideNewsTickerEyebrow {
+.headerRightRail .sideNewsTickerEyebrow {
   color: var(--accent-strong);
   font-size: 12px;
   font-weight: 900;
   letter-spacing: -0.02em;
 }
 
-.headerNewsSlot .sideNewsTickerBadge {
+.headerRightRail .sideNewsTickerBadge {
   min-height: 24px;
   padding: 0 8px;
   border-radius: 999px;
@@ -220,16 +225,16 @@
   flex-shrink: 0;
 }
 
-.headerNewsSlot .sideNewsTickerViewport {
+.headerRightRail .sideNewsTickerViewport {
   height: 48px;
   overflow: hidden;
 }
 
-.headerNewsSlot .sideNewsTickerTrack {
+.headerRightRail .sideNewsTickerTrack {
   transition: transform .45s ease;
 }
 
-.headerNewsSlot .sideNewsTickerItem {
+.headerRightRail .sideNewsTickerItem {
   min-height: 48px;
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr);
@@ -239,7 +244,7 @@
   text-decoration: none;
 }
 
-.headerNewsSlot .sideNewsTickerRank {
+.headerRightRail .sideNewsTickerRank {
   width: 28px;
   height: 28px;
   border-radius: 999px;
@@ -253,11 +258,11 @@
   justify-content: center;
 }
 
-.headerNewsSlot .sideNewsTickerCopy {
+.headerRightRail .sideNewsTickerCopy {
   min-width: 0;
 }
 
-.headerNewsSlot .sideNewsTickerHeadline {
+.headerRightRail .sideNewsTickerHeadline {
   color: var(--text-strong);
   font-size: 14px;
   font-weight: 800;
@@ -267,7 +272,7 @@
   text-overflow: ellipsis;
 }
 
-.headerNewsSlot .sideNewsTickerMeta {
+.headerRightRail .sideNewsTickerMeta {
   margin-top: 3px;
   color: var(--muted);
   font-size: 11px;
@@ -294,8 +299,8 @@
   line-height: 1;
 }
 
-@media (max-width: 1540px) {
-  .headerNewsSlot {
+@media (max-width: 1480px) {
+  .headerRightRail {
     display: none;
   }
 }
