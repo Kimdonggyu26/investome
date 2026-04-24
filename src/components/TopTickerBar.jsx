@@ -41,12 +41,8 @@ export default function TopTickerBar({
     { symbol: "BTC", price: prices?.BTC, change: changes?.BTC },
     { symbol: "ETH", price: prices?.ETH, change: changes?.ETH },
     { symbol: "XRP", price: prices?.XRP, change: changes?.XRP },
-    { symbol: "삼성전자", price: prices?.삼성전자, change: changes?.삼성전자 },
-    {
-      symbol: "SK하이닉스",
-      price: prices?.["SK하이닉스"],
-      change: changes?.["SK하이닉스"],
-    },
+    { symbol: "삼성전자", price: prices?.SAMSUNG, change: changes?.SAMSUNG },
+    { symbol: "SK하이닉스", price: prices?.SKHYNIX, change: changes?.SKHYNIX },
     { symbol: "KOSPI", price: prices?.KOSPI, change: changes?.KOSPI },
     { symbol: "NASDAQ", price: prices?.NASDAQ, change: changes?.NASDAQ },
   ];
