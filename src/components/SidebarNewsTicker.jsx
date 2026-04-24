@@ -112,7 +112,7 @@ export default function SidebarNewsTicker({ compact = false }) {
       <div className="sideNewsTickerViewport">
         <div
           className="sideNewsTickerTrack"
-          style={{ transform: `translateY(-${activeIndex * (compact ? 48 : 60)}px)` }}
+          style={{ transform: `translateY(-${activeIndex * (compact ? 42 : 60)}px)` }}
         >
           {visibleItems.map((item, index) => (
             <a
