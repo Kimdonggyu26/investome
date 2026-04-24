@@ -40,10 +40,10 @@
 
 .sideNewsTicker{
   position: fixed;
-  top: 58px;
+  top: 42px;
   left: calc(50% + 640px);
   width: 290px;
-  z-index: 22;
+  z-index: 34;
   padding: 14px 14px 12px;
   border-radius: 24px;
 }
