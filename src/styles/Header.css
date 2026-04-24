@@ -280,6 +280,14 @@
   color: #2563eb;
 }
 
+[data-theme="light"] .headerRightRail,
+[data-theme="light"] .headerRightRail .sideNewsTicker,
+[data-theme="light"] .headerRightRail .sideNewsTickerViewport,
+[data-theme="light"] .headerRightRail .sideNewsTickerItem,
+[data-theme="light"] .headerRightRail .sideNewsTickerHeader {
+  background: var(--header-bg) !important;
+}
+
 [data-theme="light"] .headerRightRail .sideNewsTickerRank {
   background: rgba(59, 130, 246, 0.1);
   border-color: rgba(59, 130, 246, 0.16);
