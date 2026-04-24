@@ -5,7 +5,6 @@ import RankingTable from "../components/RankingTable";
 import NewsList from "../components/NewsList";
 import CommunityFeed from "../components/CommunityFeed";
 import FxRates from "../components/FxRates";
-import SidebarNewsTicker from "../components/SidebarNewsTicker";
 import "../styles/Home.css";
 
 export default function Home() {
@@ -35,8 +34,7 @@ export default function Home() {
           </section>
         </div>
 
-        <aside className="homeRightFloat homeSideStack">
-          <SidebarNewsTicker />
+        <aside className="homeRightFloat">
           <CommunityFeed />
         </aside>
       </main>

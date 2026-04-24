@@ -2,44 +2,43 @@ import { useEffect, useMemo, useState } from "react";
 import { fetchNews } from "../api/newsApi";
 
 function popularScore(item) {
-  const t = (item.title || "").toLowerCase();
-  let s = 0;
+  const title = String(item?.title || "").toLowerCase();
+  let score = 0;
 
   [
-    "breaking",
-    "surge",
-    "drop",
-    "inflation",
-    "fed",
-    "oil",
-    "semiconductor",
-    "nasdaq",
-    "kospi",
-    "bitcoin",
-    "ethereum",
-    "tesla",
-    "nvidia",
-    "ai",
-  ].forEach((k) => {
-    if (t.includes(k)) s += 3;
+    "코스피",
+    "나스닥",
+    "비트코인",
+    "금리",
+    "환율",
+    "반도체",
+    "애플",
+    "엔비디아",
+    "테슬라",
+    "삼성전자",
+    "미국 증시",
+    "국내증시",
+    "가상자산",
+  ].forEach((keyword) => {
+    if (title.includes(keyword)) score += 3;
   });
 
-  s += Math.min(6, Math.floor((t.length || 0) / 12));
+  score += Math.min(6, Math.floor(title.length / 14));
 
-  const d = new Date(item.pubDate).getTime();
-  if (!Number.isNaN(d)) {
-    const hoursAgo = (Date.now() - d) / 36e5;
-    s += Math.max(0, 8 - Math.floor(hoursAgo / 4));
+  const published = new Date(item?.pubDate).getTime();
+  if (!Number.isNaN(published)) {
+    const hoursAgo = (Date.now() - published) / 36e5;
+    score += Math.max(0, 8 - Math.floor(hoursAgo / 4));
   }
 
-  return s;
+  return score;
 }
 
 function relativeLabel(dateStr) {
-  const date = new Date(dateStr).getTime();
-  if (Number.isNaN(date)) return "방금";
+  const timestamp = new Date(dateStr).getTime();
+  if (Number.isNaN(timestamp)) return "방금";
 
-  const minutes = Math.max(0, Math.floor((Date.now() - date) / 60000));
+  const minutes = Math.max(0, Math.floor((Date.now() - timestamp) / 60000));
   if (minutes < 1) return "방금";
   if (minutes < 60) return `${minutes}분 전`;
 
@@ -49,7 +48,7 @@ function relativeLabel(dateStr) {
   return `${Math.floor(hours / 24)}일 전`;
 }
 
-export default function SidebarNewsTicker() {
+export default function SidebarNewsTicker({ compact = false }) {
   const [items, setItems] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -58,7 +57,7 @@ export default function SidebarNewsTicker() {
 
     async function load() {
       try {
-        const data = await fetchNews({ category: "all", limit: 20 });
+        const data = await fetchNews({ category: "all", sort: "popular", limit: 20 });
         if (!alive) return;
         setItems(
           [...data]
@@ -101,11 +100,11 @@ export default function SidebarNewsTicker() {
   if (visibleItems.length === 0) return null;
 
   return (
-    <section className="card sideNewsTicker">
+    <section className={`card sideNewsTicker${compact ? " compact" : ""}`}>
       <div className="sideNewsTickerHeader">
         <div>
           <div className="sideNewsTickerEyebrow">실시간 인기 뉴스</div>
-          <div className="sideNewsTickerTitle">지금 많이 보는 뉴스</div>
+          {!compact && <div className="sideNewsTickerTitle">지금 많이 보는 뉴스</div>}
         </div>
         <div className="sideNewsTickerBadge">TOP 5</div>
       </div>
@@ -113,7 +112,7 @@ export default function SidebarNewsTicker() {
       <div className="sideNewsTickerViewport">
         <div
           className="sideNewsTickerTrack"
-          style={{ transform: `translateY(-${activeIndex * 60}px)` }}
+          style={{ transform: `translateY(-${activeIndex * (compact ? 48 : 60)}px)` }}
         >
           {visibleItems.map((item, index) => (
             <a
