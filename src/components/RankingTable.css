@@ -492,3 +492,141 @@
   .priceHeadCell{ gap:6px; }
   .currencyToggleMini button{ min-width:36px; padding:0 8px; }
 }
+
+@media (max-width: 640px){
+  .rankingCard{
+    padding: 14px 12px 12px;
+  }
+
+  .rankingScroll{
+    max-height: 456px;
+  }
+
+  .rankingTable{
+    table-layout: fixed;
+  }
+
+  .rankingTable thead th,
+  .rankingTable td{
+    padding: 10px 8px;
+  }
+
+  .rankingTable thead th{
+    font-size: 11px;
+  }
+
+  .rankingTable th:nth-child(1),
+  .rankingTable td:nth-child(1){
+    width: 34px;
+  }
+
+  .rankingTable th:nth-child(3),
+  .rankingTable td:nth-child(3){
+    display: none;
+  }
+
+  .rankingTable th:nth-child(4),
+  .rankingTable td:nth-child(4){
+    width: 96px;
+    text-align: right;
+  }
+
+  .rankingTable th:nth-child(5),
+  .rankingTable td:nth-child(5){
+    width: 72px;
+    text-align: right;
+  }
+
+  .rankCell{
+    font-size: 13px;
+  }
+
+  .nameCell{
+    gap: 8px;
+  }
+
+  .avatar{
+    width: 32px;
+    height: 32px;
+  }
+
+  .avatarFallback{
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .nameMain{
+    font-size: 13px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: keep-all;
+  }
+
+  .nameSub{
+    margin-top: 2px;
+    max-width: none;
+    font-size: 11px;
+  }
+
+  .valueUpdate{
+    font-size: 13px;
+  }
+
+  .rankingChangeCell{
+    font-size: 12px;
+  }
+
+  .priceHeadCell{
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  .currencyToggleInline{
+    margin-left: 0;
+    transform: none;
+  }
+}
+
+@media (max-width: 520px){
+  .rankingTable th:nth-child(4),
+  .rankingTable td:nth-child(4){
+    width: 88px;
+  }
+
+  .rankingTable th:nth-child(5),
+  .rankingTable td:nth-child(5){
+    width: 68px;
+  }
+
+  .avatar{
+    width: 30px;
+    height: 30px;
+  }
+
+  .avatarFallback{
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+  }
+
+  .nameMain{
+    font-size: 12px;
+  }
+
+  .nameSub{
+    display: none;
+  }
+
+  .valueUpdate{
+    font-size: 12px;
+  }
+
+  .rankingChangeCell{
+    font-size: 11px;
+  }
+}
