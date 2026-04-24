@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { SEARCH_ASSETS } from "../data/searchAssets";
 import { useTheme } from "../contexts/ThemeContext.jsx";
 import { fetchNotifications, markAllNotificationsRead, markNotificationRead } from "../api/notificationApi";
-import HeaderNewsTicker from "./HeaderNewsTicker";
 import { getAuthUser, isLoggedIn, logoutAuth } from "../utils/auth";
 import "../styles/Header.css";
 
@@ -506,9 +505,6 @@ export default function Header() {
           )}
         </div>
 
-        <div className="headerNewsRail">
-          <HeaderNewsTicker />
-        </div>
       </div>
     </header>
   );

@@ -10,7 +10,7 @@
 .headerInner {
   min-height: 78px;
   display: grid;
-  grid-template-columns: auto auto minmax(220px, 1fr) auto minmax(240px, 320px);
+  grid-template-columns: auto auto minmax(220px, 1fr) auto;
   align-items: center;
   gap: 18px;
   padding: 14px 0;
@@ -167,81 +167,6 @@
   gap: 8px;
   flex-wrap: nowrap;
   min-width: 0;
-}
-
-.headerNewsRail {
-  display: flex;
-  justify-content: flex-end;
-  min-width: 0;
-}
-
-.headerNewsTicker {
-  width: 100%;
-  min-width: 0;
-  padding: 10px 14px;
-  border-radius: 18px;
-  border: 1px solid var(--border-soft);
-  background: linear-gradient(180deg, var(--surface), var(--surface-strong));
-  box-shadow: 0 12px 28px rgba(0,0,0,0.12);
-  text-decoration: none;
-  transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
-}
-
-.headerNewsTicker:hover {
-  transform: translateY(-1px);
-  border-color: rgba(14,165,255,0.26);
-  box-shadow: 0 16px 34px rgba(0,0,0,0.16), 0 0 18px rgba(14,165,255,0.08);
-}
-
-.headerNewsTickerLabel {
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.6px;
-  color: var(--accent-strong);
-  margin-bottom: 6px;
-}
-
-.headerNewsTickerViewport {
-  position: relative;
-  height: 40px;
-  overflow: hidden;
-}
-
-.headerNewsTickerTrack {
-  transition: transform .45s ease;
-}
-
-.headerNewsTickerItem {
-  height: 40px;
-  display: grid;
-  grid-template-columns: 24px minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
-}
-
-.headerNewsTickerRank {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 900;
-  color: var(--text-strong);
-  background: var(--header-pill-strong);
-  border: 1px solid var(--border-soft);
-}
-
-.headerNewsTickerTitle {
-  min-width: 0;
-  color: var(--text-strong);
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1.35;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .loginBtn {
@@ -430,9 +355,6 @@
     grid-area: actions;
   }
 
-  .headerNewsRail {
-    display: none;
-  }
 }
 
 @media (max-width: 640px) {
