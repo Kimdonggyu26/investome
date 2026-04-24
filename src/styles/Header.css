@@ -175,10 +175,11 @@
 .headerRightRail {
   position: absolute;
   top: 50%;
-  left: calc(100% + 12px);
+  left: calc(100% + 24px);
   transform: translateY(-50%);
   width: 240px;
   z-index: 2;
+  pointer-events: none;
 }
 
 .headerRightRail .sideNewsTicker {
@@ -229,6 +230,8 @@
   align-items: center;
   color: inherit;
   text-decoration: none;
+  background: transparent;
+  pointer-events: auto;
 }
 
 .headerRightRail .sideNewsTickerRank {
