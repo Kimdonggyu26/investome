@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+﻿import { useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
@@ -12,11 +12,11 @@ const TURNSTILE_SITE_KEY = (import.meta.env.VITE_TURNSTILE_SITE_KEY || "").trim(
 
 function validateSignup({ nickname, email, password, passwordConfirm }) {
   return {
-    nickname: nickname.trim().length >= 2 ? "" : "닉네임은 2자 이상 입력해주세요.",
-    email: /\S+@\S+\.\S+/.test(email) ? "" : "올바른 이메일 형식을 입력해주세요.",
-    password: password.length >= 8 ? "" : "비밀번호는 8자 이상 입력해주세요.",
+    nickname: nickname.trim().length >= 2 ? "" : "?됰꽕?꾩? 2???댁긽 ?낅젰?댁＜?몄슂.",
+    email: /\S+@\S+\.\S+/.test(email) ? "" : "?щ컮瑜??대찓???뺤떇???낅젰?댁＜?몄슂.",
+    password: password.length >= 8 ? "" : "鍮꾨?踰덊샇??8???댁긽 ?낅젰?댁＜?몄슂.",
     passwordConfirm:
-      password === passwordConfirm ? "" : "비밀번호 확인이 일치하지 않습니다.",
+      password === passwordConfirm ? "" : "鍮꾨?踰덊샇 ?뺤씤???쇱튂?섏? ?딆뒿?덈떎.",
   };
 }
 
@@ -32,6 +32,23 @@ async function readAuthError(res, fallback) {
   }
 
   return text || fallback;
+}
+
+function normalizeAuthMessage(message = "") {
+  switch (String(message).trim()) {
+    case "DUPLICATE_NICKNAME":
+      return "?대? ?ъ슜 以묒씤 ?됰꽕?꾩엯?덈떎.";
+    case "DUPLICATE_EMAIL":
+      return "?대? 媛?낅맂 ?대찓?쇱엯?덈떎.";
+    case "EMAIL_NOT_FOUND":
+      return "媛?낅맂 ?대찓?쇱씠 ?놁뒿?덈떎.";
+    case "INVALID_CREDENTIALS":
+      return "?대찓???먮뒗 鍮꾨?踰덊샇媛 ?щ컮瑜댁? ?딆뒿?덈떎.";
+    case "INVALID_REFRESH_TOKEN":
+      return "濡쒓렇???곹깭媛 留뚮즺?섏뿀?듬땲?? ?ㅼ떆 濡쒓렇?명빐二쇱꽭??";
+    default:
+      return message;
+  }
 }
 
 export default function AuthPage() {
@@ -90,12 +107,12 @@ export default function AuthPage() {
     const submittedPasswordConfirm = String(submitted.get("passwordConfirm") || "");
 
     if (TURNSTILE_SITE_KEY && isLogin && !loginTurnstileToken) {
-      alert("보안 확인을 완료해주세요.");
+      alert("蹂댁븞 ?뺤씤???꾨즺?댁＜?몄슂.");
       return;
     }
 
     if (TURNSTILE_SITE_KEY && !isLogin && !signupTurnstileToken) {
-      alert("보안 확인을 완료해주세요.");
+      alert("蹂댁븞 ?뺤씤???꾨즺?댁＜?몄슂.");
       return;
     }
 
@@ -122,7 +139,7 @@ export default function AuthPage() {
         });
 
         if (!res.ok) {
-          throw new Error(await readAuthError(res, "로그인에 실패했습니다."));
+          throw new Error(normalizeAuthMessage(await readAuthError(res, "로그인에 실패했습니다.")));
         }
 
         const data = await res.json();
@@ -130,7 +147,7 @@ export default function AuthPage() {
         window.dispatchEvent(new Event("investome-auth-changed"));
         navigate("/mypage");
       } catch (error) {
-        alert(error.message || "이메일 또는 비밀번호가 올바르지 않습니다.");
+        alert(normalizeAuthMessage(error.message || "이메일 또는 비밀번호가 올바르지 않습니다."));
         resetTurnstile();
       }
       return;
@@ -149,7 +166,7 @@ export default function AuthPage() {
     const signupValid = Object.values(nextSignupErrors).every((value) => value === "");
 
     if (!signupValid) {
-      alert("회원가입 입력값을 다시 확인해주세요.");
+      alert("?뚯썝媛???낅젰媛믪쓣 ?ㅼ떆 ?뺤씤?댁＜?몄슂.");
       return;
     }
 
@@ -168,13 +185,13 @@ export default function AuthPage() {
       });
 
       if (!res.ok) {
-        throw new Error(await readAuthError(res, "회원가입에 실패했습니다."));
+        throw new Error(normalizeAuthMessage(await readAuthError(res, "회원가입에 실패했습니다.")));
       }
 
-      alert("회원가입이 완료됐어요. 로그인해 주세요.");
+      alert("?뚯썝媛?낆씠 ?꾨즺?먯뼱?? 濡쒓렇?명빐 二쇱꽭??");
       navigate("/login");
     } catch (error) {
-      alert(error.message || "회원가입에 실패했습니다.");
+      alert(normalizeAuthMessage(error.message || "회원가입에 실패했습니다."));
       resetTurnstile();
     }
   }
@@ -196,14 +213,12 @@ export default function AuthPage() {
               <div className="authTabRowWrap">
                 <div className="authTabRow">
                   <Link to="/login" className={`authTab ${isLogin ? "active" : ""}`}>
-                    로그인
-                  </Link>
+                    濡쒓렇??                  </Link>
                   <Link to="/signup" className={`authTab ${!isLogin ? "active" : ""}`}>
-                    회원가입
-                  </Link>
+                    ?뚯썝媛??                  </Link>
                 </div>
 
-                {isLogin && <div className="authSignupHint">10초면 돼요!</div>}
+                {isLogin && <div className="authSignupHint">10珥덈㈃ ?쇱슂!</div>}
               </div>
             </div>
 
@@ -211,8 +226,8 @@ export default function AuthPage() {
               <h1 className="authTitle">{isLogin ? "로그인" : "회원가입"}</h1>
               <p className="authSub">
                 {isLogin
-                  ? "계정으로 로그인하면 관심종목, 포트폴리오, 게시판 활동을 한곳에서 관리할 수 있어요."
-                  : "빠르게 가입하고 관심종목, 포트폴리오, 게시판 기능을 바로 이용해보세요."}
+                  ? "怨꾩젙?쇰줈 濡쒓렇?명븯硫?愿?ъ쥌紐? ?ы듃?대━?? 寃뚯떆???쒕룞???쒓납?먯꽌 愿由ы븷 ???덉뼱??"
+                  : "鍮좊Ⅴ寃?媛?낇븯怨?愿?ъ쥌紐? ?ы듃?대━?? 寃뚯떆??湲곕뒫??諛붾줈 ?댁슜?대낫?몄슂."}
               </p>
             </div>
 
@@ -229,7 +244,7 @@ export default function AuthPage() {
                     type="text"
                     name="nickname"
                     autoComplete="nickname"
-                    placeholder="닉네임을 입력해주세요"
+                    placeholder="?됰꽕?꾩쓣 ?낅젰?댁＜?몄슂"
                     value={signupForm.nickname}
                     onChange={(event) => updateSignupField("nickname", event.target.value)}
                   />
@@ -270,7 +285,7 @@ export default function AuthPage() {
               </div>
 
               <div className="authField">
-                <label>비밀번호</label>
+                <label>鍮꾨?踰덊샇</label>
                 <div className="authInputWrap">
                   {isLogin ? (
                     <input
@@ -278,7 +293,7 @@ export default function AuthPage() {
                       type={showPassword ? "text" : "password"}
                       name="password"
                       autoComplete="current-password"
-                      placeholder="비밀번호를 입력해주세요"
+                      placeholder="鍮꾨?踰덊샇瑜??낅젰?댁＜?몄슂"
                       value={loginForm.password}
                       onChange={(event) => updateLoginField("password", event.target.value)}
                       onInput={(event) => updateLoginField("password", event.target.value)}
@@ -288,7 +303,7 @@ export default function AuthPage() {
                       type={showPassword ? "text" : "password"}
                       name="password"
                       autoComplete="new-password"
-                      placeholder="비밀번호를 입력해주세요"
+                      placeholder="鍮꾨?踰덊샇瑜??낅젰?댁＜?몄슂"
                       value={signupForm.password}
                       onChange={(event) => updateSignupField("password", event.target.value)}
                     />
@@ -299,7 +314,7 @@ export default function AuthPage() {
                     className="authToggleBtn"
                     onClick={() => setShowPassword((prev) => !prev)}
                   >
-                    {showPassword ? "숨김" : "보기"}
+                    {showPassword ? "?④?" : "蹂닿린"}
                   </button>
                 </div>
                 {!isLogin && signupForm.password && signupErrors.password && (
@@ -309,13 +324,13 @@ export default function AuthPage() {
 
               {!isLogin && (
                 <div className="authField">
-                  <label>비밀번호 확인</label>
+                  <label>鍮꾨?踰덊샇 ?뺤씤</label>
                   <div className="authInputWrap">
                     <input
                       type={showPasswordConfirm ? "text" : "password"}
                       name="passwordConfirm"
                       autoComplete="new-password"
-                      placeholder="비밀번호를 다시 입력해주세요"
+                      placeholder="鍮꾨?踰덊샇瑜??ㅼ떆 ?낅젰?댁＜?몄슂"
                       value={signupForm.passwordConfirm}
                       onChange={(event) =>
                         updateSignupField("passwordConfirm", event.target.value)
@@ -326,7 +341,7 @@ export default function AuthPage() {
                       className="authToggleBtn"
                       onClick={() => setShowPasswordConfirm((prev) => !prev)}
                     >
-                      {showPasswordConfirm ? "숨김" : "보기"}
+                      {showPasswordConfirm ? "?④?" : "蹂닿린"}
                     </button>
                   </div>
                   {signupForm.passwordConfirm && signupErrors.passwordConfirm && (
@@ -351,7 +366,7 @@ export default function AuthPage() {
                     checked={keepLogin}
                     onChange={(event) => setKeepLogin(event.target.checked)}
                   />
-                  <span>로그인 상태 유지</span>
+                  <span>濡쒓렇???곹깭 ?좎?</span>
                 </label>
               )}
 
