@@ -177,56 +177,43 @@
   top: 50%;
   left: calc(100% + 12px);
   transform: translateY(-50%);
-  width: 220px;
+  width: 240px;
   z-index: 2;
 }
 
 .headerRightRail .sideNewsTicker {
   margin: 0;
-  border-radius: 20px;
-  border: 1px solid var(--border-soft);
-  background: linear-gradient(180deg, var(--surface), var(--surface-strong));
-  box-shadow:
-    0 12px 28px rgba(15, 23, 42, 0.08),
-    inset 0 1px 0 rgba(255,255,255,0.4);
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
 }
 
 .headerRightRail .sideNewsTicker.compact {
-  padding: 10px 12px;
+  padding: 0;
 }
 
 .headerRightRail .sideNewsTickerHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
 .headerRightRail .sideNewsTickerEyebrow {
   color: var(--accent-strong);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 900;
   letter-spacing: -0.02em;
 }
 
 .headerRightRail .sideNewsTickerBadge {
-  min-height: 24px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent-strong);
-  border: 1px solid rgba(73, 155, 255, 0.18);
-  font-size: 10px;
-  font-weight: 900;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  display: none;
 }
 
 .headerRightRail .sideNewsTickerViewport {
-  height: 48px;
+  height: 42px;
   overflow: hidden;
 }
 
@@ -235,23 +222,23 @@
 }
 
 .headerRightRail .sideNewsTickerItem {
-  min-height: 48px;
+  min-height: 42px;
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
-  gap: 10px;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 8px;
   align-items: center;
   color: inherit;
   text-decoration: none;
 }
 
 .headerRightRail .sideNewsTickerRank {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   border-radius: 999px;
-  background: var(--header-pill-strong);
-  border: 1px solid var(--border-soft);
-  color: var(--text-strong);
-  font-size: 12px;
+  background: rgba(73, 155, 255, 0.12);
+  border: 1px solid rgba(73, 155, 255, 0.18);
+  color: var(--accent-strong);
+  font-size: 11px;
   font-weight: 900;
   display: inline-flex;
   align-items: center;
@@ -264,7 +251,7 @@
 
 .headerRightRail .sideNewsTickerHeadline {
   color: var(--text-strong);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
   line-height: 1.35;
   white-space: nowrap;
@@ -273,9 +260,9 @@
 }
 
 .headerRightRail .sideNewsTickerMeta {
-  margin-top: 3px;
+  margin-top: 2px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
 }
 
