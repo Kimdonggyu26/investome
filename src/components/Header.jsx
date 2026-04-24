@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { SEARCH_ASSETS } from "../data/searchAssets";
 import { useTheme } from "../contexts/ThemeContext.jsx";
 import { fetchNotifications, markAllNotificationsRead, markNotificationRead } from "../api/notificationApi";
-import SidebarNewsTicker from "./SidebarNewsTicker";
+import HeaderNewsInline from "./HeaderNewsInline";
 import { getAuthUser, isLoggedIn, logoutAuth } from "../utils/auth";
 import "../styles/Header.css";
 
@@ -507,7 +507,7 @@ export default function Header() {
         </div>
 
         <div className="headerRightRail">
-          <SidebarNewsTicker compact />
+          <HeaderNewsInline />
         </div>
       </div>
     </header>
