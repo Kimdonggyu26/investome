@@ -180,6 +180,7 @@
   width: 240px;
   z-index: 2;
   pointer-events: none;
+  background: var(--header-bg);
 }
 
 .headerRightRail .sideNewsTicker {
@@ -220,6 +221,7 @@
 .headerRightRail .sideNewsTickerViewport {
   height: 42px;
   overflow: hidden;
+  background: var(--header-bg);
 }
 
 .headerRightRail .sideNewsTickerTrack {
@@ -234,7 +236,7 @@
   align-items: center;
   color: inherit;
   text-decoration: none;
-  background: transparent;
+  background: var(--header-bg);
   pointer-events: auto;
 }
 
