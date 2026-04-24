@@ -12,6 +12,11 @@ import { fetchFx } from "../api/fxApi";
 const MARKETS = ["KOSPI", "NASDAQ", "CRYPTO", "COMMODITIES"];
 const REFRESH_MS = 20_000;
 const FX_REFRESH_MS = 30_000;
+const SORT_CYCLE = {
+  none: "desc",
+  desc: "asc",
+  asc: "none",
+};
 
 function formatKRW(n) {
   if (typeof n !== "number" || !Number.isFinite(n)) return "-";
@@ -183,6 +188,7 @@ export default function RankingTable() {
   const navigate = useNavigate();
 
   const [market, setMarket] = useState("KOSPI");
+  const [sortDirection, setSortDirection] = useState("none");
   const [currencyByMarket, setCurrencyByMarket] = useState({
     NASDAQ: "KRW",
     CRYPTO: "KRW",
@@ -205,6 +211,33 @@ export default function RankingTable() {
   const mountedRef = useRef(false);
 
   const currency = currencyByMarket[market] || "KRW";
+
+  const sortedRows = useMemo(() => {
+    if (sortDirection === "none") {
+      return rows;
+    }
+
+    return [...rows].sort((a, b) => {
+      const aValue =
+        typeof a.changePct === "number" && Number.isFinite(a.changePct)
+          ? a.changePct
+          : sortDirection === "desc"
+            ? Number.NEGATIVE_INFINITY
+            : Number.POSITIVE_INFINITY;
+      const bValue =
+        typeof b.changePct === "number" && Number.isFinite(b.changePct)
+          ? b.changePct
+          : sortDirection === "desc"
+            ? Number.NEGATIVE_INFINITY
+            : Number.POSITIVE_INFINITY;
+
+      if (sortDirection === "desc") {
+        return bValue - aValue;
+      }
+
+      return aValue - bValue;
+    });
+  }, [rows, sortDirection]);
 
   const clearScheduledRefresh = useCallback(() => {
     if (refreshTimeoutRef.current) {
@@ -394,6 +427,10 @@ export default function RankingTable() {
     };
   }, [market, clearScheduledRefresh, fetchRows]);
 
+  useEffect(() => {
+    setSortDirection("none");
+  }, [market]);
+
   return (
     <div className="rankingCard" id="ranking">
       <div className="rankingHeader">
@@ -488,12 +525,27 @@ export default function RankingTable() {
                       )}
                     </div>
                   </th>
-                  <th>24H</th>
+                  <th>
+                    <button
+                      type="button"
+                      className={`rankingSortButton ${sortDirection !== "none" ? "active" : ""}`}
+                      onClick={() => setSortDirection((prev) => SORT_CYCLE[prev])}
+                    >
+                      <span>24H</span>
+                      <span className="rankingSortArrow">
+                        {sortDirection === "desc"
+                          ? "↓"
+                          : sortDirection === "asc"
+                            ? "↑"
+                            : "↕"}
+                      </span>
+                    </button>
+                  </th>
                 </tr>
               </thead>
 
               <tbody>
-                {rows.map((row) => {
+                {sortedRows.map((row, index) => {
                   const flash = flashMap[row.symbol];
                   const displayName = getDisplayName(row, market);
                   const secondaryLabel = getSecondaryLabel(row, market);
@@ -518,7 +570,9 @@ export default function RankingTable() {
                       className={rowFlashClass}
                       onClick={() => navigate(`/asset/${market}/${row.symbol}`)}
                     >
-                      <td className="rankCell">{row.rank}</td>
+                      <td className="rankCell">
+                        {sortDirection === "none" ? row.rank : index + 1}
+                      </td>
 
                       <td>
                         <div className="nameCell">

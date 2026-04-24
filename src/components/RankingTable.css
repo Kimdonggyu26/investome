@@ -254,6 +254,32 @@
   z-index: 6;
 }
 
+.rankingSortButton{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.rankingSortButton:hover{
+  color: rgba(255,255,255,0.82);
+}
+
+.rankingSortButton.active{
+  color: var(--text-strong);
+}
+
+.rankingSortArrow{
+  font-size: 11px;
+  opacity: 0.84;
+}
+
 .rankingTable th:nth-child(1), .rankingTable td:nth-child(1){ width: 52px; }
 .rankingTable th:nth-child(3), .rankingTable td:nth-child(3){ width: 140px; }
 .rankingTable th:nth-child(4), .rankingTable td:nth-child(4){ width: 140px; white-space: nowrap; }
@@ -515,6 +541,14 @@
     font-size: 11px;
   }
 
+  .rankingSortButton{
+    gap: 4px;
+  }
+
+  .rankingSortArrow{
+    font-size: 10px;
+  }
+
   .rankingTable th:nth-child(1),
   .rankingTable td:nth-child(1){
     width: 34px;
@@ -590,6 +624,10 @@
     margin-left: 0;
     transform: none;
   }
+}
+
+[data-theme="light"] .rankingSortButton:hover{
+  color: rgba(18, 43, 77, 0.8);
 }
 
 @media (max-width: 520px){
