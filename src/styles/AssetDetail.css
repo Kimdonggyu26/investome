@@ -577,10 +577,18 @@
 
 .communityMeta {
   display: flex;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 8px 12px;
   flex-wrap: wrap;
   align-items: center;
   margin-bottom: 10px;
+}
+
+.communityMetaMain {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .communityNick {
@@ -602,6 +610,20 @@
   line-height: 1.65;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.communityDeleteBtn {
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.60);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0;
+}
+
+.communityDeleteBtn:hover {
+  color: #ff9ab4;
 }
 
 .assetEmpty {
@@ -1762,6 +1784,14 @@
 
 [data-theme="light"] .communityContent {
   color: #314863;
+}
+
+[data-theme="light"] .communityDeleteBtn {
+  color: #7a8ea8;
+}
+
+[data-theme="light"] .communityDeleteBtn:hover {
+  color: #cf4f73;
 }
 
 [data-theme="light"] .communityItem::before {

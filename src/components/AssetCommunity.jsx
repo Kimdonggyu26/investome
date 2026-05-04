@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { createAssetComment, fetchAssetComments } from "../api/assetCommunityApi";
-import { getAuthNickname, isLoggedIn } from "../utils/auth";
+import {
+  createAssetComment,
+  deleteAssetComment,
+  fetchAssetComments,
+} from "../api/assetCommunityApi";
+import { getAuthNickname, getAuthUser, isLoggedIn } from "../utils/auth";
 
 function formatTime(value) {
   const d = new Date(value);
@@ -16,10 +20,12 @@ function formatTime(value) {
 }
 
 function commentInitial(nickname) {
-  return String(nickname || "익명").trim().slice(0, 1) || "익";
+  return String(nickname || "익명").trim().slice(0, 1) || "?";
 }
 
 export default function AssetCommunity({ market, symbol, assetName }) {
+  const authUser = useMemo(() => getAuthUser(), []);
+  const isAdmin = authUser?.role === "ADMIN";
   const [loggedIn, setLoggedIn] = useState(() => isLoggedIn());
   const [nickname, setNickname] = useState(() => getAuthNickname("사용자"));
   const [content, setContent] = useState("");
@@ -86,9 +92,7 @@ export default function AssetCommunity({ market, symbol, assetName }) {
     }
 
     const trimmed = content.trim();
-    if (!trimmed || submitting) {
-      return;
-    }
+    if (!trimmed || submitting) return;
 
     try {
       setSubmitting(true);
@@ -106,6 +110,21 @@ export default function AssetCommunity({ market, symbol, assetName }) {
     }
   }
 
+  async function handleDelete(commentId) {
+    const ok = window.confirm("이 의견을 삭제할까요?");
+    if (!ok) return;
+
+    try {
+      await deleteAssetComment({
+        ...requestKey,
+        commentId,
+      });
+      setComments((prev) => prev.filter((item) => item.id !== commentId));
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "의견 삭제에 실패했어요.");
+    }
+  }
+
   return (
     <div className="assetPanel">
       <div className="assetPanelHead">
@@ -117,13 +136,7 @@ export default function AssetCommunity({ market, symbol, assetName }) {
 
       {loggedIn ? (
         <form className="communityForm" onSubmit={handleSubmit}>
-          <input
-            className="communityInput"
-            type="text"
-            value={nickname}
-            disabled
-            maxLength={20}
-          />
+          <input className="communityInput" type="text" value={nickname} disabled maxLength={20} />
 
           <textarea
             className="communityTextarea"
@@ -138,18 +151,12 @@ export default function AssetCommunity({ market, symbol, assetName }) {
 
           {submitError ? <div className="communityError">{submitError}</div> : null}
 
-          <button
-            type="submit"
-            className="btn primary communitySubmit"
-            disabled={submitting}
-          >
+          <button type="submit" className="btn primary communitySubmit" disabled={submitting}>
             {submitting ? "등록 중..." : "등록"}
           </button>
         </form>
       ) : (
-        <div className="communityLoginNotice">
-          로그인하면 {assetName} 커뮤니티에 의견을 남길 수 있어요.
-        </div>
+        <div className="communityLoginNotice">로그인하면 {assetName} 커뮤니티에 의견을 남길 수 있어요.</div>
       )}
 
       <div className="communityList communityListScrollable">
@@ -161,15 +168,22 @@ export default function AssetCommunity({ market, symbol, assetName }) {
           <div className="assetEmpty">아직 등록된 의견이 없어요.</div>
         ) : (
           comments.map((item) => (
-            <div
-              key={item.id}
-              className="communityItem"
-              data-initial={commentInitial(item.authorNickname)}
-            >
+            <div key={item.id} className="communityItem" data-initial={commentInitial(item.authorNickname)}>
               <div className="communityMeta">
-                <span className="communityNick">{item.authorNickname}</span>
-                <span className="communityDot">•</span>
-                <span className="communityDate">{formatTime(item.createdAt)}</span>
+                <div className="communityMetaMain">
+                  <span className="communityNick">{item.authorNickname}</span>
+                  <span className="communityDot">·</span>
+                  <span className="communityDate">{formatTime(item.createdAt)}</span>
+                </div>
+                {loggedIn && (item.mine || isAdmin) ? (
+                  <button
+                    type="button"
+                    className="communityDeleteBtn"
+                    onClick={() => handleDelete(item.id)}
+                  >
+                    삭제
+                  </button>
+                ) : null}
               </div>
               <div className="communityContent">{item.content}</div>
             </div>

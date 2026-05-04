@@ -46,3 +46,20 @@ export async function createAssetComment({ market, symbol, assetName, content })
 
   return res.json();
 }
+
+export async function deleteAssetComment({ market, symbol, commentId }) {
+  const res = await fetch(
+    apiUrl(`/api/assets/${encodeURIComponent(market)}/${encodeURIComponent(symbol)}/comments/${commentId}`),
+    {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    }
+  );
+
+  if (!res.ok) {
+    const fallbackMessage = res.status === 401
+      ? "로그인 후 의견을 삭제할 수 있어요."
+      : "의견 삭제에 실패했어요.";
+    throw new Error(await parseErrorMessage(res, fallbackMessage));
+  }
+}

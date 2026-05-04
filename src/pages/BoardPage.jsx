@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
 import { useTicker } from "../hooks/useTicker";
-import { fetchBoardPosts } from "../api/boardApi";
+import { deleteBoardPost, fetchBoardPosts } from "../api/boardApi";
+import { getAuthUser } from "../utils/auth";
 import { stripBoardContent } from "../utils/boardContent";
 import "../styles/BoardPage.css";
 
@@ -25,6 +26,8 @@ function formatBoardDate(dateValue) {
 export default function BoardPage() {
   const navigate = useNavigate();
   const { prices, changes, loading, error } = useTicker();
+  const authUser = useMemo(() => getAuthUser(), []);
+  const isAdmin = authUser?.role === "ADMIN";
 
   const [tab, setTab] = useState("all");
   const [searchType, setSearchType] = useState("titleContent");
@@ -104,6 +107,19 @@ export default function BoardPage() {
 
   const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
   const pagePosts = filteredPosts.slice(startIndex, startIndex + POSTS_PER_PAGE);
+
+  async function handleDeletePost(event, postId) {
+    event.stopPropagation();
+    const ok = window.confirm("이 게시글을 삭제할까요?");
+    if (!ok) return;
+
+    try {
+      await deleteBoardPost(postId);
+      setPosts((prev) => prev.filter((post) => post.id !== postId));
+    } catch (err) {
+      alert(err.message || "게시글 삭제 중 오류가 발생했어요.");
+    }
+  }
 
   return (
     <>
@@ -235,7 +251,18 @@ export default function BoardPage() {
                         {post.hasImage || post.imageData ? (
                           <span className="boardImageBadge">사진</span>
                         ) : null}
+
                       </button>
+
+                      {isAdmin ? (
+                        <button
+                          type="button"
+                          className="boardAdminDeleteBtn"
+                          onClick={(event) => handleDeletePost(event, post.id)}
+                        >
+                          삭제
+                        </button>
+                      ) : null}
 
                       {stripBoardContent(post.content) ? (
                         <div className="boardExcerpt">{stripBoardContent(post.content)}</div>

@@ -35,6 +35,7 @@ export default function BoardDetailPage() {
 
   const authUser = useMemo(() => getAuthUser(), []);
   const loggedIn = isLoggedIn();
+  const isAdmin = authUser?.role === "ADMIN";
   const nickname = authUser?.nickname || authUser?.name || "사용자";
 
   const [post, setPost] = useState(null);
@@ -248,15 +249,17 @@ export default function BoardDetailPage() {
               목록으로
             </button>
 
-            {post.mine ? (
+            {post.mine || isAdmin ? (
               <div className="boardDetailTopActions">
-                <button
-                  type="button"
-                  className="boardDetailGhostBtn"
-                  onClick={() => navigate(`/board/${post.id}/edit`)}
-                >
-                  수정
-                </button>
+                {post.mine ? (
+                  <button
+                    type="button"
+                    className="boardDetailGhostBtn"
+                    onClick={() => navigate(`/board/${post.id}/edit`)}
+                  >
+                    수정
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   className="boardDetailGhostBtn"
@@ -384,7 +387,7 @@ export default function BoardDetailPage() {
                         >
                           답글
                         </button>
-                        {comment.mine ? (
+                        {comment.mine || isAdmin ? (
                           <button
                             type="button"
                             className="boardCommentActionBtn danger"
