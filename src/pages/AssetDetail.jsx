@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import TopTickerBar from "../components/TopTickerBar";
 import { useTicker } from "../hooks/useTicker";
@@ -228,9 +228,11 @@ async function fetchRankingRows(market) {
 
 export default function AssetDetail() {
   const { market = "", symbol = "" } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { prices, changes, loading, error } = useTicker();
   const [asset, setAsset] = useState(getFallbackAsset(market, symbol));
+  const [marketRows, setMarketRows] = useState([]);
   const [assetLoading, setAssetLoading] = useState(true);
   const [watchPromptOpen, setWatchPromptOpen] = useState(false);
   const { watchlist, isWatched, toggleWatchlist } = useWatchlist();
@@ -261,6 +263,8 @@ export default function AssetDetail() {
           rows.find((row) => String(row.symbol).toUpperCase() === String(symbol).toUpperCase()) || null;
 
         if (!alive) return;
+
+        setMarketRows(Array.isArray(rows) ? rows.slice(0, 10) : []);
 
         const mappedKoreanName = getKoreanAssetName(market, symbol);
         const resolvedName =
@@ -317,6 +321,13 @@ export default function AssetDetail() {
   const isKoreanMarket = market === "KOSPI" || market === "KOSDAQ";
   const watched = isWatched(market, symbol);
   const changeAmount = calcChangeAmount(asset.priceKRW, asset.changePct);
+  const sideMarketRows = useMemo(
+    () =>
+      marketRows.filter(
+        (item) => String(item.symbol).toUpperCase() !== String(symbol).toUpperCase()
+      ),
+    [marketRows, symbol]
+  );
 
   const watchlistPreview = useMemo(() => watchlist.slice(0, 5), [watchlist]);
 
@@ -469,6 +480,51 @@ export default function AssetDetail() {
             </div>
 
             <aside className="assetSideColumn">
+              <section className="assetRailCard assetSideListCard">
+                <div className="assetSectionHead compact">
+                  <div>
+                    <div className="assetSectionEyebrow">MARKET LIST</div>
+                    <h2 className="assetSectionTitle">같은 시장 종목</h2>
+                  </div>
+                  <span className="assetRailCount">{marketRows.length || 0}</span>
+                </div>
+
+                {sideMarketRows.length === 0 ? (
+                  <div className="assetWatchMiniEmpty">같은 시장 종목을 불러오는 중이에요.</div>
+                ) : (
+                  <div className="assetMarketSwitchList">
+                    {sideMarketRows.map((item, index) => {
+                      const nextName =
+                        getKoreanAssetName(item.market, item.symbol) || item.name || item.symbol;
+                      const nextHref = `/asset/${item.market}/${item.symbol}`;
+                      const isActive = location.pathname === nextHref;
+
+                      return (
+                        <Link
+                          key={`${item.market}-${item.symbol}-${index}`}
+                          to={nextHref}
+                          className={`assetMarketSwitchItem ${isActive ? "active" : ""}`}
+                        >
+                          <div className="assetMarketSwitchLeft">
+                            <div className="assetMarketSwitchRank">{index + 1}</div>
+                            <div className="assetMarketSwitchCopy">
+                              <strong className="assetMarketSwitchName">{nextName}</strong>
+                              <span className="assetMarketSwitchMeta">{item.symbol}</span>
+                            </div>
+                          </div>
+                          <div className="assetMarketSwitchRight">
+                            <span className="assetMarketSwitchPrice">{formatKRW(item.priceKRW)}</span>
+                            <span className={`assetMarketSwitchChange ${getChangeClass(item.changePct)}`}>
+                              {formatChange(item.changePct)}
+                            </span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+
               <section className="assetRailCard">
                 <div className="assetSectionHead compact">
                   <div>

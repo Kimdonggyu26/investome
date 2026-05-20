@@ -885,3 +885,282 @@
     flex: 1 1 100%;
   }
 }
+
+/* ===== minimal redesign v2 ===== */
+
+.assetDetailPage {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(90, 174, 255, 0.05), transparent 22%),
+    var(--bg);
+}
+
+.assetHero {
+  padding: 24px 26px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: linear-gradient(180deg, rgba(11, 15, 24, 0.92), rgba(8, 11, 18, 0.9));
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+}
+
+.assetHeroTop {
+  align-items: center;
+}
+
+.assetHeroName {
+  font-size: 32px;
+  letter-spacing: -0.045em;
+}
+
+.assetHeroQuoteRow {
+  margin-top: 18px;
+  padding-top: 18px;
+  gap: 20px;
+}
+
+.assetHeroPrice {
+  font-size: 42px;
+}
+
+.assetHeroChange {
+  font-size: 26px;
+}
+
+.assetHeroMicroGrid {
+  margin-top: 18px;
+  padding-top: 18px;
+  gap: 8px;
+}
+
+.assetHeroMicroCard {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: none;
+}
+
+.assetContentGrid {
+  grid-template-columns: minmax(0, 1.95fr) minmax(320px, 0.85fr);
+  gap: 18px;
+}
+
+.assetPrimaryColumn,
+.assetSideColumn {
+  gap: 18px;
+}
+
+.assetPanel,
+.assetRailCard {
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.018);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.assetSectionTitle,
+.assetPanelTitle {
+  font-size: 21px;
+}
+
+.assetSectionDesc,
+.assetPanelSub {
+  font-size: 13px;
+}
+
+.tvWrap {
+  border-radius: 16px;
+  box-shadow: none;
+}
+
+.assetExternalChart {
+  min-height: 480px;
+}
+
+.assetExternalChartBody {
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.assetWatchMiniList,
+.assetMarketSwitchList {
+  display: grid;
+  gap: 8px;
+}
+
+.assetWatchMiniItem,
+.assetMarketSwitchItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.022);
+  text-decoration: none;
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.assetWatchMiniItem:hover,
+.assetWatchMiniItem.active,
+.assetMarketSwitchItem:hover,
+.assetMarketSwitchItem.active {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(96, 165, 250, 0.16);
+}
+
+.assetMarketSwitchLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.assetMarketSwitchRank {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.assetMarketSwitchCopy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.assetMarketSwitchName {
+  font-size: 14px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.94);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assetMarketSwitchMeta,
+.assetWatchMiniMeta {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.assetMarketSwitchRight {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.assetMarketSwitchPrice {
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.assetMarketSwitchChange {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.communityItem,
+.assetNewsItem {
+  border-radius: 16px;
+  box-shadow: none;
+}
+
+[data-theme="light"] .assetHero {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.995), rgba(247, 250, 255, 0.975));
+  box-shadow: 0 14px 30px rgba(113, 140, 174, 0.1);
+}
+
+[data-theme="light"] .assetPanel,
+[data-theme="light"] .assetRailCard,
+[data-theme="light"] .assetHeroMicroCard,
+[data-theme="light"] .assetWatchMiniEmpty,
+[data-theme="light"] .assetEmpty,
+[data-theme="light"] .communityLoginNotice,
+[data-theme="light"] .assetNewsItem,
+[data-theme="light"] .communityItem,
+[data-theme="light"] .assetWatchMiniItem,
+[data-theme="light"] .assetMarketSwitchItem,
+[data-theme="light"] .assetExternalChartBody {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(247, 250, 255, 0.965));
+  border-color: rgba(185, 205, 233, 0.3);
+  box-shadow: 0 12px 28px rgba(113, 140, 174, 0.08);
+}
+
+[data-theme="light"] .assetMarketSwitchRank {
+  color: #2d5d96;
+  background: #edf5ff;
+}
+
+[data-theme="light"] .assetMarketSwitchName,
+[data-theme="light"] .assetMarketSwitchPrice {
+  color: #17253c;
+}
+
+[data-theme="light"] .assetMarketSwitchMeta {
+  color: #7b8ea7;
+}
+
+[data-theme="light"] .tvWrap {
+  box-shadow: none;
+}
+
+@media (max-width: 1080px) {
+  .assetContentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .assetHero {
+    padding: 18px;
+  }
+
+  .assetHeroName {
+    font-size: 28px;
+  }
+
+  .assetHeroPrice {
+    font-size: 32px;
+  }
+
+  .assetHeroChange {
+    font-size: 22px;
+  }
+
+  .assetHeroMicroGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .assetHeroActions {
+    width: 100%;
+  }
+
+  .assetHeroActions .btn {
+    flex: 1 1 calc(50% - 5px);
+  }
+}
+
+@media (max-width: 520px) {
+  .assetHeroMicroGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .assetHeroActions .btn {
+    flex: 1 1 100%;
+  }
+
+  .assetMarketSwitchItem,
+  .assetWatchMiniItem {
+    padding: 12px;
+  }
+}
