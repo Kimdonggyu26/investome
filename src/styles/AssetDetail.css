@@ -1534,3 +1534,25 @@
     display: none;
   }
 }
+
+/* Keep the minimal asset header blended into the light page background. */
+:root[data-theme="light"] .assetDetailPage {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(90, 174, 255, 0.10), transparent 24%),
+    radial-gradient(circle at 90% 8%, rgba(120, 110, 255, 0.07), transparent 24%),
+    linear-gradient(180deg, #eef4fb 0%, #f7faff 34%, #edf4fb 100%) !important;
+}
+
+:root[data-theme="light"] .assetHero.card,
+:root[data-theme="light"] .assetHero {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme="light"] .assetPanel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(247, 251, 255, 0.68)) !important;
+  border-color: rgba(183, 202, 226, 0.42) !important;
+  box-shadow: 0 14px 30px rgba(113, 140, 174, 0.08) !important;
+}
