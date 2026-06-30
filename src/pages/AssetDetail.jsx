@@ -200,6 +200,35 @@ function AssetLogo({ iconUrl, name }) {
   return <div className="assetLogo assetLogoFallback">{initial}</div>;
 }
 
+function RollingValue({ value }) {
+  const [displayValue, setDisplayValue] = useState(value);
+  const [previousValue, setPreviousValue] = useState(value);
+  const [rolling, setRolling] = useState(false);
+
+  useEffect(() => {
+    if (value === displayValue) return undefined;
+
+    setPreviousValue(displayValue);
+    setDisplayValue(value);
+    setRolling(true);
+
+    const timer = window.setTimeout(() => {
+      setRolling(false);
+    }, 520);
+
+    return () => window.clearTimeout(timer);
+  }, [displayValue, value]);
+
+  return (
+    <span className={`rollingValue ${rolling ? "isRolling" : ""}`}>
+      <span className="rollingValueOld" aria-hidden="true">
+        {previousValue}
+      </span>
+      <span className="rollingValueNew">{displayValue}</span>
+    </span>
+  );
+}
+
 function getPreferredName(asset, symbol) {
   return getKoreanAssetName(asset.market, symbol) || asset.name || asset.displayNameEN || symbol;
 }
@@ -283,20 +312,31 @@ export default function AssetDetail() {
           watchedItem?.displayNameEN ||
           (resolvedName !== symbol ? resolvedName : symbol);
 
-        setAsset({
-          market,
-          symbol: liveQuote?.symbol || symbol,
-          name: resolvedName,
-          displayNameEN: resolvedDisplayName,
-          iconUrl: found?.iconUrl || watchedItem?.iconUrl || liveQuote?.iconUrl || "",
-          coinId: liveQuote?.coinId || found?.coinId || watchedItem?.coinId || "",
-          capKRW: liveQuote?.capKRW ?? found?.capKRW ?? null,
-          priceKRW: liveQuote?.priceKRW ?? found?.priceKRW ?? null,
-          changePct: liveQuote?.changePct ?? found?.changePct ?? null,
+        setAsset((prev) => {
+          const sameAsset =
+            String(prev.market).toUpperCase() === String(market).toUpperCase() &&
+            String(prev.symbol).toUpperCase() === String(symbol).toUpperCase();
+
+          return {
+            market,
+            symbol: liveQuote?.symbol || symbol,
+            name: resolvedName,
+            displayNameEN: resolvedDisplayName,
+            iconUrl: found?.iconUrl || watchedItem?.iconUrl || liveQuote?.iconUrl || (sameAsset ? prev.iconUrl : ""),
+            coinId: liveQuote?.coinId || found?.coinId || watchedItem?.coinId || (sameAsset ? prev.coinId : ""),
+            capKRW: liveQuote?.capKRW ?? found?.capKRW ?? (sameAsset ? prev.capKRW : null),
+            priceKRW: liveQuote?.priceKRW ?? found?.priceKRW ?? (sameAsset ? prev.priceKRW : null),
+            changePct: liveQuote?.changePct ?? found?.changePct ?? (sameAsset ? prev.changePct : null),
+          };
         });
       } catch {
         if (!alive) return;
-        setAsset(getFallbackAsset(market, symbol));
+        setAsset((prev) => {
+          const sameAsset =
+            String(prev.market).toUpperCase() === String(market).toUpperCase() &&
+            String(prev.symbol).toUpperCase() === String(symbol).toUpperCase();
+          return sameAsset ? prev : getFallbackAsset(market, symbol);
+        });
       } finally {
         if (alive) setAssetLoading(false);
       }
@@ -321,6 +361,12 @@ export default function AssetDetail() {
   const isKoreanMarket = market === "KOSPI" || market === "KOSDAQ";
   const watched = isWatched(market, symbol);
   const changeAmount = calcChangeAmount(asset.priceKRW, asset.changePct);
+  const hasAssetPrice = typeof asset.priceKRW === "number" && Number.isFinite(asset.priceKRW);
+  const hasAssetChange = typeof asset.changePct === "number" && Number.isFinite(asset.changePct);
+  const hasChangeAmount = typeof changeAmount === "number" && Number.isFinite(changeAmount);
+  const assetPriceText = hasAssetPrice ? formatKRW(asset.priceKRW) : assetLoading ? "..." : "-";
+  const assetChangeText = hasAssetChange ? formatChange(asset.changePct) : assetLoading ? "..." : "-";
+  const assetAmountText = hasChangeAmount ? formatSignedKRW(changeAmount) : "-";
   const sideMarketRows = useMemo(
     () =>
       marketRows.filter(
@@ -398,17 +444,17 @@ export default function AssetDetail() {
               <div className="assetHeroPriceWrap">
                 <div className="assetHeroLabel">{marketLabel} 실시간 시세</div>
                 <div className="assetHeroPrice">
-                  {assetLoading ? "불러오는 중.." : formatKRW(asset.priceKRW)}
+                  <RollingValue value={assetPriceText} />
                 </div>
               </div>
 
               <div className="assetHeroChangeWrap">
                 <div className="assetHeroLabel">등락률</div>
                 <div className={`assetHeroChange ${getChangeClass(asset.changePct)}`}>
-                  {assetLoading ? "불러오는 중.." : formatChange(asset.changePct)}
+                  <RollingValue value={assetChangeText} />
                 </div>
                 <div className="assetHeroAmount">
-                  {assetLoading ? "-" : formatSignedKRW(changeAmount)}
+                  <RollingValue value={assetAmountText} />
                 </div>
               </div>
             </div>

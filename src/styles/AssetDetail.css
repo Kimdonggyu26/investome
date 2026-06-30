@@ -165,6 +165,62 @@
   font-weight: 700;
 }
 
+.rollingValue {
+  display: inline-grid;
+  position: relative;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+
+.rollingValueOld,
+.rollingValueNew {
+  grid-area: 1 / 1;
+  display: block;
+  will-change: transform, opacity;
+}
+
+.rollingValueOld {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rollingValue.isRolling .rollingValueOld {
+  animation: rollingValueOut 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.rollingValue.isRolling .rollingValueNew {
+  animation: rollingValueIn 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes rollingValueOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-115%);
+  }
+}
+
+@keyframes rollingValueIn {
+  0% {
+    opacity: 0;
+    transform: translateY(115%);
+  }
+  58% {
+    opacity: 1;
+    transform: translateY(-8%);
+  }
+  78% {
+    transform: translateY(3%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .up {
   color: #55d8ac;
 }
