@@ -1550,18 +1550,23 @@
   box-shadow: none !important;
 }
 
-:root[data-theme="light"] .assetPanel {
-  background:
-    linear-gradient(180deg, rgba(239, 247, 255, 0.62), rgba(230, 240, 251, 0.50)) !important;
-  border-color: rgba(150, 177, 210, 0.30) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.46) !important;
+:root[data-theme="light"] body .assetDetailPage .assetPanel {
+  background: transparent !important;
+  border-color: rgba(143, 170, 205, 0.24) !important;
+  box-shadow: none !important;
 }
 
-:root[data-theme="light"] .assetExternalChartBody,
-:root[data-theme="light"] .assetNewsItem,
-:root[data-theme="light"] .communityItem,
-:root[data-theme="light"] .communityLoginNotice {
-  background: rgba(246, 250, 255, 0.44) !important;
-  border-color: rgba(150, 177, 210, 0.24) !important;
+:root[data-theme="light"] body .assetDetailPage .assetExternalChartBody,
+:root[data-theme="light"] body .assetDetailPage .assetNewsItem,
+:root[data-theme="light"] body .assetDetailPage .communityItem,
+:root[data-theme="light"] body .assetDetailPage .communityLoginNotice {
+  background: rgba(232, 242, 252, 0.30) !important;
+  border-color: rgba(143, 170, 205, 0.22) !important;
   box-shadow: none !important;
+}
+
+:root[data-theme="light"] body .assetDetailPage .assetPanel.chartPanel,
+:root[data-theme="light"] body .assetDetailPage .assetPanel.assetExternalChart {
+  padding-left: 0;
+  padding-right: 0;
 }
