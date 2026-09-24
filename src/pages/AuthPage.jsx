@@ -133,7 +133,6 @@ export default function AuthPage() {
           body: JSON.stringify({
             email: submittedLoginEmail,
             password: submittedLoginPassword,
-            keepLogin,
             turnstileToken: loginTurnstileToken,
           }),
         });

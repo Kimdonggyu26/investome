@@ -149,7 +149,7 @@
   font-size: 48px;
   line-height: 1;
   letter-spacing: -0.05em;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .assetHeroChange {
@@ -1621,3 +1621,13 @@
   border-color: rgba(150, 177, 210, 0.24) !important;
   box-shadow: none !important;
 }
+
+.assetQuoteHeading { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.assetCurrencyToggle { display: flex; gap: 4px; }
+.assetCurrencyToggle button { border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; color: var(--text-strong); background: transparent; cursor: pointer; font-size: 11px; }
+.assetCurrencyToggle button[aria-pressed="true"] { background: rgba(128,128,128,.2); font-weight: 700; }
+.assetCurrencyToggle button:disabled { opacity: .4; cursor: default; }
+
+.assetQuoteValue { display: inline-block; animation: assetQuoteEnter 220ms ease-out; }
+@keyframes assetQuoteEnter { from { opacity: .6; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .assetQuoteValue { animation: none; } }

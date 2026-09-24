@@ -1,5 +1,6 @@
 package com.investome.api.config;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -41,15 +42,12 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public Long getUserId(String token) {
-        String subject = Jwts.parser()
+    public Claims parseClaims(String token) {
+        return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
-
-        return Long.parseLong(subject);
+                .getPayload();
     }
 
 }

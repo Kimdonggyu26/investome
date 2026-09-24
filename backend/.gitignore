@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+/.metadata/
+
+# Persistent local preview database and signing key
+.local/

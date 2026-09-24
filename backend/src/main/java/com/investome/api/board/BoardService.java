@@ -2,11 +2,13 @@ package com.investome.api.board;
 
 import com.investome.api.user.User;
 import com.investome.api.user.UserRepository;
+import com.investome.api.exception.AuthenticationFailedException;
+import com.investome.api.exception.BadRequestException;
+import com.investome.api.exception.ForbiddenException;
+import com.investome.api.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
 import java.util.List;
@@ -34,7 +36,7 @@ public class BoardService {
     @Transactional
     public BoardPostResponse getPost(Long postId, boolean increaseView, Long currentUserId) {
         BoardPost post = boardPostRepository.findWithCommentsById(postId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("게시글이 없습니다."));
 
         if (increaseView) {
             post.setViews((post.getViews() == null ? 0L : post.getViews()) + 1);
@@ -46,15 +48,7 @@ public class BoardService {
     @Transactional
     public BoardPostResponse createPost(Long userId, BoardCreateRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."));
-
-        if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "제목을 입력해 주세요.");
-        }
-
-        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용을 입력해 주세요.");
-        }
+                .orElseThrow(() -> new AuthenticationFailedException("로그인이 필요합니다."));
 
         BoardPost post = new BoardPost();
         post.setAuthorId(user.getId());
@@ -72,18 +66,10 @@ public class BoardService {
     @Transactional
     public BoardPostResponse updatePost(Long userId, Long postId, BoardCreateRequest request) {
         BoardPost post = boardPostRepository.findWithCommentsById(postId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("게시글이 없습니다."));
 
         if (!post.getAuthorId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 글만 수정할 수 있습니다.");
-        }
-
-        if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "제목을 입력해 주세요.");
-        }
-
-        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용을 입력해 주세요.");
+            throw new ForbiddenException("본인 글만 수정할 수 있습니다.");
         }
 
         post.setCategory(request.getCategory() == null || request.getCategory().isBlank() ? "free" : request.getCategory());
@@ -98,10 +84,10 @@ public class BoardService {
     @Transactional
     public void deletePost(Long userId, Long postId) {
         BoardPost post = boardPostRepository.findById(postId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("게시글이 없습니다."));
 
         if (!post.getAuthorId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 글만 삭제할 수 있습니다.");
+            throw new ForbiddenException("본인 글만 삭제할 수 있습니다.");
         }
 
         boardPostLikeRepository.deleteAllByPostId(postId);
@@ -112,14 +98,10 @@ public class BoardService {
     @Transactional
     public BoardPostResponse addComment(Long userId, Long postId, BoardCommentCreateRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."));
-
-        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "댓글 내용을 입력해 주세요.");
-        }
+                .orElseThrow(() -> new AuthenticationFailedException("로그인이 필요합니다."));
 
         BoardPost post = boardPostRepository.findWithCommentsById(postId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("게시글이 없습니다."));
 
         BoardComment comment = new BoardComment();
         comment.setPost(post);
@@ -130,7 +112,7 @@ public class BoardService {
         boardCommentRepository.save(comment);
 
         BoardPost refreshed = boardPostRepository.findWithCommentsById(postId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("게시글이 없습니다."));
 
         return toResponse(refreshed, refreshed.getId(), userId);
     }
@@ -138,20 +120,20 @@ public class BoardService {
     @Transactional
     public BoardPostResponse deleteComment(Long userId, Long postId, Long commentId) {
         BoardComment comment = boardCommentRepository.findById(commentId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글이 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("댓글이 없습니다."));
 
         if (!comment.getPost().getId().equals(postId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 요청입니다.");
+            throw new BadRequestException("잘못된 요청입니다.");
         }
 
         if (!comment.getAuthorId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 댓글만 삭제할 수 있습니다.");
+            throw new ForbiddenException("본인 댓글만 삭제할 수 있습니다.");
         }
 
         boardCommentRepository.delete(comment);
 
         BoardPost refreshed = boardPostRepository.findWithCommentsById(postId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("게시글이 없습니다."));
 
         return toResponse(refreshed, refreshed.getId(), userId);
     }
@@ -159,7 +141,7 @@ public class BoardService {
     @Transactional
     public BoardPostResponse toggleLike(Long userId, Long postId) {
         BoardPost post = boardPostRepository.findWithCommentsById(postId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("게시글이 없습니다."));
 
         var existing = boardPostLikeRepository.findByPostIdAndUserId(postId, userId);
 
@@ -175,7 +157,7 @@ public class BoardService {
         post.setLikes(boardPostLikeRepository.countByPostId(postId));
 
         BoardPost refreshed = boardPostRepository.findWithCommentsById(postId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("게시글이 없습니다."));
 
         return toResponse(refreshed, refreshed.getId(), userId);
     }

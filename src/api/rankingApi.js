@@ -156,23 +156,6 @@ function normalizeRow(row, index) {
   };
 }
 
-function toCryptoRow(coin, index) {
-  return {
-    rank: coin.market_cap_rank ?? index + 1,
-    name: coin.name ?? "-",
-    displayNameEN: coin.name ?? "",
-    symbol: (coin.symbol || "-").toUpperCase(),
-    iconUrl: coin.image ?? "",
-    coinId: coin.id ?? "",
-    capKRW: typeof coin.market_cap === "number" ? coin.market_cap : null,
-    priceKRW: typeof coin.current_price === "number" ? coin.current_price : null,
-    changePct:
-      typeof coin.price_change_percentage_24h === "number"
-        ? coin.price_change_percentage_24h
-        : null,
-  };
-}
-
 function hasUsableRows(rows) {
   return (
     Array.isArray(rows) &&
@@ -245,10 +228,10 @@ export async function fetchCryptoTop30KRW() {
       }
 
       const json = await res.json();
-      const rows = Array.isArray(json)
-        ? json.map(toCryptoRow)
-        : Array.isArray(json?.items)
+      const rows = Array.isArray(json?.items)
         ? json.items.map(normalizeRow)
+        : Array.isArray(json)
+        ? json.map(normalizeRow)
         : [];
 
       cryptoClientCache.data = rows;

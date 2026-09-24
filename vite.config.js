@@ -23,10 +23,12 @@ export default defineConfig({
       "/api/asset-quote": vercelApiProxy,
       "/api/asset-search": vercelApiProxy,
       "/api/ticker": vercelApiProxy,
+      "/api/news": vercelApiProxy,
 
       "/api/auth": springProxy,
       "/api/board": springProxy,
-      "/api/news": springProxy,
+      "/api/mypage": springProxy,
+      "/api/paper": springProxy,
     },
   },
 });

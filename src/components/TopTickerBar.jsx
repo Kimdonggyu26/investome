@@ -1,7 +1,7 @@
 import "./TopTickerBar.css";
 
 function formatPrice(value, symbol) {
-  if (typeof value !== "number" || !isFinite(value)) return "불러오는중";
+  if (typeof value !== "number" || !isFinite(value)) return "-";
 
   if (symbol === "KOSPI" || symbol === "NASDAQ") {
     return value.toLocaleString("ko-KR", {
@@ -64,13 +64,13 @@ export default function TopTickerBar({
     <div className="tickerBar">
       <div className="container tickerInner">
         <div className="tickerLeft">
-          <div className={`tickerLiveBadge ${loading ? "syncing" : "live"}`}>
+          <div className={`tickerLiveBadge ${loading || error ? "syncing" : "live"}`}>
             <span className="tickerLiveDot" />
-            <span>{loading ? "SYNCING" : "LIVE"}</span>
+            <span>{loading ? "SYNCING" : error ? "OFFLINE" : "LIVE"}</span>
           </div>
 
           <span className="tickerBriefingText">
-            {error ? "실시간 마켓 브리핑" : "실시간 마켓 브리핑"}
+            {error ? "시세 조회 실패 · 재시도 예정" : "실시간 마켓 브리핑"}
           </span>
         </div>
 

@@ -1,13 +1,9 @@
-import { apiUrl } from "../lib/apiClient";
-
 const ACCESS_TOKEN_KEY = "accessToken";
-const REFRESH_TOKEN_KEY = "refreshToken";
 const USER_KEY = "investome_user";
 const LOGGED_IN_KEY = "investome_logged_in";
 const KEEP_LOGIN_KEY = "investome_keep_login";
 const ACCESS_EXPIRES_AT_KEY = "accessTokenExpiresAt";
 
-let refreshPromise = null;
 
 function storages() {
   return [window.sessionStorage, window.localStorage];
@@ -17,16 +13,6 @@ function readValue(key) {
   for (const storage of storages()) {
     const value = storage.getItem(key);
     if (value !== null) return value;
-  }
-  return null;
-}
-
-function activeStorage() {
-  if (window.sessionStorage.getItem(LOGGED_IN_KEY) === "true") {
-    return window.sessionStorage;
-  }
-  if (window.localStorage.getItem(LOGGED_IN_KEY) === "true") {
-    return window.localStorage;
   }
   return null;
 }
@@ -51,10 +37,6 @@ function deriveAccessTokenExpiry(token) {
 
 export function getAccessToken() {
   return readValue(ACCESS_TOKEN_KEY);
-}
-
-export function getRefreshToken() {
-  return readValue(REFRESH_TOKEN_KEY);
 }
 
 export function getAccessTokenExpiresAt() {
@@ -102,7 +84,6 @@ export function isLoggedIn() {
 export function clearAuth() {
   storages().forEach((storage) => {
     storage.removeItem(ACCESS_TOKEN_KEY);
-    storage.removeItem(REFRESH_TOKEN_KEY);
     storage.removeItem(USER_KEY);
     storage.removeItem(LOGGED_IN_KEY);
     storage.removeItem(KEEP_LOGIN_KEY);
@@ -118,7 +99,6 @@ export function storeAuthSession(data, keepLogin) {
     Number(data?.accessTokenExpiresAt) || deriveAccessTokenExpiry(data?.accessToken);
 
   storage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
-  storage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
   storage.setItem(
     USER_KEY,
     JSON.stringify({
@@ -135,50 +115,6 @@ export function storeAuthSession(data, keepLogin) {
   }
 }
 
-export async function refreshAccessToken() {
-  if (refreshPromise) {
-    return refreshPromise;
-  }
-
-  const refreshToken = getRefreshToken();
-  const keepLogin = readValue(KEEP_LOGIN_KEY) === "true";
-
-  if (!refreshToken) {
-    clearAuth();
-    window.dispatchEvent(new Event("investome-auth-changed"));
-    return false;
-  }
-
-  refreshPromise = (async () => {
-    try {
-      const res = await fetch(apiUrl("/api/auth/refresh"), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ refreshToken }),
-      });
-
-      if (!res.ok) {
-        throw new Error("refresh failed");
-      }
-
-      const data = await res.json();
-      storeAuthSession(data, keepLogin);
-      window.dispatchEvent(new Event("investome-auth-changed"));
-      return true;
-    } catch {
-      clearAuth();
-      window.dispatchEvent(new Event("investome-auth-changed"));
-      return false;
-    } finally {
-      refreshPromise = null;
-    }
-  })();
-
-  return refreshPromise;
-}
-
 export async function initializeAuthSession() {
   const token = getAccessToken();
   if (!token) {
@@ -186,32 +122,15 @@ export async function initializeAuthSession() {
     return false;
   }
 
-  if (!isAccessTokenExpired(60_000)) {
-    return true;
-  }
+  if (!isAccessTokenExpired()) return true;
 
-  return refreshAccessToken();
+  clearAuth();
+  return false;
 }
 
 export async function logoutAuth() {
-  const refreshToken = getRefreshToken();
-
-  try {
-    if (refreshToken) {
-      await fetch(apiUrl("/api/auth/logout"), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ refreshToken }),
-      });
-    }
-  } catch {
-    // Best-effort logout.
-  } finally {
-    clearAuth();
-    window.dispatchEvent(new Event("investome-auth-changed"));
-  }
+  clearAuth();
+  window.dispatchEvent(new Event("investome-auth-changed"));
 }
 
 export function getAuthHeaders() {

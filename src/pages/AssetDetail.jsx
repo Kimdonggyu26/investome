@@ -11,9 +11,9 @@ import {
 } from "../api/rankingApi";
 import TradingViewChart from "../components/TradingViewChart";
 import AssetNewsList from "../components/AssetNewsList";
-import AssetCommunity from "../components/AssetCommunity";
 import "../styles/AssetDetail.css";
 import { useWatchlist } from "../hooks/useWatchlist";
+import { fetchFx } from "../api/fxApi";
 import { fetchAssetQuote } from "../api/portfolioApi";
 import { getKoreanAssetName } from "../data/assetNameMap";
 
@@ -26,6 +26,15 @@ function formatSignedKRW(value) {
   if (typeof value !== "number" || !Number.isFinite(value)) return "-";
   const sign = value > 0 ? "+" : value < 0 ? "-" : "";
   return `${sign}${Math.abs(Math.round(value)).toLocaleString("ko-KR")}원`;
+}
+
+function formatUSD(value, signed = false) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "-";
+  const sign = value < 0 ? "-" : signed && value > 0 ? "+" : "";
+  return `${sign}$${Math.abs(value).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: Math.abs(value) < 1 ? 6 : 2,
+  })}`;
 }
 
 function formatCapKRW(value) {
@@ -47,7 +56,8 @@ function formatChange(value) {
 function calcChangeAmount(price, changePct) {
   if (typeof price !== "number" || !Number.isFinite(price)) return null;
   if (typeof changePct !== "number" || !Number.isFinite(changePct)) return null;
-  return price * (changePct / 100);
+  if (changePct <= -100) return null;
+  return price - price / (1 + changePct / 100);
 }
 
 function getChangeClass(value) {
@@ -201,32 +211,7 @@ function AssetLogo({ iconUrl, name }) {
 }
 
 function RollingValue({ value }) {
-  const [displayValue, setDisplayValue] = useState(value);
-  const [previousValue, setPreviousValue] = useState(value);
-  const [rolling, setRolling] = useState(false);
-
-  useEffect(() => {
-    if (value === displayValue) return undefined;
-
-    setPreviousValue(displayValue);
-    setDisplayValue(value);
-    setRolling(true);
-
-    const timer = window.setTimeout(() => {
-      setRolling(false);
-    }, 520);
-
-    return () => window.clearTimeout(timer);
-  }, [displayValue, value]);
-
-  return (
-    <span className={`rollingValue ${rolling ? "isRolling" : ""}`}>
-      <span className="rollingValueOld" aria-hidden="true">
-        {previousValue}
-      </span>
-      <span className="rollingValueNew">{displayValue}</span>
-    </span>
-  );
+  return <span key={value} className="assetQuoteValue">{value}</span>;
 }
 
 function getPreferredName(asset, symbol) {
@@ -264,6 +249,25 @@ export default function AssetDetail() {
   const [marketRows, setMarketRows] = useState([]);
   const [assetLoading, setAssetLoading] = useState(true);
   const [watchPromptOpen, setWatchPromptOpen] = useState(false);
+  const [currency, setCurrency] = useState("KRW");
+  const [usdKrw, setUsdKrw] = useState(null);
+
+  useEffect(() => {
+    let alive = true;
+    async function loadFx() {
+      try {
+        const data = await fetchFx();
+        if (alive && Number.isFinite(data.USDKRW) && data.USDKRW > 0) {
+          setUsdKrw(data.USDKRW);
+        }
+      } catch {
+        // Keep KRW available when the exchange rate cannot be loaded.
+      }
+    }
+    loadFx();
+    const timer = setInterval(loadFx, 30_000);
+    return () => { alive = false; clearInterval(timer); };
+  }, []);
   const { watchlist, isWatched, toggleWatchlist } = useWatchlist();
 
   useEffect(() => {
@@ -364,9 +368,14 @@ export default function AssetDetail() {
   const hasAssetPrice = typeof asset.priceKRW === "number" && Number.isFinite(asset.priceKRW);
   const hasAssetChange = typeof asset.changePct === "number" && Number.isFinite(asset.changePct);
   const hasChangeAmount = typeof changeAmount === "number" && Number.isFinite(changeAmount);
-  const assetPriceText = hasAssetPrice ? formatKRW(asset.priceKRW) : assetLoading ? "..." : "-";
+  const showUSD = !isKoreanMarket && currency === "USD" && usdKrw > 0;
+  const assetPriceText = hasAssetPrice
+    ? showUSD ? formatUSD(asset.priceKRW / usdKrw) : formatKRW(asset.priceKRW)
+    : assetLoading ? "..." : "-";
   const assetChangeText = hasAssetChange ? formatChange(asset.changePct) : assetLoading ? "..." : "-";
-  const assetAmountText = hasChangeAmount ? formatSignedKRW(changeAmount) : "-";
+  const assetAmountText = hasChangeAmount
+    ? showUSD ? formatUSD(changeAmount / usdKrw, true) : formatSignedKRW(changeAmount)
+    : "-";
   const sideMarketRows = useMemo(
     () =>
       marketRows.filter(
@@ -442,7 +451,20 @@ export default function AssetDetail() {
 
             <div className="assetHeroQuoteRow">
               <div className="assetHeroPriceWrap">
-                <div className="assetHeroLabel">{marketLabel} 실시간 시세</div>
+                <div className="assetQuoteHeading">
+                  <div className="assetHeroLabel">{marketLabel} 시세</div>
+                  {!isKoreanMarket && (
+                    <div className="assetCurrencyToggle" role="group" aria-label="가격 표시 통화">
+                      {["KRW", "USD"].map((unit) => (
+                        <button key={unit} type="button"
+                          aria-pressed={(showUSD ? "USD" : "KRW") === unit}
+                          disabled={unit === "USD" && !usdKrw}
+                          title={unit === "USD" && !usdKrw ? "환율을 불러오면 사용할 수 있어요" : ""}
+                          onClick={() => setCurrency(unit)}>{unit}</button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <div className="assetHeroPrice">
                   <RollingValue value={assetPriceText} />
                 </div>
@@ -604,7 +626,6 @@ export default function AssetDetail() {
                 )}
               </section>
 
-              <AssetCommunity market={market} symbol={symbol} assetName={preferredName} />
             </aside>
           </section>
         </div>

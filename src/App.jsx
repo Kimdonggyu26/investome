@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import AssetDetail from "./pages/AssetDetail";
 import NewsPage from "./pages/NewsPage";
 import MyPage from "./pages/MyPage";
+import PaperTrading from "./pages/PaperTrading";
 import BoardPage from "./pages/BoardPage";
 import BoardWritePage from "./pages/BoardWritePage";
 import BoardDetailPage from "./pages/BoardDetailPage";
@@ -38,6 +39,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/news" element={<NewsPage />} />
       <Route path="/mypage" element={<MyPage />} />
+      <Route path="/paper" element={<PaperTrading />} />
       <Route path="/board" element={<BoardPage />} />
       <Route path="/board/write" element={<BoardWritePage />} />
       <Route path="/board/:postId/edit" element={<BoardWritePage />} />

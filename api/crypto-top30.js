@@ -46,7 +46,22 @@ async function loadCryptoTop30() {
     throw new Error("Crypto top30 fetch failed: invalid payload");
   }
 
-  return items;
+  return items.map((coin, index) => ({
+    rank: Number.isFinite(Number(coin?.market_cap_rank))
+      ? Number(coin.market_cap_rank)
+      : index + 1,
+    market: "CRYPTO",
+    name: coin?.name || "-",
+    displayNameEN: coin?.name || "",
+    symbol: String(coin?.symbol || "-").toUpperCase(),
+    iconUrl: coin?.image || "",
+    coinId: coin?.id || "",
+    capKRW: Number.isFinite(Number(coin?.market_cap)) ? Number(coin.market_cap) : null,
+    priceKRW: Number.isFinite(Number(coin?.current_price)) ? Number(coin.current_price) : null,
+    changePct: Number.isFinite(Number(coin?.price_change_percentage_24h))
+      ? Number(coin.price_change_percentage_24h)
+      : null,
+  }));
 }
 
 async function getCryptoTop30Cached() {
@@ -89,13 +104,13 @@ export default async function handler(req, res) {
 
   try {
     const items = await getCryptoTop30Cached();
-    return res.status(200).json(items);
+    return res.status(200).json({ items });
   } catch (error) {
     const hasStaleCache =
       Array.isArray(globalCache.data) && globalCache.data.length > 0;
 
     if (hasStaleCache) {
-      return res.status(200).json(globalCache.data);
+      return res.status(200).json({ items: globalCache.data, stale: true });
     }
 
     return res.status(error?.status || 500).json({

@@ -2,10 +2,11 @@ package com.investome.api.mypage;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.investome.api.exception.BadRequestException;
+import com.investome.api.exception.InternalServerException;
+import com.investome.api.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -24,7 +25,7 @@ public class MyPagePortfolioService {
 
     public MyPagePortfolioResponse getByUserId(Long userId) {
         MyPagePortfolio saved = repository.findByUserId(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "마이페이지 저장 정보가 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("마이페이지 저장 정보가 없습니다."));
 
         return new MyPagePortfolioResponse(
                 readHoldings(saved.getHoldingsJson()),
@@ -55,7 +56,7 @@ public class MyPagePortfolioService {
         try {
             return objectMapper.writeValueAsString(holdings == null ? Collections.emptyList() : holdings);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "보유 종목 데이터 저장에 실패했습니다.");
+            throw new BadRequestException("보유 종목 데이터 저장에 실패했습니다.");
         }
     }
 
@@ -66,7 +67,7 @@ public class MyPagePortfolioService {
             }
             return objectMapper.readValue(json, HOLDINGS_TYPE);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "보유 종목 데이터를 읽는 중 오류가 발생했습니다.");
+            throw new InternalServerException("보유 종목 데이터를 읽는 중 오류가 발생했습니다.");
         }
     }
 

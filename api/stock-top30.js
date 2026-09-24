@@ -800,7 +800,7 @@ async function ensureRankSnapshot(market) {
   const bucket = getCacheBucket(market);
   const now = Date.now();
 
-  if (bucket.rankedItems?.length && now - bucket.rankAt < RANK_TTL_MS) {
+  if (bucket.rankedItems?.length && now - bucket.rankAt < (market === "KOSPI" ? PRICE_TTL_MS : RANK_TTL_MS)) {
     return bucket.rankedItems;
   }
 
@@ -917,7 +917,7 @@ async function ensurePriceSnapshot(market) {
   }
 
   const rankedItems = await ensureRankSnapshot(market);
-  const pricedItems = await buildPriceSnapshot(rankedItems, market);
+  const pricedItems = market === "KOSPI" ? rankedItems : await buildPriceSnapshot(rankedItems, market);
 
   if (!pricedItems.length) {
     throw new Error(`${market} price snapshot build failed`);
@@ -946,7 +946,8 @@ export default async function handler(req, res) {
       stale: false,
       rankUpdatedAt: bucket.rankAt || null,
       priceUpdatedAt: bucket.priceAt || null,
-      rankRefreshHours: 6,
+      rankRefreshHours: market === "KOSPI" ? 20 / 3600 : 6,
+      rankRefreshSeconds: market === "KOSPI" ? 20 : 21600,
       priceRefreshSeconds: 20,
       mode:
         market === "NASDAQ"
@@ -963,7 +964,8 @@ export default async function handler(req, res) {
       stale: true,
       rankUpdatedAt: bucket.rankAt || null,
       priceUpdatedAt: bucket.priceAt || null,
-      rankRefreshHours: 6,
+      rankRefreshHours: market === "KOSPI" ? 20 / 3600 : 6,
+      rankRefreshSeconds: market === "KOSPI" ? 20 : 21600,
       priceRefreshSeconds: 20,
       error: String(error?.message || error),
       mode:

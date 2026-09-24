@@ -10,7 +10,7 @@ import {
 import { fetchFx } from "../api/fxApi";
 
 const MARKETS = ["KOSPI", "NASDAQ", "CRYPTO", "COMMODITIES"];
-const REFRESH_MS = 20_000;
+const REFRESH_MS_BY_MARKET = { KOSPI: 20_000, NASDAQ: 20_000, CRYPTO: 300_000, COMMODITIES: 20_000 };
 const FX_REFRESH_MS = 30_000;
 const SORT_CYCLE = {
   none: "desc",
@@ -211,6 +211,7 @@ export default function RankingTable() {
   const mountedRef = useRef(false);
 
   const currency = currencyByMarket[market] || "KRW";
+  const refreshMs = REFRESH_MS_BY_MARKET[market];
 
   const sortedRows = useMemo(() => {
     if (sortDirection === "none") {
@@ -271,20 +272,20 @@ export default function RankingTable() {
     (refreshFn) => {
       clearScheduledRefresh();
 
-      nextRefreshAtRef.current = Date.now() + REFRESH_MS;
-      setSecondsLeft(Math.ceil(REFRESH_MS / 1000));
+      nextRefreshAtRef.current = Date.now() + refreshMs;
+      setSecondsLeft(Math.ceil(refreshMs / 1000));
       setIsRefreshingNow(false);
       startCountdown();
 
       refreshTimeoutRef.current = setTimeout(() => {
         refreshFn({ initial: false });
-      }, REFRESH_MS);
+      }, refreshMs);
     },
-    [clearScheduledRefresh, startCountdown]
+    [clearScheduledRefresh, startCountdown, refreshMs]
   );
 
   const fetchRows = useCallback(
-    async ({ initial = false } = {}) => {
+    async function refreshRows({ initial = false } = {}) {
       const startAt = Date.now();
 
       try {
@@ -354,7 +355,7 @@ export default function RankingTable() {
         setIsLoading(false);
         setIsSwitching(false);
 
-        scheduleNextRefresh(fetchRows);
+        scheduleNextRefresh(refreshRows);
       } catch (e) {
         if (!mountedRef.current) return;
         setErr(e);
@@ -362,7 +363,7 @@ export default function RankingTable() {
         setIsSwitching(false);
         setIsRefreshingNow(false);
 
-        scheduleNextRefresh(fetchRows);
+        scheduleNextRefresh(refreshRows);
       }
     },
     [market, scheduleNextRefresh]
@@ -396,7 +397,7 @@ export default function RankingTable() {
     setRows([]);
     setErr(null);
     setFlashMap({});
-    setSecondsLeft(20);
+    setSecondsLeft(Math.ceil(refreshMs / 1000));
     setIsRefreshingNow(false);
 
     clearScheduledRefresh();
@@ -425,7 +426,7 @@ export default function RankingTable() {
         clearTimeout(flashTimerRef.current);
       }
     };
-  }, [market, clearScheduledRefresh, fetchRows]);
+  }, [market, clearScheduledRefresh, fetchRows, refreshMs]);
 
   useEffect(() => {
     setSortDirection("none");
@@ -437,14 +438,14 @@ export default function RankingTable() {
         <div className="rankingHeaderMain">
           <div className="tickerLiveBadge live sectionTickerBadge">
             <span className="tickerLiveDot" />
-            <span>LIVE</span>
+            <span>AUTO</span>
           </div>
 
           <h3>{market === "COMMODITIES" ? "원자재 시세" : "TOP 30"}</h3>
           <div className="rankingSub">
             {market === "COMMODITIES"
-              ? "주요 원자재 가격을 실시간으로 확인해보세요"
-              : "실시간 순위와 가격 변동을 확인해보세요"}
+              ? "원자재 가격 조회 · 20초 간격"
+              : market === "CRYPTO" ? "목록 조회 · 5분 간격" : market === "NASDAQ" ? "가격 조회 20초 · 순위 갱신 6시간" : "순위·가격 조회 · 20초 간격"}
           </div>
         </div>
 
