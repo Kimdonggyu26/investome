@@ -45,4 +45,11 @@ class PaperMarketDataTests {
         assertEquals("KOSDAQ", catalog.require("247540").market());
         assertThrows(BadRequestException.class, () -> catalog.require("999999"));
     }
+    @Test void rankingMasterIsPackagedWithTheApplication() {
+        var market = new StockMarketService(mock(MarketHttpClient.class));
+        java.util.Map<?, ?> master = ReflectionTestUtils.invokeMethod(market, "getKospiMasterMap");
+        assertNotNull(master);
+        assertTrue(master.containsKey("005930"));
+        assertTrue(master.size() > 500);
+    }
 }

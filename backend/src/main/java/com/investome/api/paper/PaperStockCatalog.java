@@ -21,9 +21,14 @@ public class PaperStockCatalog {
                     loaded.put(symbol, new Stock(symbol, row.path("name").asText().replaceFirst("보통주$", "").replace("(주)", "").trim(), market));
             }
         }
-        stocks = Collections.unmodifiableMap(loaded);
+        stocks = new java.util.concurrent.ConcurrentHashMap<>(loaded);
     }
     public List<Stock> all() { return List.copyOf(stocks.values()); }
+    public Stock registerKospi(String symbol, String name) {
+        if (symbol == null || !symbol.matches("[0-9]{6}") || name == null || name.isBlank())
+            throw new IllegalArgumentException("Invalid ranking symbol");
+        return stocks.computeIfAbsent(symbol, code -> new Stock(code, name, "KOSPI"));
+    }
     public Stock require(String symbol) {
         Stock stock = stocks.get(symbol);
         if (stock == null) throw new BadRequestException("지원 종목 목록에서 종목을 선택해 주세요.");

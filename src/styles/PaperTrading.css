@@ -10,3 +10,27 @@
 .paperSearchBox{position:relative}.paperSearchResults{position:absolute;top:100%;left:0;right:0;z-index:20;max-height:240px;background:var(--panel);box-shadow:0 12px 30px #0006}.paperGrid{grid-template-columns:minmax(0,1fr) 320px 210px;align-items:start}.paperChart{min-height:580px}.paperCandleChart{flex:none;height:auto;min-height:0}.paperAssetValue{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.paperAssetValue .paperReturn{font-size:14px;white-space:nowrap}.paperReturn.positive{color:#ef646e}.paperReturn.negative{color:#5094f3}.paperReturn.neutral{color:var(--muted)}.paperMarketList{padding:20px 14px}.paperMarketList h2{font-size:17px}.paperMarketList select{width:100%;margin-top:8px;background:var(--bg-elevated);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px}.paperMarketScroll{height:510px;overflow-y:auto;overscroll-behavior:contain}.paperMarketScroll button{display:block;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--border);border-radius:0;padding:12px 8px}.paperMarketScroll strong{display:block;font-size:12px;overflow-wrap:anywhere}.paperMarketScroll small{display:block;color:var(--muted);margin-top:5px;font-size:11px}.paperMarketScroll button[aria-pressed=true]{background:var(--accent-soft);color:var(--accent)}
 @media(max-width:1200px){.paperGrid{grid-template-columns:minmax(0,1fr) 320px}.paperMarketList{grid-column:1/-1}.paperMarketScroll{height:220px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-content:start}.paperMarketList select{width:180px}}
 @media(max-width:900px){.paperGrid{grid-template-columns:1fr}.paperChart{min-height:0}.paperMarketList{grid-column:auto}.paperMarketScroll{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Two columns: chart and a compact order/market stack with matching outer edges. */
+.paperGrid{grid-template-columns:minmax(0,1fr) 350px;align-items:stretch}
+.paperSidebar{display:flex;flex-direction:column;gap:16px;min-width:0;min-height:0}
+.paperGrid>.paperChart{min-height:740px}.paperGrid .paperCandleChart{flex:1;min-height:260px}
+.paperSidebar .paperOrder{padding:22px}.paperSidebar .paperOrder h2{margin-bottom:12px}
+.paperSidebar .paperSides{margin:12px 0}.paperSidebar .paperSides button{padding:10px}
+.paperSidebar .paperQuote{margin:12px 0}.paperSidebar .paperOrder label{margin:12px 0 8px}
+.paperSidebar .paperTotal{padding-top:14px;margin-top:16px}.paperSidebar .paperPrimary{padding:12px}
+.paperSidebar .paperMarketList{grid-column:auto;display:flex;flex-direction:column;flex:1;min-height:300px;padding:18px 22px}
+.paperMarketHeading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.paperMarketHeading h2{margin:0}.paperSidebar .paperMarketList select{width:110px;margin:0}
+.paperMarketList input{width:100%;box-sizing:border-box;padding:10px 12px;margin-top:6px;border:1px solid var(--input-border);border-radius:10px;background:var(--bg-elevated);color:var(--text)}
+.paperSidebar .paperMarketScroll{display:block;flex:1;height:0;min-height:140px;overflow-y:auto}
+.paperSidebar .paperMarketScroll button{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 8px}
+.paperSidebar .paperMarketScroll small{margin:0;flex-shrink:0}
+@media(max-width:900px){.paperGrid{grid-template-columns:1fr}.paperGrid>.paperChart{min-height:0}.paperGrid .paperCandleChart{flex:none;min-height:0}.paperSidebar .paperMarketScroll{height:240px;flex:none}.paperSidebar .paperMarketList{min-height:0}}
+/* Bound the list explicitly: flex content must never determine the chart row height. */
+.paperSidebar .paperMarketScroll{flex:0 0 180px;height:180px;min-height:0;max-height:180px;overflow-y:auto}
+.paperSidebar .paperMarketList{min-height:0;overflow:hidden}
+@media(max-width:900px){.paperSidebar .paperMarketScroll{flex:0 0 240px;height:240px;max-height:240px}}
+.paperToast{position:fixed;right:24px;bottom:24px;z-index:1000;display:flex;align-items:center;gap:16px;max-width:min(540px,calc(100vw - 32px));box-sizing:border-box;padding:14px 18px;background:var(--panel);border:1px solid var(--accent);box-shadow:0 8px 30px #0005;border-radius:12px;color:var(--text);font-size:13px;line-height:1.6}.paperToast button{flex-shrink:0;padding:3px 9px}.paperHoldingValue{display:flex;align-items:center;gap:12px}.paperHoldingValue .paperReturn{font-size:12px;white-space:nowrap}.paperGrid+.paperHistory{margin-top:16px}
+@media(max-width:560px){.paperToast{right:16px;bottom:16px}.paperHoldingValue{gap:8px}}
+.paperRealtime{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:10px 12px;margin:6px 0;border:1px solid var(--border);border-radius:10px;font-size:11px;color:var(--muted)}.paperRealtime>div{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.paperRealtime strong{font-size:12px;color:var(--text)}.paperRealtime small{width:100%}.paperRealtime button{font-size:11px;padding:6px 9px}.paperLiveDot{width:6px;height:6px;border-radius:50%;background:var(--muted);display:inline-block}.paperLiveDot.active{background:#35c79c}
+.paperAverageLine{pointer-events:none}.paperAverageLine line{stroke:#e7ad45;stroke-width:1.5;stroke-dasharray:6 4}.paperAverageLine rect{fill:var(--panel);stroke:#e7ad45;stroke-width:1}.paperCandleChart .paperAverageLine text{fill:#e7ad45;font-size:12px;font-weight:700}

@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -88,6 +86,10 @@ public class StockMarketService {
             new StockBase("MELI", "메르카도리브레", "MercadoLibre, Inc.", "mercadolibre.com"),
             new StockBase("ORCL", "오라클", "Oracle Corporation", "oracle.com")
     );
+
+    public List<MarketItemResponse> getFreshKospiTop30() throws Exception {
+        return buildKospiRankSnapshot();
+    }
 
     public List<MarketItemResponse> getTop30(String market) {
         String normalizedMarket = String.valueOf(market).toUpperCase(Locale.ROOT);
@@ -554,15 +556,10 @@ public class StockMarketService {
     }
 
     private List<KospiMaster> loadKospiMaster() throws IOException {
-        Path path1 = Path.of("tmp", "kospi.csv");
-        Path path2 = Path.of("..", "tmp", "kospi.csv");
-
-        Path filePath = Files.exists(path1) ? path1 : path2;
-        if (!Files.exists(filePath)) {
-            throw new IOException("tmp/kospi.csv not found");
+        String text;
+        try (var input = new org.springframework.core.io.ClassPathResource("market/kospi.csv").getInputStream()) {
+            text = new String(input.readAllBytes(), Charset.forName("MS949"));
         }
-
-        String text = Files.readString(filePath, Charset.forName("MS949"));
         List<Map<String, String>> rows = parseCsv(text);
 
         Map<String, KospiMaster> overrides = Map.ofEntries(

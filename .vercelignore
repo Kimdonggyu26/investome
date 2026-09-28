@@ -6,3 +6,5 @@ dist
 backend
 work
 *.log
+
+tmp/paper-ui-tools

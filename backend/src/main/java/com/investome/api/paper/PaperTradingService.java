@@ -19,6 +19,7 @@ public class PaperTradingService {
     private final PaperOrderRepository orders;
     private final PaperQuoteProvider quotes;
     private final Validator validator;
+    private final PaperUniverseService universe;
     private final org.springframework.transaction.support.TransactionTemplate transaction;
 
     public PaperOrderResponse buy(Long userId, BuyOrderRequest request) {
@@ -36,6 +37,7 @@ public class PaperTradingService {
         PaperAccount current = accountOf(userId);
         var completed = orders.findByAccount_IdAndRequestId(current.getId(), request.requestId());
         if (completed.isPresent()) return replay(completed.get(), request, side);
+        if (side == PaperOrder.Side.BUY) universe.requireBuyable(request.symbol());
         // Remote I/O finishes before taking a database lock or opening a write transaction.
         PaperQuoteProvider.Quote quote = quotes.quoteOf(request.symbol());
         return transaction.execute(status -> executeLocked(userId, request, side, quote));

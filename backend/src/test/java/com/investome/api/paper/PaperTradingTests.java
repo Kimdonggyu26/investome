@@ -31,6 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PaperTradingTests {
     @org.springframework.test.context.bean.override.mockito.MockitoBean
     com.investome.api.market.StockMarketService market;
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    PaperUniverseService universe;
     @Autowired PaperTradingService trading;
     @Autowired PaperAccountService accountService;
     @Autowired PaperAccountRepository accounts;
@@ -44,6 +46,8 @@ class PaperTradingTests {
     void prepare() throws Exception {
         org.mockito.Mockito.when(market.getCurrentKoreanPrice("005930")).thenReturn(70_000L);
         org.mockito.Mockito.when(market.getCurrentKoreanPrice("000660")).thenReturn(150_000L);
+        org.mockito.Mockito.when(universe.stocks()).thenReturn(java.util.stream.IntStream.range(0, 30)
+            .mapToObj(i -> new PaperStockCatalog.Stock(String.format("%06d", i), "종목" + i, "KOSPI")).toList());
         orders.deleteAll();
         holdings.deleteAll();
         accounts.deleteAll();
@@ -78,10 +82,11 @@ class PaperTradingTests {
 
     @Test
     void endpointsRequireAuthentication() throws Exception {
+        mvc.perform(post("/api/paper/realtime/start")).andExpect(status().isUnauthorized());
         mvc.perform(post("/api/paper/orders/buy").contentType("application/json")
                 .content("{\"requestId\":\"x\",\"symbol\":\"005930\",\"quantity\":1}"))
                 .andExpect(status().isUnauthorized());
-        for (String path : List.of("holdings", "orders", "quotes")) {
+        for (String path : List.of("holdings", "orders", "quotes", "realtime", "realtime/stream")) {
             mvc.perform(get("/api/paper/" + path)).andExpect(status().isUnauthorized());
         }
     }
@@ -337,7 +342,7 @@ class PaperTradingTests {
         org.mockito.Mockito.when(market.getKoreanDailyChart("035420")).thenReturn(List.of(
             new com.investome.api.market.StockMarketService.DailyCandle("2026-09-21", 190000, 205000, 189000, 200000, 10000)));
         mvc.perform(get("/api/paper/symbols").header("Authorization", auth(1)))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThan(2000)));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(30));
         mvc.perform(get("/api/paper/quotes/035420").header("Authorization", auth(1)))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.symbol").value("035420"))
                 .andExpect(jsonPath("$.price").value(200000));
@@ -364,5 +369,13 @@ class PaperTradingTests {
         } catch (BadRequestException e) {
             return false;
         }
+    }
+    @Test void delistedFromTop30CanSellAndReplayButCannotBuyMore() {
+        trading.buy(1L, request("before-removal", 2));
+        org.mockito.Mockito.doThrow(new BadRequestException("TOP30 only")).when(universe).requireBuyable("005930");
+        assertEquals(2, trading.buy(1L, request("before-removal", 2)).quantity());
+        assertThrows(BadRequestException.class, () -> trading.buy(1L, request("after-removal", 1)));
+        assertEquals(1, trading.sell(1L, request("sell-removed", 1)).quantity());
+        assertEquals(1, trading.getHoldings(1L).get(0).quantity());
     }
 }

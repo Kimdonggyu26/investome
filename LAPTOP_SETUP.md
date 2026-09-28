@@ -54,19 +54,18 @@ powershell -ExecutionPolicy Bypass -File .\start-paper-frontend.ps1
 
 ## 현재 구현
 
-- 가상 현금 1,000만 원, 매수·매도, 거래 기록, 재시도 중복 방지, 트랜잭션 롤백.
-- KIS 현재가, 코스피·코스닥 목록 검색, 수정주가 일봉/거래량 차트.
-- 보유종목/거래내역 탭, 검색창 드롭다운, 코스피 기본 시장 목록.
-- 총 수익률 = (현금 + 보유 평가금액 - 10,000,000) / 10,000,000 × 100.
-- 시세 누락 시 총 평가금액과 수익률은 표시하지 않음.
-- 시세 자동 스트리밍, 지정가 대기·취소, 수수료·세금·장 운영시간 제한은 아직 미구현.
+- 가상 현금 1,000만 원, 매수·매도, 거래 기록, 중복 체결 방지와 트랜잭션 롤백.
+- 일별 코스피 TOP30 검색·신규 매수, 순위 밖 보유종목 조회·매도 유지.
+- 한투 웹소켓 30종목 구독 → Spring → 인증 SSE → 현재가·수익률·당일 캔들 갱신.
+- 수정주가 20/60/100봉, 거래량, 가격축 평단가 표시, 보유종목/거래내역 탭.
+- 지정가 대기·취소, 수수료·세금·장 운영시간 제한은 미구현.
 
 ## 검증
 
 ```powershell
 npm run build
 cd backend
-.\mvnw.cmd '-Dtest=PaperTradingTests,PaperAccountApiTests,PaperHoldingTests,PaperMarketDataTests' test
+.\mvnw.cmd '-Dtest=Paper*Tests' test
 ```
 
 추가 설명은 `backend/PAPER_TRADING_GUIDE.md` 참고.

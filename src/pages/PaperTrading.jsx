@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import { getAuthUser, isLoggedIn } from "../utils/auth";
 import { createPaperAccount, getPaperAccount, getPaperHoldings, getPaperOrders, getPaperQuote, getPaperSymbols, placePaperOrder } from "../api/paperApi";
+import usePaperRealtime from "../hooks/usePaperRealtime";
 import PaperPriceChart from "../components/PaperPriceChart";
 import "../styles/PaperTrading.css";
 
@@ -31,7 +32,6 @@ export default function PaperTrading() {
     <div className="paperHero"><div><span className="paperEyebrow">INVESTOME PAPER TRADING</span>
       <h1>투자 연습, 부담 없이.</h1><p>가상 자금 1,000만 원으로 주문부터 자산 관리까지 경험해 보세요.</p></div>
       <span className="paperBadge">연습 모드</span></div>
-    <div className="paperNotice">실제 돈과 거래되지 않습니다. <strong>한투 API에서 조회한 KRX 현재가</strong>로 전량 모의 체결합니다. 실제 시장가의 호가·부분 체결·수수료·세금은 반영하지 않습니다. 장외 시간에는 마지막 시세로 연습할 수 있습니다.</div>
     {user ? <TradingDesk key={user.id} userId={user.id} /> : <section className="paperCard paperEmpty">
       <h2>나만의 모의계좌를 시작하세요</h2><p>로그인하면 가상 현금으로 매수·매도를 연습하고 거래 내역을 확인할 수 있습니다.</p>
       <Link className="paperPrimary" to="/login">로그인하기</Link></section>}
@@ -44,14 +44,17 @@ function TradingDesk({ userId }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  useEffect(() => {
+    if (!notice) return;
+    const timer = window.setTimeout(() => setNotice(""), 6000);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
   const [pending, setPending] = useState(() => readPending(userId));
   const [side, setSide] = useState("buy");
   const [symbol, setSymbol] = useState("005930");
   const [tab, setTab] = useState("holdings");
-  const [stocks, setStocks] = useState([]);
+  const [stockList, setStocks] = useState([]);
   const [search, setSearch] = useState("");
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [listMarket, setListMarket] = useState("KOSPI");
   const [stockError, setStockError] = useState("");
   const [quoteState, setQuoteState] = useState({});
   const [quoteVersion, setQuoteVersion] = useState(0);
@@ -91,6 +94,8 @@ function TradingDesk({ userId }) {
   }
   useEffect(() => { loadStocks(); }, []);
   const accountId = data?.account?.accountId;
+  const realtime = usePaperRealtime(!!accountId);
+  const stocks = realtime.stocks?.length ? realtime.stocks : stockList;
   useEffect(() => {
     if (!accountId) return;
     let cancelled = false;
@@ -102,8 +107,8 @@ function TradingDesk({ userId }) {
   }, [symbol, quoteVersion, accountId]);
   const selectedStock = stocks.find(stock => stock.symbol === symbol);
   const stockName = code => stocks.find(stock => stock.symbol === code)?.name || code;
-  const matches = search.trim() ? stocks.filter(stock => `${stock.name} ${stock.symbol}`.toLowerCase().includes(search.trim().toLowerCase())).slice(0, 30) : [];
-  function selectStock(code) { setSymbol(code); setSearch(""); setSearchOpen(false); setQuantity("1"); }
+
+  function selectStock(code) { setSymbol(code); setSearch(""); setQuantity("1"); }
 
   async function reload() {
     setError("");
@@ -158,22 +163,21 @@ function TradingDesk({ userId }) {
     }
   }
 
-  const quote = quoteState.symbol === symbol ? quoteState.quote : null;
+  const restQuote = quoteState.symbol === symbol ? quoteState.quote : null;
+  const tick = realtime.trades?.[symbol];
+  const fresh = tick && realtime.state === "LIVE" && realtime.now - Date.parse(tick.receivedAt) < 15000;
+  const quote = tick && (!restQuote || Date.parse(tick.receivedAt) > Date.parse(restQuote.fetchedAt))
+    ? { symbol, price: tick.price, fetchedAt: tick.receivedAt } : restQuote;
   const owned = data?.holdings.find(h => h.symbol === symbol)?.quantity || 0;
   const count = Number(quantity);
   const total = (quote?.price || 0) * count;
   const max = side === "buy" ? Math.min(1000000, Math.floor((data?.account?.cashBalance || 0) / (quote?.price || 1))) : owned;
-  const valid = !!quote && Number.isInteger(count) && count > 0 && count <= max && count <= 1000000;
-  const hasQuotes = data?.holdings.every(h => data.quotes.some(q => q.symbol === h.symbol));
-  const valuation = data?.holdings.reduce((sum, h) => sum + h.quantity * (data.quotes.find(q => q.symbol === h.symbol)?.price || 0), 0) || 0;
-  const totalAssets = (data?.account?.cashBalance || 0) + valuation;
-  const totalReturn = (totalAssets - 10000000) / 10000000 * 100;
-  const marketStocks = stocks.filter(stock => stock.market === listMarket);
-  const cost = data?.holdings.reduce((sum, h) => sum + h.quantity * Number(h.averagePrice), 0) || 0;
+  const valid = (side === "sell" || !!selectedStock) && !!quote && Number.isInteger(count) && count > 0 && count <= max && count <= 1000000;
+  const marketStocks = stocks.filter(stock => `${stock.name} ${stock.symbol}`.toLowerCase().includes(search.trim().toLowerCase()));
   return <>
     {error && <div className="paperAlert" role="alert">{error} <button onClick={reload} disabled={busy || loading}>잔고 새로고침</button></div>}
     {data?.quoteError && <div className="paperAlert" role="alert">{data.quoteError} 잔고와 거래내역은 조회할 수 있습니다.</div>}
-    {notice && <div className="paperSuccess" role="status">{notice}</div>}
+    {notice && <div className="paperToast" role="status"><span>{notice}</span><button aria-label="체결 알림 닫기" onClick={() => setNotice("")}>×</button></div>}
     {pending && <div className="paperAlert" role="status">
       <strong>이전 주문 결과 확인이 필요합니다.</strong>
       <p>{pending.symbol} · {pending.side === "buy" ? "매수" : "매도"} {pending.quantity}주 — 같은 요청으로 확인하여 중복 거래를 방지합니다. 아직 처리되지 않았다면 이 주문을 실행합니다.</p>
@@ -183,29 +187,16 @@ function TradingDesk({ userId }) {
     : !data.account ? <section className="paperCard paperEmpty"><span className="paperEyebrow">YOUR FIRST STEP</span><h2>1,000만 원으로 시작하는 첫 투자</h2>
       <p>계좌는 한 번만 개설되며, 가상 자금은 처음에만 지급됩니다.</p><button className="paperPrimary" onClick={openAccount} disabled={busy || loading}>{busy ? "개설 중…" : "무료 모의계좌 개설"}</button></section>
     : <>
-      <div className="paperSummary">
-        <section className="paperCard"><span>총 평가자산</span><div className="paperAssetValue"><strong>{hasQuotes ? money(totalAssets) : "시세 확인 필요"}</strong>{hasQuotes && <b className={`paperReturn ${totalReturn > 0 ? "positive" : totalReturn < 0 ? "negative" : "neutral"}`} aria-label="초기 자금 대비 수익률">{totalReturn > 0 ? "+" : ""}{totalReturn.toFixed(2)}%</b>}</div><small>초기 자금 1,000만 원 대비</small></section>
-        <section className="paperCard"><span>주문 가능 현금</span><strong>{money(data.account.cashBalance)}</strong><small>계좌 #{data.account.accountId}</small></section>
-        <section className="paperCard"><span>보유자산 평가금액</span><strong>{hasQuotes ? money(valuation) : "시세 확인 필요"}</strong><small>평가손익 {hasQuotes ? money(valuation - cost) : "—"} · {data.holdings.length}개 종목</small></section>
-      </div>
       <div className="paperGrid">
-        <PaperPriceChart key={symbol} symbol={symbol} name={selectedStock?.name || symbol} refreshVersion={quoteVersion} />
-        <section className="paperCard paperOrder"><h2>주문하기</h2><p className="paperMuted">시장가 모의 주문 · 조회 현재가로 전량 체결</p>
+        <PaperPriceChart key={symbol} symbol={symbol} name={selectedStock?.name || symbol} realtime={realtime} trade={tick} refreshVersion={quoteVersion} averagePrice={owned > 0 ? data.holdings.find(h => h.symbol === symbol)?.averagePrice : null} />
+        <div className="paperSidebar">
+        <section className="paperCard paperOrder"><h2>주문하기</h2>
           <form onSubmit={submitOrder}>
             <fieldset disabled={busy || loading || !!pending}>
               <div className="paperSides"><button type="button" aria-pressed={side === "buy"} className={side === "buy" ? "selected" : ""} onClick={() => setSide("buy")}>매수</button><button type="button" aria-pressed={side === "sell"} className={side === "sell" ? "selected sell" : ""} onClick={() => setSide("sell")}>매도</button></div>
-              <label htmlFor="paper-search">종목 검색</label>
-              <div className="paperSearchBox" onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) setSearchOpen(false); }}>
-              <input id="paper-search" type="search" autoComplete="off" placeholder="종목명 또는 종목코드" value={search} onFocus={() => setSearchOpen(true)} onKeyDown={e => { if (e.key === "Escape") setSearchOpen(false); }} onChange={e => { setSearch(e.target.value); setSearchOpen(true); }} />
-              {stockError && <p role="alert">{stockError} <button type="button" onClick={loadStocks}>목록 다시 불러오기</button></p>}
-              {searchOpen && search.trim() && <div className="paperSearchResults" aria-label="종목 검색 결과">
-                {matches.length ? matches.map(stock => <button key={stock.symbol} type="button" onClick={() => selectStock(stock.symbol)}><strong>{stock.name}</strong><small>{stock.symbol} · {stock.market}</small></button>) : <p>{stocks.length ? "검색 결과가 없습니다." : "종목 목록을 불러오는 중…"}</p>}
-              </div>}
-              </div>
-              <div className="paperSelected"><strong>{selectedStock?.name || symbol}</strong><small>{symbol} · {selectedStock?.market || "국내주식"}</small></div>
               {quoteState.error && <p className="paperMuted" role="alert">{quoteState.error} <button type="button" onClick={() => setQuoteVersion(v => v + 1)}>시세 재조회</button></p>}
-              <div className="paperQuote"><span>조회 현재가</span><strong>{quote ? money(quote.price) : quoteState.loading ? "조회 중…" : "조회 불가"}</strong></div>
-              <p className="paperMuted">{quote ? `조회 시각 ${new Date(quote.fetchedAt).toLocaleString("ko-KR")}` : "시세를 새로고침해 주세요."}</p>
+              <div className="paperQuote"><span>{fresh ? "실시간 현재가" : "조회 현재가"}</span><strong>{quote ? money(quote.price) : quoteState.loading ? "조회 중…" : "조회 불가"}</strong></div>
+              {side === "buy" && !selectedStock && <p className="paperMuted">TOP30 밖의 보유종목은 매도만 가능합니다.</p>}
               <label htmlFor="paper-quantity">주문 수량</label><div className="paperQuantity"><input id="paper-quantity" type="number" min="1" max="1000000" step="1" required value={quantity} onChange={e => setQuantity(e.target.value)} /><button type="button" onClick={() => setQuantity(String(max))} disabled={max < 1}>최대</button></div>
               <small className="paperMuted">보유 {owned.toLocaleString()}주 · {side === "buy" ? "매수" : "매도"} 가능 {max.toLocaleString()}주</small>
               <div className="paperQuote paperTotal"><span>예상 {side === "buy" ? "매수" : "매도"} 금액</span><strong>{quote && Number.isFinite(total) && total >= 0 ? money(total) : "—"}</strong></div>
@@ -215,13 +206,17 @@ function TradingDesk({ userId }) {
           </form>
         </section>
         <aside className="paperCard paperMarketList" aria-label="시장 종목 목록">
-          <h2>시장 종목</h2>
-          <label htmlFor="paper-market" className="paperMuted">시장 선택</label>
-          <select id="paper-market" value={listMarket} onChange={e => setListMarket(e.target.value)}><option value="KOSPI">코스피</option><option value="KOSDAQ">코스닥</option></select>
+          <div className="paperMarketHeading"><h2>코스피 TOP30</h2>
+</div>
+          <label htmlFor="paper-search" className="paperMuted">종목 검색</label>
+          <input id="paper-search" type="search" autoComplete="off" placeholder="TOP30 종목명 또는 종목코드" value={search} onChange={e => setSearch(e.target.value)} />
+          {stockError && <p role="alert">{stockError} <button type="button" onClick={loadStocks}>다시 불러오기</button></p>}
           <p className="paperMuted">{marketStocks.length.toLocaleString()}개 종목</p>
           <div className="paperMarketScroll">{marketStocks.map(stock => <button type="button" key={stock.symbol} aria-pressed={symbol === stock.symbol} disabled={busy || !!pending} onClick={() => selectStock(stock.symbol)}><strong>{stock.name}</strong><small>{stock.symbol}</small></button>)}</div>
+          {stocks.length > 0 && !marketStocks.length && <p className="paperMuted">검색 결과가 없습니다.</p>}
           {!stocks.length && <p className="paperMuted">{stockError || "종목 목록을 불러오는 중…"}</p>}
         </aside>
+        </div>
       </div>
       <section className="paperCard paperHistory">
         <div className="paperSectionHead"><div className="paperTabs" role="tablist" aria-label="계좌 내역">
@@ -235,7 +230,20 @@ function TradingDesk({ userId }) {
               }}>{label}</button>)}
         </div><button onClick={reload} disabled={loading || busy}>{loading ? "갱신 중…" : "새로고침"}</button></div>
         <div id="paper-panel-holdings" role="tabpanel" aria-labelledby="paper-tab-holdings" hidden={tab !== "holdings"}>
-          {!data.holdings.length ? <div className="paperEmpty"><h3>아직 보유한 종목이 없어요</h3><p>첫 매수 주문을 넣으면 여기에 표시됩니다.</p></div> : <div className="paperTableWrap"><table><thead><tr><th>종목</th><th>보유 수량</th><th>평균 매입가</th><th>평가금액</th></tr></thead><tbody>{data.holdings.map(h => <tr key={h.symbol}><td><button className="paperStockLink" disabled={busy || !!pending} onClick={() => selectStock(h.symbol)}>{stockName(h.symbol)}</button><small>{h.symbol}</small></td><td>{h.quantity.toLocaleString()}주</td><td>{money(h.averagePrice)}</td><td>{hasQuotes ? money(h.quantity * (data.quotes.find(q => q.symbol === h.symbol)?.price || 0)) : "—"}</td></tr>)}</tbody></table></div>}
+          {!data.holdings.length ? <div className="paperEmpty"><h3>아직 보유한 종목이 없어요</h3><p>첫 매수 주문을 넣으면 여기에 표시됩니다.</p></div> : <div className="paperTableWrap"><table><thead><tr><th>종목</th><th>보유 수량</th><th>평균 매입가</th><th>현재가</th><th>평가금액</th></tr></thead><tbody>{data.holdings.map(h => {
+            const rest = data.quotes.find(q => q.symbol === h.symbol);
+            const live = realtime.trades?.[h.symbol];
+            const newer = live && (!rest || Date.parse(live.receivedAt) > Date.parse(rest.fetchedAt));
+            const current = newer ? live.price : rest?.price;
+            const isLive = newer && realtime.state === "LIVE" && realtime.now - Date.parse(live.receivedAt) < 15000;
+            const average = Number(h.averagePrice);
+            const rate = current != null && average > 0 ? (current - average) / average * 100 : null;
+            return <tr key={h.symbol}>
+              <td><button className="paperStockLink" disabled={busy || !!pending} onClick={() => { selectStock(h.symbol); if (!stocks.some(s => s.symbol === h.symbol)) setSide("sell"); }}>{stockName(h.symbol)}</button><small>{h.symbol}</small></td>
+              <td>{h.quantity.toLocaleString()}주</td><td>{money(average)}</td><td>{current != null ? money(current) : "—"}<small>{isLive ? "실시간" : "최근 조회 시세"}</small></td>
+              <td>{current != null ? <div className="paperHoldingValue"><span>{money(h.quantity * current)}</span>{rate != null && <b className={`paperReturn ${rate > 0 ? "positive" : rate < 0 ? "negative" : "neutral"}`} aria-label="종목 수익률">{rate > 0 ? "+" : ""}{rate.toFixed(2)}%</b>}</div> : "—"}</td>
+            </tr>;
+          })}</tbody></table></div>}
         </div>
         <div id="paper-panel-orders" role="tabpanel" aria-labelledby="paper-tab-orders" hidden={tab !== "orders"}>
           <p className="paperMuted">최근 체결 100건</p>

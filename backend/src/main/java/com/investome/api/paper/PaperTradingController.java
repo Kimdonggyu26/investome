@@ -13,7 +13,7 @@ import java.util.List;
 public class PaperTradingController {
     private final PaperTradingService trading;
     private final PaperQuoteProvider quotes;
-    private final PaperStockCatalog catalog;
+    private final PaperUniverseService universe;
     private final PaperChartService charts;
 
     @PostMapping("/orders/buy")
@@ -41,7 +41,7 @@ public class PaperTradingController {
     @GetMapping("/quotes")
     public List<PaperQuoteProvider.Quote> quotes() { return quotes.getQuotes(); }
     @GetMapping("/symbols")
-    public List<PaperStockCatalog.Stock> symbols() { return catalog.all(); }
+    public List<PaperStockCatalog.Stock> symbols() { return universe.stocks(); }
 
     @GetMapping("/quotes/{symbol}")
     public PaperQuoteProvider.Quote quote(@PathVariable String symbol) { return quotes.quoteOf(symbol); }
