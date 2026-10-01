@@ -1,7 +1,8 @@
 import { apiUrl } from "../lib/apiClient";
-import { clearAuth, getAuthHeaders } from "../utils/auth";
+import { clearRejectedAuth, getAccessToken, getAuthHeaders } from "../utils/auth";
 
 async function request(path, method = "GET", body) {
+  const requestToken = getAccessToken();
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), 65000);
   try {
@@ -12,10 +13,9 @@ async function request(path, method = "GET", body) {
     const data = await res.json().catch(() => null);
     if (!res.ok) {
       if (res.status === 401) {
-        clearAuth();
-        window.dispatchEvent(new Event("investome-auth-changed"));
+        clearRejectedAuth(requestToken, data?.code);
       }
-      const error = new Error(data?.message || `요청을 처리하지 못했습니다. (${res.status})`);
+      const error = new Error(data?.message || (res.status === 401 ? "모의투자 서버의 인증 응답을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요." : `요청을 처리하지 못했습니다. (${res.status})`));
       error.status = res.status;
       throw error;
     }
@@ -50,12 +50,14 @@ export const getPaperRealtime = () => request("/realtime");
 
 // Fetch streaming preserves the Authorization header; JWTs never appear in URLs.
 export async function consumePaperRealtime(signal, onFeed) {
+  const requestToken = getAccessToken();
   const response = await fetch(apiUrl("/api/paper/realtime/stream"), {
     headers: { ...getAuthHeaders(), Accept: "text/event-stream" }, signal,
   });
   if (!response.ok) {
     if (response.status === 401) {
-      clearAuth(); window.dispatchEvent(new Event("investome-auth-changed"));
+      const data = await response.json().catch(() => null);
+      clearRejectedAuth(requestToken, data?.code);
     }
     const error = new Error("실시간 연결을 확인해 주세요."); error.status = response.status; throw error;
   }

@@ -141,3 +141,12 @@ export function getAuthHeaders() {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
+
+// Ignore an ambiguous upstream 401 or a response belonging to an older session.
+export function clearRejectedAuth(requestToken, errorCode) {
+  if (!requestToken || getAccessToken() !== requestToken) return false;
+  if (errorCode !== "AUTHENTICATION_REQUIRED" && !isAccessTokenExpired()) return false;
+  clearAuth();
+  window.dispatchEvent(new Event("investome-auth-changed"));
+  return true;
+}

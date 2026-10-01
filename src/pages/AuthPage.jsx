@@ -146,7 +146,7 @@ export default function AuthPage() {
         const data = await res.json();
         storeAuthSession(data, keepLogin);
         window.dispatchEvent(new Event("investome-auth-changed"));
-        navigate("/mypage");
+        navigate("/", { replace: true });
       } catch (submitError) {
         alert(
           normalizeAuthMessage(
